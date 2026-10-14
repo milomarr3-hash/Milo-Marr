@@ -1,0 +1,21 @@
+{
+  "name": "aura-preview",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Renders AuraFX harness snapshots (JSON) into Roblox-like PNG previews with three.js in headless Chromium.",
+  "type": "module",
+  "scripts": {
+    "render": "node render.mjs",
+    "test": "node test/smoke.mjs",
+    "fixtures": "python3 fixtures/make_fixture_tex.py && node fixtures/make_fixtures.mjs && node render.mjs --snapshot fixtures --out out/fixtures",
+    "standins": "python3 standins/make_standins.py",
+    "viewer": "node build-viewer.mjs --snapshot fixtures/pass4 --out viewer.html"
+  },
+  "dependencies": {
+    "playwright": "1.56.1",
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

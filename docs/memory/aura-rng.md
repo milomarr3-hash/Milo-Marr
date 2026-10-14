@@ -17,7 +17,7 @@ his claude.ai chats) can pick up the work. Update it at the end of every session
   - `scripts/AuraFX_TheEnd.lua` — THE END's aura (ModuleScript `ReplicatedStorage.AuraFX.TheEnd`).
   - `scripts/AuraCinema_TheEnd.lua` — THE END's cutscene; lines ~853-940 build the film's clock from meshes in
     `ReplicatedStorage.AuraCinema.Assets.TheEnd` (RingG, Dial, Astrolabe, Hand, Gear …).
-  - Local Claude Code memory: `~/.claude/projects/-Users-milomarr-School/memory/project-aura-rng.md`.
+  - Local Claude Code memory: `~/.claude/projects/<project>/memory/project-aura-rng.md`.
 - Milo's local Claude Code drives Roblox Studio through the **Roblox Studio MCP** (`execute_luau`, `screen_capture`,
   `start_stop_play`, `upload_image`, …). Cloud sessions have **no Studio access** — they write code/textures here, and the
   local session (or Milo) installs them.

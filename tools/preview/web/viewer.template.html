@@ -1,0 +1,140 @@
+<title>__TITLE__</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: the 3D viewport fills the window like Studio's; a slim overlay names the frame, a timeline strip below scrubs the
+   snapshots (60 fps frames, seconds, Lighting.ClockTime). Dark studio panels by default, a light set for light themes. */
+:root {
+	--bg: #0b0c0f; --panel: #14161b; --panel-2: #1b1e25; --fg: #e3e6ed; --muted: #8b92a1; --line: #2a2e38;
+	--accent: #c8d2e5; --accent-ink: #0b0c0f; --note: #d9b25f; --scrim: rgba(11, 12, 15, 0.72);
+	--display: "Cormorant SC", "Cormorant Garamond", Georgia, "Times New Roman", serif;
+	--ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+	--mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+	:root:not([data-theme="dark"]) {
+		--bg: #e8ebf0; --panel: #f6f7f9; --panel-2: #eceff4; --fg: #14171d; --muted: #586070; --line: #cbd1db;
+		--accent: #26314a; --accent-ink: #f6f7f9; --note: #8a5d0c; --scrim: rgba(246, 247, 249, 0.8); color-scheme: light;
+	}
+}
+:root[data-theme="light"] {
+	--bg: #e8ebf0; --panel: #f6f7f9; --panel-2: #eceff4; --fg: #14171d; --muted: #586070; --line: #cbd1db;
+	--accent: #26314a; --accent-ink: #f6f7f9; --note: #8a5d0c; --scrim: rgba(246, 247, 249, 0.8); color-scheme: light;
+}
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.4 var(--ui); }
+#app { height: 100%; display: grid; grid-template-rows: 1fr auto; }
+#stage { position: relative; min-height: 0; overflow: hidden; background: #000; }
+#stage.drag { outline: 2px dashed var(--accent); outline-offset: -6px; }
+#view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.overlay {
+	position: absolute; top: 0; left: 0; right: 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between;
+	align-items: flex-start; padding-block: 12px; pointer-events: none;
+	padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.overlay > * { pointer-events: auto; }
+.card { background: var(--scrim); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.title { font-family: var(--display); font-weight: 600; font-size: 20px; letter-spacing: 0.06em; margin: 0; line-height: 1.1; text-wrap: balance; }
+.meta { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.meta b { color: var(--fg); font-weight: 500; }
+.group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-right: 2px; }
+button, .file { font: 500 12px var(--ui); color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 5px 9px; cursor: pointer; }
+button:hover, .file:hover { border-color: var(--muted); }
+button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+button:focus-visible, input:focus-visible, .file:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.controls { display: grid; gap: 8px; justify-items: end; }
+#status { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-family: var(--mono); color: #c8ccd6; }
+footer {
+	background: var(--panel); border-top: 1px solid var(--line); display: grid; gap: 8px;
+	padding-block: 10px calc(10px + env(safe-area-inset-bottom, 0px));
+	padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.row { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+.row > .grow { flex: 1 1 260px; min-width: 0; display: grid; gap: 4px; }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+#ticks { display: flex; gap: 2px; overflow-x: auto; }
+.tick { flex: 1 0 22px; padding: 2px 0; font: 11px var(--mono); background: transparent; border: 0; border-top: 2px solid var(--line); border-radius: 0; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tick[aria-current="true"] { border-top-color: var(--accent); color: var(--fg); }
+.tick.first { border-left: 1px solid var(--muted); flex-basis: 56px; }
+.opts { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.opts label { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; }
+.file input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.file { position: relative; display: inline-flex; align-items: center; }
+#drop-note { color: var(--muted); font-size: 12px; }
+details { font-size: 12px; color: var(--muted); }
+details summary { cursor: pointer; color: var(--note); }
+details ul { margin: 6px 0 0; padding-left: 18px; max-height: 120px; overflow: auto; }
+@media (max-width: 640px) {
+	.overlay { gap: 6px; padding-block: 8px; }
+	.controls { justify-items: start; gap: 6px; max-width: 100%; }
+	.card { padding: 6px 8px; }
+	.title { font-size: 16px; }
+	.meta { font-size: 11px; margin-top: 3px; }
+	.group { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; }
+	.group button { padding: 4px 7px; flex: 0 0 auto; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+<script type="importmap">__IMPORTMAP__</script>
+<div id="app">
+	<div id="stage">
+		<canvas id="view" aria-label="3D preview of the aura snapshot"></canvas>
+		<div id="status">Loading</div>
+		<div class="overlay">
+			<div class="card">
+				<h1 class="title">__HEADING__</h1>
+				<div class="meta">
+					<span id="scenario">-</span><span><b id="frame">-</b></span><span><b id="time">-</b></span>
+					<span id="clock">-</span><span id="quality">-</span><span id="count">-</span>
+				</div>
+				<div id="warn-box" hidden><details><summary id="warn-count">notes</summary><ul id="warnings"></ul></details></div>
+			</div>
+			<div class="controls">
+				<div class="group card" role="group" aria-label="Camera">
+					<span class="label">View</span>
+					<button type="button" id="v-cam" data-view="cam" aria-pressed="false">Game cam</button>
+					<button type="button" id="v-studio" data-view="studio" aria-pressed="false" title="The camera of the real pass-4 Studio screenshots">Studio</button>
+					<button type="button" id="v-front" data-view="front" aria-pressed="false">Front</button>
+					<button type="button" id="v-front34" data-view="front34" aria-pressed="true">3/4</button>
+					<button type="button" id="v-back" data-view="back" aria-pressed="false">Back</button>
+					<button type="button" id="v-side" data-view="side" aria-pressed="false">Side</button>
+					<button type="button" id="v-top" data-view="top" aria-pressed="false">Top</button>
+					<button type="button" id="v-far" data-view="far" aria-pressed="false">Far</button>
+				</div>
+				<div class="group card" role="group" aria-label="Time of day">
+					<span class="label">Sky</span>
+					<button type="button" id="e-auto" data-env="auto" aria-pressed="true">From ClockTime</button>
+					<button type="button" id="e-day" data-env="day" aria-pressed="false">Day</button>
+					<button type="button" id="e-night" data-env="night" aria-pressed="false">Night</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<footer>
+		<div class="row">
+			<button type="button" id="play" aria-pressed="false">Play</button>
+			<div class="grow">
+				<label class="label" for="scrub">Snapshot timeline (seconds)</label>
+				<input type="range" id="scrub" min="0" max="0" step="1" value="0">
+				<div id="ticks"></div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="opts">
+				<label for="opt-bloom"><input type="checkbox" id="opt-bloom" checked> Bloom</label>
+				<label for="opt-particles"><input type="checkbox" id="opt-particles" checked> Particles</label>
+				<label for="opt-props"><input type="checkbox" id="opt-props" checked> Palms and torches</label>
+			</div>
+			<label class="file" for="open">Add snapshot JSON<input type="file" id="open" accept=".json,application/json" multiple></label>
+			<span id="drop-note">Drag to orbit, scroll to zoom. Drop harness snapshot files here to add frames.</span>
+		</div>
+	</footer>
+</div>
+<script type="application/json" id="preview-data">__DATA__</script>
+<script type="module">
+__APP__
+</script>

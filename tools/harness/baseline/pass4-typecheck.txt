@@ -1,0 +1,25 @@
+# THE END pass 4 - static type-check baseline (tools/harness/typecheck.sh)
+# luau-lsp 1.70.1 (commit 6f90396, Luau 8387cfb) with luau-lsp's Roblox definitions. Pass 4 runs in Studio without errors.
+
+## default mode (the module is nonstrict: what Studio's Script Analysis shows) - 0 type errors
+== TheEnd.pass4-live.lua
+TheEnd.pass4-live.lua:245:54-111: (W0) SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+TheEnd.pass4-live.lua:394:8-13: (W0) LocalUnused: Variable 'alphaW' is never used; prefix with '_' to silence
+TheEnd.pass4-live.lua:403:81-106: (W0) SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+TheEnd.pass4-live.lua:404:89-120: (W0) SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+   0 type error(s), 4 other diagnostic(s)
+
+## --strict --api-only - 6 findings, all one known false positive: pe() takes Size as a NumberRange and converts it
+## to a NumberSequence before assigning it (lines 162-165), which the checker cannot see
+== TheEnd.pass4-live.lua (checked as --!strict)
+TheEnd.pass4-live.lua:186:12-100: (W0) TypeError: ... caused by: Property 'Size' is not compatible. Expected this to be exactly 'NumberSequence' but got 'NumberRange'
+TheEnd.pass4-live.lua:210:11-100: (W0) TypeError: ... caused by: Property 'Size' is not compatible. Expected this to be exactly 'NumberSequence' but got 'NumberRange'
+TheEnd.pass4-live.lua:214:16-100: (W0) TypeError: ... caused by: Property 'Size' is not compatible. Expected this to be exactly 'NumberSequence' but got 'NumberRange'
+TheEnd.pass4-live.lua:300:11-100: (W0) TypeError: ... caused by: Property 'Size' is not compatible. Expected this to be exactly 'NumberSequence' but got 'NumberRange'
+TheEnd.pass4-live.lua:302:11-100: (W0) TypeError: ... caused by: Property 'Size' is not compatible. Expected this to be exactly 'NumberSequence' but got 'NumberRange'
+TheEnd.pass4-live.lua:305:11-100: (W0) TypeError: ... caused by: Property 'Size' is not compatible. Expected this to be exactly 'NumberSequence' but got 'NumberRange'
+   6 type error(s), 0 other diagnostic(s)
+
+## --strict (everything) - summary only: pass 4's untyped helpers (new(class, props), layer(), sprite(), pe())
+## make the checker infer narrow parameter types, so most of these are not bugs
+   175 type error(s), 4 other diagnostic(s)

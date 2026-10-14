@@ -1,0 +1,89 @@
+[
+ {
+  "name": "te5_shards",
+  "file": "te5_shards.png",
+  "repoPath": "textures/te5/particles/te5_shards.png",
+  "texKey": "shards5",
+  "fallbackTexKey": "ash",
+  "size": "1024x1024",
+  "layout": "Grid4x4",
+  "flipbookMode": "Loop",
+  "purpose": "P3 metal shards breaking off the bezel and flying into the void",
+  "notes": "Flipbook 4x4 Loop (16 frames x 22.5 deg about normalize(0.35,1,0.2); frame 16 = frame 0). Front face L 0.86, back 0.25, sides 0.55 (flat values, with faint brushed grain and a soft sky-reflection band that sweeps the face and loops with the frames), 1 px specular line on the lit crease, 2 px ink (10) outline. The spec's 'x0.8 of the cell' and '>= 20 % padding' conflict (x0.8 puts the corners 8 % from the edge); padding wins, so the sliver is scaled to the largest size that keeps 20 % on every side in every frame (face-on it is ~48 % of the cell tall, at most ~54 % in any frame): at the spec's Size 0.5-0.75 the visible shard is ~0.25-0.4 studs; raise Size ~1.3x if it reads too small. Use FlipbookFramerate 10-14, FlipbookStartRandom true.",
+  "uploadedId": null
+ },
+ {
+  "name": "te5_smoke",
+  "file": "te5_smoke.png",
+  "repoPath": "textures/te5/particles/te5_smoke.png",
+  "texKey": "smoke5",
+  "fallbackTexKey": "puff",
+  "size": "1024x1024",
+  "layout": "Grid4x4",
+  "flipbookMode": "OneShot",
+  "purpose": "P4a/P4b two-tone rim smoke and P7 ground mist",
+  "notes": "Flipbook 4x4 OneShot. Per-frame peak alpha 0.62 0.76 0.85 0.85 0.85 0.81 0.76 0.70 0.64 0.58 0.53 0.48 0.44 0.40 0.37 0.34. RGB 0.75-1.0 internal shading lit from the upper left. Radial window reaches alpha 0 at 0.46 of the cell. Frames change gently (OneShot over a 3.5-4.5 s lifetime is ~4 fps), so the flipbook never pops.",
+  "uploadedId": null
+ },
+ {
+  "name": "te5_mote",
+  "file": "te5_mote.png",
+  "repoPath": "textures/te5/particles/te5_mote.png",
+  "texKey": "mote",
+  "fallbackTexKey": "glow",
+  "size": "128x128",
+  "layout": "None",
+  "purpose": "Dust motes: P1 void swirl, P2 moon dust, P6a air dust, P8a galaxy motes, P11 foot drips",
+  "notes": "White core r < 0.22 (alpha 1), ink rim r 0.22-0.30 (RGB 18, alpha 0.85), white glow r 0.30 -> 0.465 (alpha 0.25 -> 0).",
+  "uploadedId": null
+ },
+ {
+  "name": "te5_glint",
+  "file": "te5_glint.png",
+  "repoPath": "textures/te5/particles/te5_glint.png",
+  "texKey": "glint5",
+  "fallbackTexKey": "glint",
+  "size": "256x256",
+  "layout": "None",
+  "purpose": "P5a/P5b glints riding the metal and P6b mid-size air glints",
+  "notes": "4-point glint: H/V spikes 6 -> 0.5 px, alpha 1 -> 0, tips at 0.465 of the cell; 45 deg spikes half length 0.45 at alpha 0.5; core r 0.05; ink halo r 0.07-0.09 (RGB 15, alpha 0.6).",
+  "uploadedId": null
+ },
+ {
+  "name": "te5_bokeh",
+  "file": "te5_bokeh.png",
+  "repoPath": "textures/te5/particles/te5_bokeh.png",
+  "texKey": "bokeh",
+  "fallbackTexKey": "glow",
+  "size": "256x256",
+  "layout": "None",
+  "purpose": "P6c big slow bokeh between camera and wearer (L7)",
+  "notes": "Rounded hexagon (circumradius 0.46, corners 15 %), interior alpha 0.55 (L 0.9 -> 1.0 outward), rim band (outer 8 %) alpha 0.85, 2 px AA, onion rings +-0.03 alpha. White.",
+  "uploadedId": null
+ },
+ {
+  "name": "te5_streak",
+  "file": "te5_streak.png",
+  "repoPath": "textures/te5/particles/te5_streak.png",
+  "texKey": "streak5",
+  "fallbackTexKey": "spark",
+  "size": "64x256",
+  "layout": "None",
+  "purpose": "Matter streaks with VelocityParallel: P9 funnel and P10a/b palm intake",
+  "notes": "Vertical capsule y 0.06-0.94, 12 px wide: white core ~7 px (alpha 1), 2 px ink edges (RGB 15, alpha 0.9). The TOP end leads (brightest); the tail fades over the lower 40 %. If streaks fly tail-first in Studio, flip the image vertically before upload (VelocityParallel orientation check).",
+  "uploadedId": null
+ },
+ {
+  "name": "te5_ash",
+  "file": "te5_ash.png",
+  "repoPath": "textures/te5/particles/te5_ash.png",
+  "texKey": "ash5",
+  "fallbackTexKey": "ash",
+  "size": "256x256",
+  "layout": "Grid2x2",
+  "flipbookMode": "Random",
+  "purpose": "P8b black ash flakes rising off the galaxy",
+  "notes": "Flipbook 2x2 Random: 4 charred flakes (7, 9, 8, 8 main corners with torn edges), extent 0.64-0.74 of the cell, >= 12 % padding. Body RGB 14-22 alpha 1 with fibre grain and a soft fold; 1 px silver (190) highlight on the upper-left edges.",
+  "uploadedId": null
+ }
+]
