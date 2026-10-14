@@ -21,7 +21,7 @@ export function textureStrings(snap) {
 }
 
 // te5 manifests: textures/te5/<group>/manifest.json (an array of entries, or an object holding one; entries carry
-// name, file, texKey and maybe id / assetId / uploaded)
+// name, file, texKey and maybe id / uploadedId / assetId / uploaded)
 export function readTe5(dir) {
 	const out = [];
 	if (!dir || !fs.existsSync(dir)) return out;
@@ -36,7 +36,7 @@ export function readTe5(dir) {
 		for (const e of entries || []) {
 			if (!e || !e.file) continue;
 			const file = path.resolve(path.join(dir, g), e.file);
-			const id = String(e.id || e.assetId || e.uploaded || e.rbxassetid || '').replace(/\D/g, '');
+			const id = String(e.id || e.uploadedId || e.assetId || e.uploaded || e.rbxassetid || '').replace(/\D/g, '');
 			out.push({ name: e.name || path.basename(e.file, '.png'), texKey: e.texKey || null, file, id: id || null, group: g });
 		}
 	}
