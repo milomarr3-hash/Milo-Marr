@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 08_chunk_07_of_12.luau | step 8: piece 7 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (151582 bytes, checksum 322184148).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (154908 bytes, checksum 840125961).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "08_chunk_07_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-151582-322184148-12-938307881"
-local NEW_LEN, NEW_SUM = 151582, 322184148
+local RUN = "TheEnd-154908-840125961-12-402748328"
+local NEW_LEN, NEW_SUM = 154908, 840125961
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 12
-local LENS = { 13269, 13222, 13287, 13307, 13252, 13232, 13230, 13284, 13301, 13300, 13204, 5694 }
-local SUMS = { 882737169, 754366057, 266404745, 785979457, 290862805, 645616522, 300795074, 332029237, 56580994, 674174262, 959073682, 306083532 }
+local LENS = { 13303, 13296, 13287, 13167, 13232, 13273, 13188, 13300, 13244, 13299, 13292, 9027 }
+local SUMS = { 67409079, 948660274, 266404745, 816058228, 63700756, 500498415, 756191201, 562959745, 92959190, 314875523, 46584231, 495884184 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,11 @@ local function chunkOk(h, i)
 end
 
 local K = 7
--- piece 7 of 12 of the new source (13230 bytes, checksum 300795074, long bracket level 0)
+-- piece 7 of 12 of the new source (13188 bytes, checksum 756191201, long bracket level 0)
 local DATA = [[
+			for k, v in pairs(props) do p[k] = v end
+			p.LightEmission = le and le[1] or 0
+			p.Brightness = br and br[1] or 1
 			if le or br then table.insert(emitNight, { p, le and le[1] or 0, le and le[2] or 0, br and br[1] or 1, br and br[2] or 1 }) end
 			p.Parent = parent
 			table.insert(emitters, { p, tOn, kind, false, false })
@@ -143,14 +146,42 @@ local DATA = [[
 		-- studs further back, so the orbs' silhouettes stay crisp (the moon's opaque face hides what is born behind it).
 		-- While the wearer travels the void's smoke thins and goes short-lived and the moon's stops, so no smog patches
 		-- hang along the path. (te5_smoke's billows fill their cells like the pass-4 puff: both are drawn the same size)
-		em.smoke = pe(void, "smoke5", 1.0, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = rate(10, 4), Lifetime = n(3.5, 4.5),
-			Speed = n(1.4, 2.4), Drag = 0.35, Acceleration = Vector3.new(0, 0.4, 0), Size = seq({ { 0, 5 }, { 1, 14 } }),
-			Transparency = seq({ { 0, 1 }, { 0.18, 0.08 }, { 0.7, 0.32 }, { 1, 1 } }), Color = ColorSequence.new(SMOKE), Rotation = n(0, 360),
-			RotSpeed = n(-25, 25), ZOffset = -3 })
-		em.smokeMoon = hi and pe(moon, "smoke5", 1.6, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = 5, Lifetime = n(3.5, 4.5),
-			Speed = n(0.9, 1.5), Drag = 0.35, Acceleration = Vector3.new(0, 0.3, 0), Size = seq({ { 0, 3.5 }, { 1, 9 } }),
-			Transparency = seq({ { 0, 1 }, { 0.2, 0.32 }, { 0.7, 0.55 }, { 1, 1 } }), Color = ColorSequence.new(Color3.fromRGB(176, 176, 178)),
-			Rotation = n(0, 360), RotSpeed = n(-20, 20), ZOffset = -3 }, { 0.1, 0.4 })
+		-- (pass 5.1: te5_billow is ray-marched smoke with its light baked in from the upper left and real self-shadowing: a
+		-- dense puff that billows out in rolling lobes and thins into veils over its life. It starts small in its cell and is
+		-- opaque until it thins itself, so it is born bigger and denser than the pass-4 puff, kept near upright (the baked
+		-- light must stay above), and the ink is lifted a little so its billows read. Each smoke below takes the pass-4
+		-- puff's own settings if its te5 texture is missing or fails to load in the game)
+		local function propsFix(p, old, ln)
+			fixUps[p] = function(o)
+				for k, v in pairs(old) do o[k] = v end
+				o.LightEmission, o.Brightness = ln[1], ln[3]
+				for _, e in ipairs(emitNight) do
+					if e[1] == o then e[2], e[3], e[4], e[5] = ln[1], ln[2], ln[3], ln[4] end
+				end
+			end
+			return p
+		end
+		local bil = isTe5("billow")
+		em.smoke = pe(void, "billow", 1.0, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = rate(10, 4), Lifetime = n(3.5, 4.5),
+			Speed = n(1.4, 2.4), Drag = 0.35, Acceleration = Vector3.new(0, 0.4, 0),
+			Size = bil and seq({ { 0, 7 }, { 0.5, 11.5 }, { 1, 14 } }) or seq({ { 0, 5 }, { 1, 14 } }),
+			Transparency = bil and seq({ { 0, 1 }, { 0.07, 0 }, { 0.8, 0.06 }, { 1, 1 } }) or seq({ { 0, 1 }, { 0.18, 0.08 }, { 0.7, 0.32 }, { 1, 1 } }),
+			Color = ColorSequence.new(bil and Color3.fromRGB(24, 24, 30) or SMOKE), Rotation = bil and n(-20, 20) or n(0, 360),
+			RotSpeed = bil and n(-6, 6) or n(-25, 25), ZOffset = -3 }, nil, bil and { 1, 2.2 } or nil)
+		if bil then
+			propsFix(em.smoke, { Size = seq({ { 0, 5 }, { 1, 14 } }), Transparency = seq({ { 0, 1 }, { 0.18, 0.08 }, { 0.7, 0.32 }, { 1, 1 } }),
+				Color = ColorSequence.new(SMOKE), Rotation = n(0, 360), RotSpeed = n(-25, 25) }, { 0, 0, 1, 1 })
+		end
+		em.smokeMoon = hi and pe(moon, "billow", 1.6, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = 5, Lifetime = n(3.5, 4.5),
+			Speed = n(0.9, 1.5), Drag = 0.35, Acceleration = Vector3.new(0, 0.3, 0),
+			Size = bil and seq({ { 0, 5 }, { 0.5, 8 }, { 1, 10 } }) or seq({ { 0, 3.5 }, { 1, 9 } }),
+			Transparency = bil and seq({ { 0, 1 }, { 0.08, 0.12 }, { 0.8, 0.25 }, { 1, 1 } }) or seq({ { 0, 1 }, { 0.2, 0.32 }, { 0.7, 0.55 }, { 1, 1 } }),
+			Color = ColorSequence.new(Color3.fromRGB(176, 176, 178)), Rotation = bil and n(-20, 20) or n(0, 360),
+			RotSpeed = bil and n(-5, 5) or n(-20, 20), ZOffset = -3 }, bil and { 0, 0.3 } or { 0.1, 0.4 }, bil and { 1, 1.4 } or nil)
+		if bil and em.smokeMoon then
+			propsFix(em.smokeMoon, { Size = seq({ { 0, 3.5 }, { 1, 9 } }), Transparency = seq({ { 0, 1 }, { 0.2, 0.32 }, { 0.7, 0.55 }, { 1, 1 } }),
+				Rotation = n(0, 360), RotSpeed = n(-20, 20) }, { 0.1, 0.4, 1, 1 })
+		end
 		local glintT = seq({ { 0, 0.1 }, { 1, 0.1 } }) -- (a glint grows, holds and shrinks through its size: never a flash)
 		-- (pass 5.1: a twinkle's flipbook blooms, holds and shrinks the star itself, so its size and transparency stay steady
 		-- with just a soft start and end)
@@ -193,25 +224,6 @@ local DATA = [[
 				Rate = 30, Lifetime = n(3.5, 4.5), Speed = n(0.05, 0.2), SpreadAngle = Vector2.new(25, 25),
 				Size = seq({ { 0, 1.7, 0.4 }, { 1, 1.7, 0.4 } }), Transparency = seq({ { 0, 1 }, { 0.1, 0.02 }, { 0.9, 0.02 }, { 1, 1 } }),
 				LockedToPart = true, Rotation = n(0, 90), RotSpeed = n(-8, 8), ZOffset = 0.2 }, WHITE_LE, WHITE_BR, "nearcam")
-			-- (and clusters of glitter ride the same ring between the stars: each cluster's grains swell and fade on their own
-			-- beats, which gives the ring a glittering body that reads from across the plaza)
-			pe(hosts.halo, "stardust", 3.6, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.76, EmissionDirection = N_.Top,
-				Rate = 8, Lifetime = n(4, 6), Speed = n(0.05, 0.15), Size = n(3.0, 4.0),
-				Transparency = seq({ { 0, 1 }, { 0.2, 0.25 }, { 0.8, 0.25 }, { 1, 1 } }), LockedToPart = true, Rotation = n(0, 360),
-				RotSpeed = n(-6, 6), FlipbookFramerate = n(6, 9), FlipbookStartRandom = true }, { 0.4, 0.9 }, { 2.0, 2.6 }, "nearcam")
-		end
-		-- P16 (pass 5.1): the duality helix: two points turn round the body at 220 degrees a second and leave a strand each,
-		-- so a silver ribbon of light and an ink ribbon of smoke braid up round the wearer from the feet to above the head,
-		-- about one and a half turns each (not locked: each particle stays where it was born and climbs, which is what draws
-		-- the spiral; born 0.4 studs apart, so each strand reads as one ribbon). While the wearer travels the strands thin
-		-- out, so they don't hang far behind (see the travelling flip)
-		em.strandMoon = pe(hosts.strandMoon, "mote", 5.2, { EmissionDirection = N_.Top, Rate = rate(34, 14), Lifetime = n(2.0, 2.3),
-			Speed = n(2.6, 2.9), SpreadAngle = Vector2.new(4, 4), Drag = 0.3, Size = seq({ { 0, 1.0 }, { 0.7, 0.8 }, { 1, 0 } }),
-			Transparency = seq({ { 0, 1 }, { 0.06, 0.02 }, { 0.75, 0.15 }, { 1, 1 } }), ZOffset = 0.4 }, WHITE_LE, WHITE_BR, "nearcam")
-		em.strandVoid = pe(hosts.strandVoid, "wisp", 5.2, { EmissionDirection = N_.Top, Rate = rate(18, 8), Lifetime = n(2.0, 2.3),
-			Speed = n(2.6, 2.9), SpreadAngle = Vector2.new(4, 4), Drag = 0.3, Size = seq({ { 0, 1.0 }, { 0.5, 1.7 }, { 1, 0.8 } }),
-			Transparency = seq({ { 0, 1 }, { 0.1, 0.1 }, { 0.7, 0.35 }, { 1, 1 } }), Color = ColorSequence.new(INK), Rotation = n(0, 360),
-			RotSpeed = n(-40, 40), ZOffset = 0.3 }, nil, nil, "nearcam")
 ]]
 
 local function main()

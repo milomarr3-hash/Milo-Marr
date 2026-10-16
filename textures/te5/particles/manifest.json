@@ -14,20 +14,6 @@
   "uploadedId": null
  },
  {
-  "name": "te5_smoke",
-  "file": "te5_smoke.png",
-  "repoPath": "textures/te5/particles/te5_smoke.png",
-  "texKey": "smoke5",
-  "fallbackTexKey": "puff",
-  "size": "1024x1024",
-  "layout": "Grid4x4",
-  "mode": "OneShot",
-  "flipbookMode": "OneShot",
-  "purpose": "P4a/P4b two-tone orb smoke, P7 rim mist and P11 the body's silver wisps",
-  "notes": "Flipbook 4x4 OneShot. Review round 3: a dense billow filling ~80 % of its cell (body radius 0.37 -> 0.405, round lobes reaching ~0.44), alpha ~0.93 over its inner half, per-cell mean alpha >= 0.30 in frames 0-11, torn wisps only at the edge; it dissolves from the edge inward into ragged wisps in frames 12-15 only (mean alpha 0.36 -> 0.08). RGB 0.75-1.0 internal shading lit from the upper left (the lobes' relief). Radial window reaches alpha 0 at 0.46 of the cell. Frames 0-11 change gently (OneShot over a 3.5-4.5 s lifetime is ~4 fps); the dissolve frames play while the emitter's own Transparency fades the particle out. Drawn at the same size as the pass-4 puff (no 1.3x).",
-  "uploadedId": null
- },
- {
   "name": "te5_mote",
   "file": "te5_mote.png",
   "repoPath": "textures/te5/particles/te5_mote.png",

@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 02_chunk_01_of_12.luau | step 2: piece 1 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (151582 bytes, checksum 322184148).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (154908 bytes, checksum 840125961).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "02_chunk_01_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-151582-322184148-12-938307881"
-local NEW_LEN, NEW_SUM = 151582, 322184148
+local RUN = "TheEnd-154908-840125961-12-402748328"
+local NEW_LEN, NEW_SUM = 154908, 840125961
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 12
-local LENS = { 13269, 13222, 13287, 13307, 13252, 13232, 13230, 13284, 13301, 13300, 13204, 5694 }
-local SUMS = { 882737169, 754366057, 266404745, 785979457, 290862805, 645616522, 300795074, 332029237, 56580994, 674174262, 959073682, 306083532 }
+local LENS = { 13303, 13296, 13287, 13167, 13232, 13273, 13188, 13300, 13244, 13299, 13292, 9027 }
+local SUMS = { 67409079, 948660274, 266404745, 816058228, 63700756, 500498415, 756191201, 562959745, 92959190, 314875523, 46584231, 495884184 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,7 +68,7 @@ local function chunkOk(h, i)
 end
 
 local K = 1
--- piece 1 of 12 of the new source (13269 bytes, checksum 882737169, long bracket level 1)
+-- piece 1 of 12 of the new source (13303 bytes, checksum 67409079, long bracket level 1)
 local DATA = [=[
 --[[
 	AuraFX.TheEnd — 『 THE END 』 worn (1 in 1,000,000,000). Midnight of the universe, worn: black, white and silver only.
@@ -150,22 +150,24 @@ local TEX = {
 local TEX5 = {
 	dialInlay = "", subdial = "", accretion = "", galaxyFloor = "", galaxyArms = "", galaxyCore = "", engraving = "",
 	halo = "", stream = "", moon = "", starWindow = "",
-	shards5 = "", smoke5 = "", mote = "", glint5 = "", bokeh = "", streak5 = "", ash5 = "",
-	-- (pass 5.1) a star that blooms, holds and shrinks out over its life; lit volumetric smoke; curling wisps; a hot fleck
-	-- with a hairline tail; a glitter cluster whose grains swell and fade on their own phases
-	twinkle = "", billow = "", wisp = "", spark5 = "", stardust = "",
+	shards5 = "", mote = "", glint5 = "", bokeh = "", streak5 = "", ash5 = "",
+	-- (pass 5.1) a star that blooms, holds and shrinks out over its life; lit volumetric smoke (ray-marched puffs that
+	-- billow out and thin into veils); curling wisps; a low fog bank; a hot fleck with a hairline tail; a glitter cluster
+	-- whose grains swell and fade on their own phases. (te5_smoke is retired: billow, wisp and mistbank replace it)
+	twinkle = "", billow = "", wisp = "", mistbank = "", spark5 = "", stardust = "",
 }
 -- (pass 5.1: te5_ash is a tumbling ember flake, 16 frames, and te5_shards a ray-traced steel blade tumbling)
-local TEX5_LAYOUT = { shards5 = { "Grid4x4", "Loop" }, smoke5 = { "Grid4x4", "OneShot" }, ash5 = { "Grid4x4", "Loop" },
+local TEX5_LAYOUT = { shards5 = { "Grid4x4", "Loop" }, ash5 = { "Grid4x4", "Loop" },
 	twinkle = { "Grid4x4", "OneShot" }, billow = { "Grid4x4", "OneShot" }, wisp = { "Grid4x4", "OneShot" },
 	stardust = { "Grid4x4", "Loop" } }
 local FALLBACK = { -- key -> { pass-4 TEX key, flipbook layout, mode }
 	dialInlay = { "dialOuter" }, subdial = { "dialInner" }, accretion = { "galaxy4" }, galaxyFloor = { "galaxy4" },
 	galaxyArms = { "galaxy4" }, galaxyCore = { "ornate" }, engraving = { "gring" }, halo = { "rim" },
 	stream = { "line" }, moon = { "moon" }, starWindow = { "galaxy4" },
-	shards5 = { "ash", "None", "Loop" }, smoke5 = { "puff", "Grid4x4", "OneShot" }, mote = { "glow" }, glint5 = { "glint" },
+	shards5 = { "ash", "None", "Loop" }, mote = { "glow" }, glint5 = { "glint" },
 	bokeh = { "glow" }, streak5 = { "spark" }, ash5 = { "ash", "None", "Loop" },
 	twinkle = { "sparkles", "Grid4x4", "OneShot" }, billow = { "puff", "Grid4x4", "OneShot" }, wisp = { "puff", "Grid4x4", "OneShot" },
+	mistbank = { "puff", "Grid4x4", "OneShot" },
 	spark5 = { "spark" }, stardust = { "sparkles", "Grid4x4", "Loop" },
 }
 -- (te4_moon is a 512² moon disc, radius 152 px, inside a glow ring. Drawn as the face of the moon's disc it is cropped to
@@ -242,9 +244,6 @@ end
 -- that does not load (wrong id, still in moderation, rejected) is reported and swapped for its pass-4 fallback everywhere,
 -- for every key that shares its id. A slow phone or a cold cache can time out: that id is asked for once more 20 s later
 -- before anything is swapped.
-local preloadUsed
-do
-	local asked, keysOf, retried, dead = {}, {}, {}, {}
 ]=]
 
 local function main()

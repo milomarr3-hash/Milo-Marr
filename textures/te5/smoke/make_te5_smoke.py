@@ -6,7 +6,8 @@
 #   te5_billow    (1024^2, Grid4x4 OneShot)  one smoke puff over one particle life: born dense and compact, it billows
 #                                            out in rolling cauliflower lobes, softens, shears into curling veils and
 #                                            thins away (P4a / P4b)
-#   te5_wisp      (1024^2, Grid4x4 OneShot)  thin curling smoke tendrils, like incense or cold breath (P11)
+#   te5_wisp      (1024^2, Grid4x4 OneShot)  thin curling smoke tendrils, like incense or cold breath: born as a faint
+#                                            tuft, drawn up into curls, thinning away (P11; also the P16 ink strand)
 #   te5_mistbank  (512^2, single image)      a soft, low, wide fog bank lit from above (P7)
 #
 # Only python3 + numpy + PIL. Deterministic: every random source is seeded (a re-run gives byte-identical PNGs on the
@@ -21,10 +22,10 @@
 # How the smoke is made (real 3D volumes, lit and ray-marched; nothing is painted in 2D):
 #   * Shape. A puff is modelled once, at birth, in its own "material" space: a sphere tree (a core, lobes on it,
 #     sub-lobes on their outer sides, sub-sub-lobes on those) soft-unioned level by level (wide blends between the big
-#     lobes, tight ones for the small billows) into a signed-distance volume. A wisp is a few thin twisted ribbons.
+#     lobes, tight ones for the small billows) into a signed-distance volume. A wisp is seven thin twisted ribbons.
 #   * Motion. A velocity field -- an expansion that slows down and swells more in some places than others, two scales of
 #     divergence-free curl noise that strengthen with age, a slight rise -- is integrated backward from every frame's
-#     time to birth (RK2, composed frame by frame on a 64^3-96^3 grid). Each frame looks its smoke up through that map,
+#     time to birth (RK2, composed frame by frame on a 64^3 / 80^3 grid). Each frame looks its smoke up through that map,
 #     so consecutive frames are the same smoke, moved on a little: no pops, no repeated frames.
 #   * Density per frame: the shape's distance through a soft ramp (wide inside, so billows have soft cloudy edges),
 #     fine billow detail and ramp noise in expansion-only coordinates (so the flow never shears it into brushed streaks),
@@ -41,8 +42,8 @@
 #     exactly 0 on every cell's border (>= 6 % padding), both channels get +-1 LSB triangular dither (no banding), and
 #     every pixel is neutral grey (R = G = B): the emitter's Color tints it.
 import argparse, json, math, os, sys, time
-# one BLAS thread per process: frames render in parallel processes, and threaded BLAS on the small interpolation
-# matmuls used here is ~40x slower than one thread (measured)
+# one BLAS thread per process: frames render in parallel processes, nothing here needs threaded BLAS, and BLAS threads
+# oversubscribing the CPUs made small matrix work ~40x slower in testing
 for _v in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS", "VECLIB_MAXIMUM_THREADS", "NUMEXPR_NUM_THREADS"):
     os.environ.setdefault(_v, "1")
 import numpy as np
@@ -506,7 +507,7 @@ BILLOW = dict(
     A3=0.004, F3=60.0, AP=0.002, FP=24.0, QN=0.4, FQ=30.0, FMIX=0.5,
     wo=(0.004, 0.045, 0.2), wi=(0.05, 0.07, 0.35),
     # dying: thinning exp(-DK sstep(DT0, 1, t)^DP), erosion, density gathered into veils (ridges at F4, power RP)
-    DK=3.2, DT0=0.36, DP=1.25, ero=(1.0, 0.4, 0.25), EN=0.2, ED=0.45, EDD=0.12, FE=12.0,
+    DK=3.3, DT0=0.32, DP=1.1, ero=(1.0, 0.4, 0.25), EN=0.2, ED=0.45, EDD=0.12, FE=12.0,
     veil=(1.0, 0.4), F4=7.0, RP=1.6, RLO=0.2, RHI=1.25,
     # light and render
     sigma=90.0, S=CELL * SS, NZ=128, ZH=0.45, win=(0.44, 0.38),
@@ -568,7 +569,6 @@ def billow_frame(P, k, Phi):
     eth = -0.3 + P["ero"][0] * float(sstep(P["ero"][1], 1.0, t))
     veil = P["veil"][0] * float(sstep(P["veil"][1], 1.0, t))
     reach = (P["A3"] + P["AP"] + 0.01) * s + w_out + 0.02
-    gam_off = (0.7, 0.8, 0.9)
 
     def reach_test(ch):
         return ch[3] * s - reach < 0
@@ -580,7 +580,7 @@ def billow_frame(P, k, Phi):
         Xf, Yf, Zf = XW / s, YW / s, np.full(XW.shape, z / s, F32)
         mx = P["FMIX"]
         Xf, Yf, Zf = Xf + mx * (X - Xf), Yf + mx * (Y - Yf), Zf + mx * (Z - Zf)
-        w3 = N["w2"].sample(Xf, Yf, Zf, P["F3"], R[2], gam_off)
+        w3 = N["w2"].sample(Xf, Yf, Zf, P["F3"], R[2], (0.7, 0.8, 0.9))
         n3 = N["n3"].sample(Xf, Yf, Zf, P["FP"], R[5], (0.6, 0.1, 0.7))
         Dw = (sd - P["A3"] * (w3 - 0.5) - P["AP"] * n3) * s
         rho = sstep(w_out, -w_in, Dw)
@@ -606,7 +606,7 @@ def billow_frame(P, k, Phi):
 # workers rebuild the same seeded noises, so the result does not depend on how the frames are spread)
 # --------------------------------------------------------------------------------------------------------------------
 
-KINDS = {}      # name -> (params, velocity(P), frame(P, k, Phi), grid size key)
+KINDS = {}      # name -> (default params, velocity(P) -> vel(X, Y, Z, t), frame(P, k, Phi) -> (P, A))
 
 
 def _work(args):
@@ -643,17 +643,21 @@ KINDS["billow"] = (BILLOW, billow_velocity, billow_frame)
 # --------------------------------------------------------------------------------------------------------------------
 
 WISP = dict(
-    # five thin ribbons at birth (material space): a vertical span y0..y1 with soft ends, half-width growing from the
-    # bottom (hw[0]) to the top (hw[1]), gaussian thickness, a twist about the vertical (rad per cell unit), a gentle
-    # wave (amplitude, rad per cell unit, growth with height) and streaks along the flow
-    seed=41, ribbons=5, y0=-0.30, y1=0.22, hw=(0.016, 0.095), thick=0.007, twist=6.0, spread_x=0.045,
-    wave=(0.03, 14.0, 1.0), streak=0.45, streakF=(6.0, 40.0),
-    # motion: curl (3-5 cycles per cell) at a + b t, a finer curl, a rise and a slight spread
-    curl=(0.05, 0.55), curlF=(3.0, 5.0), curl2=(0.01, 0.08), rise=0.10, E0=0.25, G=80, substeps=3,
-    # dying: thinning exp(-DK sstep(DT0, 1, t)^DP); the ribbons thicken (diffuse) with age
-    DK=1.4, DT0=0.5, DP=1.4, diff=(0.0, 0.010, 0.3),
+    # seven thin ribbons at birth (material space): a short tuft low in the cell (y0..y1, each ribbon starting and
+    # ending at its own height, the ends frayed by noise), half-width growing from the bottom (hw[0]) to the top
+    # (hw[1]), gaussian thickness, a twist about the vertical (rad per cell unit), a gentle wave (amplitude, rad per
+    # cell unit, growth with height) and streaks along the flow
+    seed=41, ribbons=7, y0=-0.31, y1=0.0, hw=(0.02, 0.11), thick=0.007, twist=6.0, spread_x=0.05,
+    wave=(0.03, 14.0, 1.0), streak=0.32, streakF=(6.0, 40.0), ends=(0.1, 0.25), fray=0.07,
+    # motion: curl (3-5 cycles per cell) at a + b t, a finer curl, a rise plus buoyant strain (smoke above ybase
+    # rises faster the higher it is, so the tuft is drawn up into tall tendrils) and a slight spread
+    curl=(0.06, 0.72), curlF=(3.0, 5.0), curl2=(0.01, 0.08), rise=0.04, strain=0.62, ybase=-0.32, E0=0.22, G=80,
+    substeps=3,
+    # life: born at born[0] of full density, full by t = born[1]; thinning exp(-DK sstep(DT0, 1, t)^DP); the ribbons
+    # thicken (diffuse) with age
+    DK=1.4, DT0=0.5, DP=1.4, diff=(0.0, 0.010, 0.3), born=(0.22, 0.4),
     # light and render (thin smoke: lighter self-shadowing, more ambient and multiple scattering, a strong rim)
-    sigma=50.0, S=CELL * SS, NZ=256, ZH=0.45, win=(0.44, 0.38),
+    sigma=60.0, S=CELL * SS, NZ=256, ZH=0.45, win=(0.44, 0.38),
     key=(-0.5, 0.7, 0.5), rim=(0.45, 0.35, -0.82), k_int=1.0, rim_int=1.1, sky_int=0.3, amb=0.14,
     ms=((1.0, 1.0), (0.5, 0.4), (0.25, 0.16)), soft=0.1, kext=0.55,
     gamma=1.6, ref_frames=(3, 10),
@@ -669,7 +673,8 @@ def wisp_noise(P):
             rib.append(dict(th=rng.uniform(0, math.pi), ox=rng.uniform(-1, 1) * P["spread_x"],
                             oz=rng.uniform(-1, 1) * P["spread_x"], ph=rng.uniform(0, 2 * math.pi),
                             ph2=rng.uniform(0, 2 * math.pi), dens=rng.uniform(0.75, 1.0),
-                            tw=P["twist"] * rng.uniform(0.6, 1.3) * rng.choice([-1, 1]), wf=rng.uniform(0.8, 1.25)))
+                            tw=P["twist"] * rng.uniform(0.6, 1.3) * rng.choice([-1, 1]), wf=rng.uniform(0.8, 1.25),
+                            lo=rng.uniform(0.0, P["ends"][0]), hi=1.0 - rng.uniform(0.0, P["ends"][1])))
         _CACHE[key] = dict(rib=rib, c1=CurlVol(51, 64, *P["curlF"]), c2=CurlVol(52, 64, 7.0, 11.0), n1=Vol(53),
                            R=[rot3(200 + i) for i in range(8)])
     return _CACHE[key]
@@ -684,7 +689,9 @@ def wisp_velocity(P):
         k1 = P["curl"][0] + P["curl"][1] * t
         k2 = P["curl2"][0] + P["curl2"][1] * t
         e = P["E0"] * (1.0 - 0.5 * t)
-        return (e * X + k1 * a[0] + k2 * b[0], 0.3 * e * Y + k1 * a[1] + k2 * b[1] + P["rise"],
+        # buoyancy: higher smoke rises faster, so a short tuft is drawn up into tall tendrils
+        up = P["rise"] + P["strain"] * np.maximum(Y - P["ybase"], 0.0)
+        return (e * X + k1 * a[0] + k2 * b[0], 0.3 * e * Y + k1 * a[1] + k2 * b[1] + up,
                 e * Z + k1 * a[2] + k2 * b[2])
     return vel
 
@@ -693,7 +700,8 @@ def ribbons(P, N, X, Y, Z, extra):
     """Density of the ribbons at material positions X, Y, Z ('extra' = added gaussian thickness: diffusion)."""
     rho = np.zeros(X.shape, F32)
     yy = (Y - P["y0"]) / (P["y1"] - P["y0"])                  # 0 at the bottom, 1 at the top
-    env = sstep(-0.02, 0.12, yy) * sstep(1.05, 0.7, yy)
+    # each ribbon starts and ends at its own height, and the ends are frayed by noise (no flat cut)
+    fray = P["fray"] * N["n1"].sample(X, Y, Z, 5.0, N["R"][1], (0.55, 0.15, 0.85))
     yc = np.clip(yy, 0.0, 1.0)
     hw = P["hw"][0] + (P["hw"][1] - P["hw"][0]) * yc
     th2 = P["thick"] ** 2 + extra ** 2
@@ -706,16 +714,21 @@ def ribbons(P, N, X, Y, Z, extra):
         dz = Z - r["oz"] - wav * np.cos(P["wave"][1] * r["wf"] * 0.8 * Y + r["ph2"])
         dn = dx * nx + dz * nz                                # off the ribbon's plane
         dt = -dx * nz + dz * nx                               # across it, in its plane
-        rho += r["dens"] * amp * np.exp(-dn * dn / th2) * sstep(hw, hw * 0.45, np.abs(dt))
+        ye = yy + fray
+        env = sstep(r["lo"] - 0.02, r["lo"] + 0.12, ye) * sstep(r["hi"] + 0.05, r["hi"] - 0.3, ye)
+        rho += r["dens"] * amp * np.exp(-dn * dn / th2) * sstep(hw, hw * 0.45, np.abs(dt)) * env
     sx = P["streakF"][1] / P["streakF"][0]                    # streaks: noise stretched along the flow
     n = N["n1"].sample(X * sx, Y, Z * sx, P["streakF"][0], N["R"][0], (0.2, 0.4, 0.6))
-    return (rho * np.clip(1.0 + P["streak"] * n, 0.15, 2.0) * env).astype(F32)
+    return (rho * np.clip(1.0 + P["streak"] * n, 0.15, 2.0)).astype(F32)
 
 
 def wisp_frame(P, k, Phi):
     N = wisp_noise(P)
     t = frame_times()[k]
+    # born faint (a wisp gathers body as it rises and curls: a dense newborn tuft reads as a white dot on the body),
+    # then thinning away
     dens = math.exp(-P["DK"] * float(sstep(P["DT0"], 1.0, t)) ** P["DP"])
+    dens *= P["born"][0] + (1.0 - P["born"][0]) * float(sstep(0.0, P["born"][1], t))
     extra = P["diff"][0] + P["diff"][1] * float(sstep(P["diff"][2], 1.0, t))
     grid = np.concatenate([Phi, ribbons(P, N, Phi[0], Phi[1], Phi[2], max(extra, 0.012))[None]], axis=0)
 
@@ -776,12 +789,13 @@ def mist_density_fn(P):
         w = w2.sample(X, Y, Z, P["F"], R[0], (0.1, 0.3, 0.5))
         d = d - P["A"] * (w - 0.5)
         rho = sstep(P["wo"], -P["wi"], d)
-        q = nz.sample(X, Y, Z, P["FQ"], R[1], (0.4, 0.2, 0.7)) + 0.5 * nz.sample(X, Y, Z, 2.2 * P["FQ"], R[2], (0.1, 0.8, 0.3))
+        q = (nz.sample(X, Y, Z, P["FQ"], R[1], (0.4, 0.2, 0.7))
+             + 0.5 * nz.sample(X, Y, Z, 2.2 * P["FQ"], R[2], (0.1, 0.8, 0.3)))
         # ground mist lies in layers: noise stretched along x (and z), squeezed in y
         lay = nz.sample(X * P["layer"][1], Y * P["layer"][2], Z * P["layer"][1], P["FQ"], R[3], (0.6, 0.5, 0.2))
         rho = rho * np.clip(0.75 + P["QN"] * 0.5 * q + P["layer"][0] * lay, 0.1, 1.6)
         rho = rho * np.exp(-np.maximum(Y, 0.0) / P["height"])           # thins upward
-        r3 = np.sqrt(X * X + Y * Y * 1.0 + Z * Z)
+        r3 = np.sqrt(X * X + Y * Y + Z * Z)
         return (rho * sstep(P["win"][0], P["win"][1], r3)).astype(F32)
     return density
 
@@ -789,15 +803,28 @@ def mist_density_fn(P):
 def render_mist(P):
     dens = mist_density_fn(P)
     S = P["S"]
+    # where the fog is (from a coarse 64^3 look), so only that box is ray-marched
+    g = ((np.arange(64) + 0.5) / 64 - 0.5).astype(F32)
+    Zc, Yc, Xc = np.meshgrid(g, g, g, indexing="ij")
+    occ = np.argwhere(dens(Xc, Yc, Zc) > 1e-4)
+    lo = (occ.min(axis=0) + 0.5) / 64 - 0.5 - 2.0 / 64           # (z, y, x)
+    hi = (occ.max(axis=0) + 0.5) / 64 - 0.5 + 2.0 / 64
+    r0, r1 = max(0, int(math.floor((0.5 - hi[1]) * S))), min(S, int(math.ceil((0.5 - lo[1]) * S)))
+    c0, c1 = max(0, int(math.floor((lo[2] + 0.5) * S))), min(S, int(math.ceil((hi[2] + 0.5) * S)))
+    zh = min(P["ZH"], max(abs(lo[0]), abs(hi[0])))
+    nz = max(16, int(round(P["NZ"] * zh / P["ZH"])))
     c = ((np.arange(S) + 0.5) / S - 0.5).astype(F32)
-    XW = np.ascontiguousarray(np.broadcast_to(c[None, :], (S, S)))
-    YW = np.ascontiguousarray(np.broadcast_to(-c[:, None], (S, S)))
+    XW = np.ascontiguousarray(np.broadcast_to(c[None, c0:c1], (r1 - r0, c1 - c0)))
+    YW = np.ascontiguousarray(np.broadcast_to(-c[r0:r1, None], (r1 - r0, c1 - c0)))
 
     def dslice(z):
-        return dens(XW, YW, np.full((S, S), z, F32))
+        return dens(XW, YW, np.full(XW.shape, z, F32))
     light = Light(P["key"], P["rim"], P["k_int"], P["rim_int"], P["sky_int"], P["amb"], ms=P["ms"], soft=P["soft"],
                   sigma_key=P["kext"])
-    return render_volume(dslice, S, S, P["NZ"], P["ZH"], P["sigma"], light, 1.0 / S)
+    Pc, Ac = render_volume(dslice, r1 - r0, c1 - c0, nz, zh, P["sigma"], light, 1.0 / S)
+    Pm, Am = np.zeros((S, S), F32), np.zeros((S, S), F32)
+    Pm[r0:r1, c0:c1], Am[r0:r1, c0:c1] = Pc, Ac
+    return Pm, Am
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -922,7 +949,6 @@ TEXTURES = [
     dict(name="te5_mistbank", kind="mist", texKey="mistbank", size="512x512", layout="None", mode=None,
          purpose="P7 the low mist bank round the dais rim"),
 ]
-STATS = {}      # name -> numbers measured while building (written into the manifest notes)
 
 
 def build(names, over, procs, log=print):
@@ -942,8 +968,8 @@ def build(names, over, procs, log=print):
             Ps, As = render_flipbook(spec["kind"], P, procs=procs, log=log)
             Pt, ref = tone(Ps, As, P["gamma"], P["ref_frames"])
             finish(nm, Pt, As, (4, 4), seed=71 if spec["kind"] == "billow" else 72)
-        STATS[nm] = dict(exposure=round(ref, 4), seconds=round(time.time() - t0, 1))
-        log(f"{nm}.png  {os.path.getsize(os.path.join(OUT, nm + '.png')) / 1024:.0f} KB  ({time.time() - t0:.1f}s)")
+        log(f"{nm}.png  {os.path.getsize(os.path.join(OUT, nm + '.png')) / 1024:.0f} KB  (exposure ref {ref:.3f}, "
+            f"{time.time() - t0:.1f}s)")
 
 
 def _sha(path):
@@ -957,16 +983,18 @@ NOTES = {
         "Flipbook 4x4 OneShot: frame k shows the puff at life fraction (k + 0.5) / 16. A volumetric puff ray-marched in 3D "
         "(Beer-Lambert, key light upper front left with a shadow march, multiple-scattering lift, rim light from behind, "
         "sky from above): born dense and compact (visible radius ~0.19 of the cell), billows out in rolling cauliflower "
-        "lobes (radius ~0.38 by frame 11), softens, and from frame ~11 thins into curling veils (texture mean alpha falls "
-        "~70 % over frames 11-15 by itself). Opaque core (alpha 1) in frames 0-10. Baked light comes from the upper left: "
+        "lobes (radius ~0.38 by frame 11), softens, and from frame ~10 thins into curling veils (its own mean alpha falls "
+        "~75 % from the peak at frame 9 to frame 15). Opaque core (alpha 1) in frames 0-10. Baked light comes from the upper left: "
         "keep the particle's Rotation within about +-20 deg (not 0-360) or the light turns with it. The puff grows inside "
         "its cell, so the emitter's Size curve should grow less than for te5_smoke (see the recommended settings)."),
     "te5_wisp": (
-        "Flipbook 4x4 OneShot (life ~1.6-2.2 s = 7-10 fps): thin twisted ribbons of smoke advected through curl noise -- a "
-        "slender rising thread at birth that curls into incense-like tendrils (bright where a fold is edge-on, a veil where "
-        "it is face-on) and thins out. OneShot, not Loop: the wisp's own life (thread -> curls -> fade) matches the "
-        "particle's, every particle starts thin at the body, and a loop would have to fold back on itself (a visible "
-        "cycle at 8-10 fps). It rises toward the TOP of the cell: keep Rotation within about +-15 deg."),
+        "Flipbook 4x4 OneShot (life ~1.6-2.2 s = 7-10 fps): seven thin twisted ribbons of smoke advected through curl "
+        "noise and buoyancy -- born as a small tuft low in the cell (~0.15 of it), drawn up into tall incense-like curling "
+        "tendrils (bright where a fold is edge-on, a veil where it is face-on), then spreading and thinning (its own mean "
+        "alpha falls ~60 % from frame 9 to 15). OneShot, not Loop: the wisp's life (tuft -> curls -> fade) is the "
+        "particle's, every particle starts small at the body, and a loop would have to fold back on itself (a visible "
+        "cycle at 8-10 fps). It rises toward the TOP of the cell: keep Rotation within about +-15 deg (P11). For a "
+        "strand of many small particles (P16) any rotation is fine."),
     "te5_mistbank": (
         "One image (FlipbookLayout None): a soft low fog bank ~0.8 of the image wide and ~0.3 tall, densest along its "
         "middle line (where the floor cuts a particle born on it), billowy and thinning upward, lit from above, in soft "
@@ -996,7 +1024,6 @@ def write_manifest():
         if prev.get("uploadedId") and uid is None:
             print(f"  note: {nm}.png changed, so its old uploadedId {prev['uploadedId']} was dropped: upload it again")
         notes = NOTES[nm]
-        st = STATS.get(nm) or prev.get("_stats")
         e = dict(name=nm, file=nm + ".png", repoPath=f"{REPO_DIR}/{nm}.png", texKey=spec["texKey"],
                  fallbackTexKey="puff", size=spec["size"], layout=spec["layout"], mode=spec["mode"],
                  purpose=spec["purpose"], uploadedId=uid, notes=notes, sha256=sha)
@@ -1137,11 +1164,11 @@ EMIT_OLD = {
 }
 EMIT_NEW = {
     "void": dict(EMIT_OLD["void"], size=[(0, 7), (0.5, 11.5), (1, 14)], tr=[(0, 1), (0.07, 0.0), (0.8, 0.06), (1, 1)],
-                 color=(24, 24, 30), rot=(-20, 20), rots=(-6, 6)),
+                 color=(24, 24, 30), rot=(-20, 20), rots=(-6, 6), br=(1.0, 2.2)),
     "moon": dict(EMIT_OLD["moon"], size=[(0, 5), (0.5, 8), (1, 10)], tr=[(0, 1), (0.08, 0.12), (0.8, 0.25), (1, 1)],
-                 rot=(-20, 20), rots=(-5, 5), le=(0.0, 0.3)),
-    "wisps": dict(EMIT_OLD["wisps"], size=[(0, 1.8), (1, 4.0)], tr=[(0, 1), (0.1, 0.05), (0.75, 0.2), (1, 1)],
-                  rot=(-15, 15), rots=(-10, 10)),
+                 rot=(-20, 20), rots=(-5, 5), le=(0.0, 0.3), br=(1.0, 1.4)),
+    "wisps": dict(EMIT_OLD["wisps"], size=[(0, 2.2), (1, 4.6)], tr=[(0, 1), (0.2, 0.1), (0.75, 0.2), (1, 1)],
+                  rot=(-15, 15), rots=(-10, 10), le=(0.2, 0.4), br=(1.2, 1.4)),
     "mist": dict(EMIT_OLD["mist"], size=[(0, 9), (1, 15)], tr=[(0, 1), (0.3, 0.55), (0.7, 0.6), (1, 1)],
                  rot=(-4, 4), rots=(-2, 2), grid=1),
 }

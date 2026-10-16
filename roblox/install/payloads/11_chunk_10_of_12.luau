@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 11_chunk_10_of_12.luau | step 11: piece 10 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (151582 bytes, checksum 322184148).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (154908 bytes, checksum 840125961).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "11_chunk_10_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-151582-322184148-12-938307881"
-local NEW_LEN, NEW_SUM = 151582, 322184148
+local RUN = "TheEnd-154908-840125961-12-402748328"
+local NEW_LEN, NEW_SUM = 154908, 840125961
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 12
-local LENS = { 13269, 13222, 13287, 13307, 13252, 13232, 13230, 13284, 13301, 13300, 13204, 5694 }
-local SUMS = { 882737169, 754366057, 266404745, 785979457, 290862805, 645616522, 300795074, 332029237, 56580994, 674174262, 959073682, 306083532 }
+local LENS = { 13303, 13296, 13287, 13167, 13232, 13273, 13188, 13300, 13244, 13299, 13292, 9027 }
+local SUMS = { 67409079, 948660274, 266404745, 816058228, 63700756, 500498415, 756191201, 562959745, 92959190, 314875523, 46584231, 495884184 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,86 @@ local function chunkOk(h, i)
 end
 
 local K = 10
--- piece 10 of 12 of the new source (13300 bytes, checksum 674174262, long bracket level 0)
+-- piece 10 of 12 of the new source (13299 bytes, checksum 314875523, long bracket level 0)
 local DATA = [[
+			-- another player's aura past ~110 studs (about 40 px tall) runs every other frame, with both frames' time: the
+			-- springs and spins stay exact and it costs half
+			st.skipDt += dt
+			st.skipN = 1 - st.skipN
+			if st.skipN == 1 then return end
+			dt, st.skipDt = st.skipDt, 0
+		elseif st.skipDt > 0 then
+			dt += st.skipDt
+			st.skipDt = 0
+		end
+		if dt > 0.1 then dt = 0.1 end
+		age += dt
+		local asm = age < ASM_END
+		local t, now, g = s.t, s.now, s.glide
+		local cf = s.cf
+		local O = cf.Position + Vector3.new(0, s.hover, 0)
+		local a = s.alpha
+		if type(a) ~= "number" or a ~= a then a = 1 end
+		a = clamp(a, 0, 1)
+		local on = a >= 0.6 -- (the emitters follow the framework's fade only: the reveal below starts from an empty sky anyway)
+		if st.revealA < 1 then st.revealA = min(1, st.revealA + dt / 0.4) end -- (fading back in after a long hide)
+		a *= st.revealA
+		-- (the first frame after a long hide: the clock's swing, the zoom layout, the dais and the heights start where they
+		-- belong instead of springing in from where they were when the aura was hidden)
+		local snap = st.snap
+		st.snap = false
+		-- (shown again since the last frame: parent it now, so nothing is ever drawn at the positions it had when hidden)
+		if st.pendingRoot then
+			st.pendingRoot = false
+			root.Parent = ctx.container
+		end
+		if st.pendingGroups then
+			st.pendingGroups = false
+			setGroups()
+		end
+		-- the wearer's own grade starts with the first frame they can see (never over a scripted camera, e.g. a cutscene)
+		if st.gradeWanted and not st.gradeStarted and age < 4.5 then -- (not when the assembly is nearly over)
+			st.gradeStarted = true
+			local camG = workspace.CurrentCamera
+			-- (not for a character that has just spawned or respawned: a reset rebuilds the aura on the new character, which
+			-- is not an equip. Decided here rather than at build, when every CharacterAdded handler has run; and with a
+			-- 12 s window, as the framework may build only once the avatar has loaded)
+			local sa = spawnedAt[char]
+			if (sa and st.builtAt - sa < 12) or (ownGone and ownGoneChar[1] ~= char and st.builtAt - ownGone < 15) then
+				st.gradeWanted = false
+			elseif camG and camG.CameraType == Enum.CameraType.Scriptable then
+				st.gradeStarted = false
+			elseif camG then
+				if liveGrade and liveGrade.Parent then
+					grade = liveGrade -- (an earlier equip's grade still easing out: take it over, never stack a second one)
+				else
+					grade = new("ColorCorrectionEffect", { Name = "TheEndReveal" }, camG)
+					liveGrade = grade
+				end
+				gradeOwner = st
+				gradeToken += 1
+				gradeTo(GRADE_ON, 1.2)
+			end
+		end
+		if grade and not st.gradeOut and age >= 5.8 then
+			st.gradeOut = true
+			gradeTo(GRADE_OFF, 2.2, true)
+		end
+
+		-- 0. the wearer's state: how fast they travel (a teleport is ignored; on the ground only the horizontal speed counts,
+		-- so a jump is not a flight), and whether they sit
+		local lastO = st.lastO
+		st.lastO = O
+		-- (a teleport, to another island or a lobby pad: everything starts where it belongs instead of springing across)
+		if lastO and ((O - lastO).Magnitude >= 30 or abs(O.Y - lastO.Y) > 8) then snap = true end
+		if lastO then
+			local dO = O - lastO
+			if grounded then dO = Vector3.new(dO.X, 0, dO.Z) end
+			local d = dO.Magnitude
+			if d < 30 and dt > 0 then
+				st.speed += (d / dt - st.speed) * (1 - exp(-6 * dt))
+				if d / dt > 4 then
+					local u = dO / d
 					st.tdir = st.tdir and (st.tdir + (u - st.tdir) * (1 - exp(-4 * dt))) or u
 				end
 			end
@@ -279,64 +357,6 @@ local DATA = [[
 
 		-- 2. the clockwork: gears (meshed rates from the server clock), hands, crown
 		for _, gd in ipairs(gearData) do
-			local x, y, z = gd.cx, gd.cy, gd.cz
-			if asm then
-				-- spin up fast and wind down to the running pace (an integrated extra angle, so nothing jumps)
-				gd.extra = (gd.extra + rad((gd.sign * 300 - gd.rate) * exp(-4 * max(0, age - gd.a0))) * dt) % TAU
-				local u = (age - gd.a0) / (gd.a1 - gd.a0)
-				if u < 1 then
-					local kk = 1 - easeOutBack(u)
-					x, y, z = x + (gd.sx - x) * kk, y + (gd.sy - y) * kk, z + (gd.sz - z) * kk
-				end
-			end
-			GCF[gd.grp] = K * CFrame.new(x, y, z) * CFrame.Angles(0, 0, -((rad(gd.rate) * now + gd.extra) % TAU))
-		end
-		local th, tm, ts = 0, 0, rad(6 * (now % 60))
-		local crownY = 0
-		if asm then
-			local kk = 1 - easeOutBack((age - 3.6) / 1.2)
-			th, tm, ts = -rad(330) * kk, -rad(1050) * kk, ts - rad(720) * kk
-			crownY = 6 * (1 - easeOutBack((age - 4.2) / 0.6))
-		end
-		GCF[GHOUR] = K * CFrame.Angles(0, 0, -th) * CFrame.new(0, 0, 0.85)
-		GCF[GMIN] = K * CFrame.Angles(0, 0, -tm) * CFrame.new(0, 0, 1.15)
-		GCF[GSEC] = K * CFrame.Angles(0, 0, -ts) * CFrame.new(0, 0, 1.42)
-		GCF[GDUST] = K * CFrame.new(0, 0, 1.3) * CFrame.Angles(0, 0, -((rad(20) * now) % TAU)) -- (the time-dust ring turns clockwise)
-		GCF[GCROWN] = crownY ~= 0 and K * CFrame.new(0, crownY, 0) or K
-
-		-- 3. the dais layers and the balance wheel (just below the soles, never into the galaxy; on the dais when seated)
-		local gdir = CONFIG.GALAXY_DIR
-		GCF[GDAIS] = Gd
-		GCF[GG0] = Gd * CFrame.new(0, 0.15, 0) * CFrame.Angles(0, (rad(-6) * gdir * now) % TAU, 0)
-		GCF[GG1] = Gd * CFrame.new(0, 0.42, 0) * CFrame.Angles(0, (rad(9) * gdir * now) % TAU, 0)
-		GCF[GG2] = Gd * CFrame.new(0, 0.66, 0) * CFrame.Angles(0, (rad(-16) * gdir * now) % TAU, 0)
-		GCF[GENG] = Gd * CFrame.new(0, 0.04, 0) * CFrame.Angles(0, (rad(2.5) * gdir * now) % TAU, 0)
-		GCF[GFUNNEL] = Gd * CFrame.new(0, 0.8, 0) * CFrame.Angles(0, (rad(-70) * CONFIG.FUNNEL_DIR * t) % TAU, 0)
-		local wheelAngle = rad(160) * sin(TAU * t / 3.2) * (asm and smooth((age - 4.6) / 1.2) or 1)
-		local wheelY = O.Y - s.legLen - 0.9
-		wheelY += (dY + 1.2 - wheelY) * sitT
-		if wheelY < dY + 1.2 + 2.5 * slopeT then wheelY = dY + 1.2 + 2.5 * slopeT end
-		local Bw = CFrame.new(O.X, wheelY, O.Z) * CFrame.Angles(0, wheelAngle, 0)
-		GCF[GWHEEL] = Bw
-
-		-- 4. the armillary (body-anchored, upright: leaning it with the glide laid the dark equator across the head line from
-		-- the follow camera); on equip each ring rises from lying flat on the dais. It lifts a little whenever a ring's lowest
-		-- edge would dip into the galaxy layers (small avatars, slopes, sitting)
-		local Wr = W.Rotation
-		local R1 = Wr * CFrame.Angles(0, (rad(8) * t) % TAU, 0) * TILT33
-		local R2 = R1 * CFrame.Angles(rad(57) + rad(18) * sin(TAU * t / 19), 0, 0)
-		local R3 = R2 * CFrame.Angles(0, rad(23.4) + rad(14) * sin(TAU * t / 27 + 1.1), 0)
-		local n1, n2, n3 = R1.ZVector.Y, R2.ZVector.Y, R3.ZVector.Y
-		local drop = max(6.23 * sqrt(max(0, 1 - n1 * n1)) + 0.09 * abs(n1), 5.54 * sqrt(max(0, 1 - n2 * n2)) + 0.17 * abs(n2),
-			4.79 * sqrt(max(0, 1 - n3 * n3)) + 0.08 * abs(n3))
-		local baseY = 1.3 - 1.0 * sitT
-		local liftT = max(0, dY + 0.96 + 6.3 * slopeT - (O.Y + baseY - drop))
-		st.lift = snap and liftT or st.lift + (liftT - st.lift) * (1 - exp(-6 * dt))
-		if st.lift < liftT - 0.3 then st.lift = liftT - 0.3 end
-		local A0p = O + Vector3.new(0, baseY + st.lift, 0)
-		local F1 = CFrame.new(A0p) * R1
-		local F2 = CFrame.new(A0p) * R2
-		local F3 = CFrame.new(A0p) * R3
 ]]
 
 local function main()

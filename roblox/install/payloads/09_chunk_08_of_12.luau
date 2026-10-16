@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 09_chunk_08_of_12.luau | step 9: piece 8 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (151582 bytes, checksum 322184148).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (154908 bytes, checksum 840125961).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "09_chunk_08_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-151582-322184148-12-938307881"
-local NEW_LEN, NEW_SUM = 151582, 322184148
+local RUN = "TheEnd-154908-840125961-12-402748328"
+local NEW_LEN, NEW_SUM = 154908, 840125961
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 12
-local LENS = { 13269, 13222, 13287, 13307, 13252, 13232, 13230, 13284, 13301, 13300, 13204, 5694 }
-local SUMS = { 882737169, 754366057, 266404745, 785979457, 290862805, 645616522, 300795074, 332029237, 56580994, 674174262, 959073682, 306083532 }
+local LENS = { 13303, 13296, 13287, 13167, 13232, 13273, 13188, 13300, 13244, 13299, 13292, 9027 }
+local SUMS = { 67409079, 948660274, 266404745, 816058228, 63700756, 500498415, 756191201, 562959745, 92959190, 314875523, 46584231, 495884184 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,27 @@ local function chunkOk(h, i)
 end
 
 local K = 8
--- piece 8 of 12 of the new source (13284 bytes, checksum 332029237, long bracket level 1)
+-- piece 8 of 12 of the new source (13300 bytes, checksum 562959745, long bracket level 1)
 local DATA = [=[
+			-- (and clusters of glitter ride the same ring between the stars: each cluster's grains swell and fade on their own
+			-- beats, which gives the ring a glittering body that reads from across the plaza)
+			pe(hosts.halo, "stardust", 3.6, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.76, EmissionDirection = N_.Top,
+				Rate = 8, Lifetime = n(4, 6), Speed = n(0.05, 0.15), Size = n(3.0, 4.0),
+				Transparency = seq({ { 0, 1 }, { 0.2, 0.25 }, { 0.8, 0.25 }, { 1, 1 } }), LockedToPart = true, Rotation = n(0, 360),
+				RotSpeed = n(-6, 6), FlipbookFramerate = n(6, 9), FlipbookStartRandom = true }, { 0.4, 0.9 }, { 2.0, 2.6 }, "nearcam")
+		end
+		-- P16 (pass 5.1): the duality helix: two points turn round the body at 220 degrees a second and leave a strand each,
+		-- so a silver ribbon of light and an ink ribbon of smoke braid up round the wearer from the feet to above the head,
+		-- about one and a half turns each (not locked: each particle stays where it was born and climbs, which is what draws
+		-- the spiral; born 0.4 studs apart, so each strand reads as one ribbon). While the wearer travels the strands thin
+		-- out, so they don't hang far behind (see the travelling flip)
+		em.strandMoon = pe(hosts.strandMoon, "mote", 5.2, { EmissionDirection = N_.Top, Rate = rate(34, 14), Lifetime = n(2.0, 2.3),
+			Speed = n(2.6, 2.9), SpreadAngle = Vector2.new(4, 4), Drag = 0.3, Size = seq({ { 0, 1.0 }, { 0.7, 0.8 }, { 1, 0 } }),
+			Transparency = seq({ { 0, 1 }, { 0.06, 0.02 }, { 0.75, 0.15 }, { 1, 1 } }), ZOffset = 0.4 }, WHITE_LE, WHITE_BR, "nearcam")
+		em.strandVoid = pe(hosts.strandVoid, "wisp", 5.2, { EmissionDirection = N_.Top, Rate = rate(18, 8), Lifetime = n(2.0, 2.3),
+			Speed = n(2.6, 2.9), SpreadAngle = Vector2.new(4, 4), Drag = 0.3, Size = seq({ { 0, 1.4 }, { 0.5, 2.4 }, { 1, 1.1 } }),
+			Transparency = seq({ { 0, 1 }, { 0.1, 0.1 }, { 0.7, 0.35 }, { 1, 1 } }), Color = ColorSequence.new(INK), Rotation = n(0, 360),
+			RotSpeed = n(-40, 40), ZOffset = 0.3 }, nil, nil, "nearcam")
 		-- P17 (pass 5.1): stars twinkle inside the clock's star window, between the rete's bars (locked to the dial, so they
 		-- stay in the face however the clock turns to its viewer)
 		if hi and hosts.inlay then
@@ -81,9 +100,18 @@ local DATA = [=[
 		if hi then
 			-- P7: a low mist bank round the pool's rim, only while standing on the ground (ShapePartial 0.8: the outer fifth
 			-- of the disc, so the galaxy inside stays clear)
-			pe(hosts.floorFx, "smoke5", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.8, EmissionDirection = N_.Top, Rate = 2.5,
-				Lifetime = n(6, 8), Speed = n(0.1, 0.25), Size = seq({ { 0, 8 }, { 1, 14 } }), Transparency = seq({ { 0, 1 }, { 0.3, 0.80 }, { 0.7, 0.82 }, { 1, 1 } }),
-				Color = ColorSequence.new(MIST), LockedToPart = true, Rotation = n(0, 360), RotSpeed = n(-6, 6) }, nil, nil, "ground")
+			-- (pass 5.1: te5_mistbank is one soft low fog bank, densest along its middle and thinning upward in layers: a
+			-- single image, because a 6-8 s particle would step through a flipbook. Kept level: the bank is wide and flat)
+			local mb = isTe5("mistbank")
+			local mist = pe(hosts.floorFx, "mistbank", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.8, EmissionDirection = N_.Top,
+				Rate = 2.5, Lifetime = n(6, 8), Speed = n(0.1, 0.25), Size = mb and seq({ { 0, 9 }, { 1, 15 } }) or seq({ { 0, 8 }, { 1, 14 } }),
+				Transparency = mb and seq({ { 0, 1 }, { 0.3, 0.55 }, { 0.7, 0.6 }, { 1, 1 } }) or seq({ { 0, 1 }, { 0.3, 0.80 }, { 0.7, 0.82 }, { 1, 1 } }),
+				Color = ColorSequence.new(MIST), LockedToPart = true, Rotation = mb and n(-4, 4) or n(0, 360),
+				RotSpeed = mb and n(-2, 2) or n(-6, 6) }, nil, nil, "ground")
+			if mb then
+				propsFix(mist, { Size = seq({ { 0, 8 }, { 1, 14 } }), Transparency = seq({ { 0, 1 }, { 0.3, 0.80 }, { 0.7, 0.82 }, { 1, 1 } }),
+					Rotation = n(0, 360), RotSpeed = n(-6, 6) }, { 0, 0, 1, 1 })
+			end
 		end
 		-- P8: starlight rises off the turning arms and swirls with them, in slow four-point twinkles (grow, hold, shrink);
 		-- black ash flakes rise against them. At Roblox's default zoom, where the floor is a few studs from the lens, the
@@ -147,10 +175,19 @@ local DATA = [=[
 		do
 			local torso = char:FindFirstChild("UpperTorso") or char:FindFirstChild("Torso")
 			if torso and torso:IsA("BasePart") then
-				em.wisps = pe(torso, "smoke5", 5.2, { Shape = BOX, ShapeStyle = SURFACE, EmissionDirection = N_.Top, Rate = rate(7, 3), Lifetime = n(1.6, 2.2),
-					Speed = n(1.5, 2.5), SpreadAngle = Vector2.new(20, 20), Acceleration = Vector3.new(0, 1, 0), Size = seq({ { 0, 1.2 }, { 1, 3.4 } }),
-					Transparency = seq({ { 0, 1 }, { 0.2, 0.32 }, { 0.6, 0.55 }, { 1, 1 } }), Color = ColorSequence.new(Color3.fromRGB(200, 202, 208)),
-					ZOffset = -1.5, Rotation = n(0, 360), RotSpeed = n(-40, 40) }, { 0.2, 0.6 }, { 1.2, 2.0 }, "body")
+				-- (pass 5.1: te5_wisp is a faint tuft drawn up into curling incense-like tendrils; it starts small in its cell and
+				-- rises to the top of it, so it is drawn bigger and near upright, with less night glow than the old puff)
+				local wsp = isTe5("wisp")
+				em.wisps = pe(torso, "wisp", 5.2, { Shape = BOX, ShapeStyle = SURFACE, EmissionDirection = N_.Top, Rate = rate(7, 3), Lifetime = n(1.6, 2.2),
+					Speed = n(1.5, 2.5), SpreadAngle = Vector2.new(20, 20), Acceleration = Vector3.new(0, 1, 0),
+					Size = wsp and seq({ { 0, 2.2 }, { 1, 4.6 } }) or seq({ { 0, 1.2 }, { 1, 3.4 } }),
+					Transparency = wsp and seq({ { 0, 1 }, { 0.2, 0.1 }, { 0.75, 0.2 }, { 1, 1 } }) or seq({ { 0, 1 }, { 0.2, 0.32 }, { 0.6, 0.55 }, { 1, 1 } }),
+					Color = ColorSequence.new(Color3.fromRGB(200, 202, 208)), ZOffset = -1.5, Rotation = wsp and n(-15, 15) or n(0, 360),
+					RotSpeed = wsp and n(-10, 10) or n(-40, 40) }, wsp and { 0.2, 0.4 } or { 0.2, 0.6 }, wsp and { 1.2, 1.4 } or { 1.2, 2.0 }, "body")
+				if wsp then
+					propsFix(em.wisps, { Size = seq({ { 0, 1.2 }, { 1, 3.4 } }), Transparency = seq({ { 0, 1 }, { 0.2, 0.32 }, { 0.6, 0.55 }, { 1, 1 } }),
+						Rotation = n(0, 360), RotSpeed = n(-40, 40) }, { 0.2, 0.6, 1.2, 2.0 })
+				end
 				table.insert(charStuff, em.wisps)
 				-- (pass 5.1: the body's sparks are hot flecks with hairline tails, streaking up the body the way they fly)
 				table.insert(charStuff, pe(torso, "spark5", 5.2, { Shape = BOX, ShapeStyle = VOLUME, EmissionDirection = N_.Top, Rate = rate(16, 6),
@@ -214,74 +251,6 @@ local DATA = [=[
 	st.fxLtm = pcall(function()
 		sb[1].LocalTransparencyModifier = 0
 		emitters[1][1].LocalTransparencyModifier = 0
-	end)
-	-- this wearer's dais sits a hair above (or below) the others', so two pools side by side never share a plane (Roblox
-	-- z-fights coplanar faces as a crawling shimmer). The layer surfaces repeat every 0.055 studs (engraving, base,
-	-- floor), so the three lifts are a third of that apart: your own pool on top (0.037), other players 0 or 0.018, so where
-	-- two pools overlap yours is the one you see.
-	do
-		local uid = 0
-		pcall(function()
-			local plr = Players:GetPlayerFromCharacter(char)
-			uid = plr and plr.UserId or #char.Name
-		end)
-		st.layer = ctx.isLocal and 0.0366 or 0.0183 * (uid % 2)
-	end
-
-	---------------------------------------------------------------- the wearer's own screen grade (real equips only)
-	-- It starts with the first frame the player can actually see (not while the roll cutscene still holds the camera), eases
-	-- back when the assembly ends, and never snaps: hiding or unequipping eases it out too.
-	local grade
-	st.gradeWanted, st.builtAt = CONFIG.GRADE and ctx.isLocal, os.clock()
-	local function gradeTo(target, dur, thenDestroy)
-		if not grade then return end
-		if gradeOwner ~= st then
-			grade = nil -- (another build took the grade over since: it is theirs to ease out)
-			return
-		end
-		if liveGradeTween then liveGradeTween:Cancel() end
-		liveGradeTween = TweenService:Create(grade, TweenInfo.new(dur, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), target)
-		liveGradeTween:Play()
-		if thenDestroy then
-			gradeToken += 1
-			local tok, g = gradeToken, grade
-			grade = nil -- (this aura lets go of it; a new equip within the fade takes it over instead of stacking a second one)
-			task.delay(dur + 0.05, function()
-				if gradeToken == tok and liveGrade == g then
-					g:Destroy()
-					liveGrade, liveGradeTween, gradeOwner = nil, nil, nil
-				end
-			end)
-		end
-	end
-
-	---------------------------------------------------------------- state
-	local fx = {}
-	local remote = not ctx.isLocal
-	local age = (CONFIG.ASSEMBLY and (CONFIG.ASSEMBLY_REMOTE or not remote)) and 0 or ASM_END
-	local VIEWER = CONFIG.VIEWER_ANCHOR
-	local near, visible, armHidden, bokehNear, grounded = true, true, false, false, true
-	local alphaW, alphaOn, settled = -1, false, false
-	local nq, nightClock = -1, 0
-	local nextEmit = 1
-	local accExtra, voidD = 0, (age >= ASM_END) and 8 or 0.6
-	local rt = 3.9
-	local daisY, lastGroundY = nil, nil
-	st.ltmOn, st.hlF, st.lightsOn, st.haloZ, st.hlA, st.fb, st.lod = false, -1, false, 1, 0, 0, 1
-	if age >= ASM_END then void.Size = voidSize else void.Size = voidSize * (0.6 / 8) end
-
-	---------------------------------------------------------------- event writes (never per frame in steady state)
-	local function refreshEmitters()
-		for _, e in ipairs(emitters) do
-			local want = e[4] and near and alphaOn
-			local kind = e[3]
-			if kind == "ground" then want = want and grounded
-			elseif kind == "bokeh" then want = want and not bokehNear
-			elseif kind == "body" then want = want and visible and st.footOk and not st.fpOn -- (they live on the character)
-			elseif kind == "nearcam" then want = want and not st.fpOn -- (the funnel and palm streaks and the air's sparkles: round the lens)
-			elseif kind == "speed" then want = want and st.speedOn end
-			if e[6] and st.ghostGui and not st.fxLtm then want = false end -- (a ghosted aura without emitter LTM: smoke off)
-			if want ~= e[5] then
 ]=]
 
 local function main()

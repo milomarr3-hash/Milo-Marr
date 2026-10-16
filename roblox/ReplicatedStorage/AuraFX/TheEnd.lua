@@ -78,22 +78,24 @@ local TEX = {
 local TEX5 = {
 	dialInlay = "", subdial = "", accretion = "", galaxyFloor = "", galaxyArms = "", galaxyCore = "", engraving = "",
 	halo = "", stream = "", moon = "", starWindow = "",
-	shards5 = "", smoke5 = "", mote = "", glint5 = "", bokeh = "", streak5 = "", ash5 = "",
-	-- (pass 5.1) a star that blooms, holds and shrinks out over its life; lit volumetric smoke; curling wisps; a hot fleck
-	-- with a hairline tail; a glitter cluster whose grains swell and fade on their own phases
-	twinkle = "", billow = "", wisp = "", spark5 = "", stardust = "",
+	shards5 = "", mote = "", glint5 = "", bokeh = "", streak5 = "", ash5 = "",
+	-- (pass 5.1) a star that blooms, holds and shrinks out over its life; lit volumetric smoke (ray-marched puffs that
+	-- billow out and thin into veils); curling wisps; a low fog bank; a hot fleck with a hairline tail; a glitter cluster
+	-- whose grains swell and fade on their own phases. (te5_smoke is retired: billow, wisp and mistbank replace it)
+	twinkle = "", billow = "", wisp = "", mistbank = "", spark5 = "", stardust = "",
 }
 -- (pass 5.1: te5_ash is a tumbling ember flake, 16 frames, and te5_shards a ray-traced steel blade tumbling)
-local TEX5_LAYOUT = { shards5 = { "Grid4x4", "Loop" }, smoke5 = { "Grid4x4", "OneShot" }, ash5 = { "Grid4x4", "Loop" },
+local TEX5_LAYOUT = { shards5 = { "Grid4x4", "Loop" }, ash5 = { "Grid4x4", "Loop" },
 	twinkle = { "Grid4x4", "OneShot" }, billow = { "Grid4x4", "OneShot" }, wisp = { "Grid4x4", "OneShot" },
 	stardust = { "Grid4x4", "Loop" } }
 local FALLBACK = { -- key -> { pass-4 TEX key, flipbook layout, mode }
 	dialInlay = { "dialOuter" }, subdial = { "dialInner" }, accretion = { "galaxy4" }, galaxyFloor = { "galaxy4" },
 	galaxyArms = { "galaxy4" }, galaxyCore = { "ornate" }, engraving = { "gring" }, halo = { "rim" },
 	stream = { "line" }, moon = { "moon" }, starWindow = { "galaxy4" },
-	shards5 = { "ash", "None", "Loop" }, smoke5 = { "puff", "Grid4x4", "OneShot" }, mote = { "glow" }, glint5 = { "glint" },
+	shards5 = { "ash", "None", "Loop" }, mote = { "glow" }, glint5 = { "glint" },
 	bokeh = { "glow" }, streak5 = { "spark" }, ash5 = { "ash", "None", "Loop" },
 	twinkle = { "sparkles", "Grid4x4", "OneShot" }, billow = { "puff", "Grid4x4", "OneShot" }, wisp = { "puff", "Grid4x4", "OneShot" },
+	mistbank = { "puff", "Grid4x4", "OneShot" },
 	spark5 = { "spark" }, stardust = { "sparkles", "Grid4x4", "Loop" },
 }
 -- (te4_moon is a 512² moon disc, radius 152 px, inside a glow ring. Drawn as the face of the moon's disc it is cropped to
@@ -1413,14 +1415,42 @@ function End.build(ctx)
 		-- studs further back, so the orbs' silhouettes stay crisp (the moon's opaque face hides what is born behind it).
 		-- While the wearer travels the void's smoke thins and goes short-lived and the moon's stops, so no smog patches
 		-- hang along the path. (te5_smoke's billows fill their cells like the pass-4 puff: both are drawn the same size)
-		em.smoke = pe(void, "smoke5", 1.0, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = rate(10, 4), Lifetime = n(3.5, 4.5),
-			Speed = n(1.4, 2.4), Drag = 0.35, Acceleration = Vector3.new(0, 0.4, 0), Size = seq({ { 0, 5 }, { 1, 14 } }),
-			Transparency = seq({ { 0, 1 }, { 0.18, 0.08 }, { 0.7, 0.32 }, { 1, 1 } }), Color = ColorSequence.new(SMOKE), Rotation = n(0, 360),
-			RotSpeed = n(-25, 25), ZOffset = -3 })
-		em.smokeMoon = hi and pe(moon, "smoke5", 1.6, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = 5, Lifetime = n(3.5, 4.5),
-			Speed = n(0.9, 1.5), Drag = 0.35, Acceleration = Vector3.new(0, 0.3, 0), Size = seq({ { 0, 3.5 }, { 1, 9 } }),
-			Transparency = seq({ { 0, 1 }, { 0.2, 0.32 }, { 0.7, 0.55 }, { 1, 1 } }), Color = ColorSequence.new(Color3.fromRGB(176, 176, 178)),
-			Rotation = n(0, 360), RotSpeed = n(-20, 20), ZOffset = -3 }, { 0.1, 0.4 })
+		-- (pass 5.1: te5_billow is ray-marched smoke with its light baked in from the upper left and real self-shadowing: a
+		-- dense puff that billows out in rolling lobes and thins into veils over its life. It starts small in its cell and is
+		-- opaque until it thins itself, so it is born bigger and denser than the pass-4 puff, kept near upright (the baked
+		-- light must stay above), and the ink is lifted a little so its billows read. Each smoke below takes the pass-4
+		-- puff's own settings if its te5 texture is missing or fails to load in the game)
+		local function propsFix(p, old, ln)
+			fixUps[p] = function(o)
+				for k, v in pairs(old) do o[k] = v end
+				o.LightEmission, o.Brightness = ln[1], ln[3]
+				for _, e in ipairs(emitNight) do
+					if e[1] == o then e[2], e[3], e[4], e[5] = ln[1], ln[2], ln[3], ln[4] end
+				end
+			end
+			return p
+		end
+		local bil = isTe5("billow")
+		em.smoke = pe(void, "billow", 1.0, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = rate(10, 4), Lifetime = n(3.5, 4.5),
+			Speed = n(1.4, 2.4), Drag = 0.35, Acceleration = Vector3.new(0, 0.4, 0),
+			Size = bil and seq({ { 0, 7 }, { 0.5, 11.5 }, { 1, 14 } }) or seq({ { 0, 5 }, { 1, 14 } }),
+			Transparency = bil and seq({ { 0, 1 }, { 0.07, 0 }, { 0.8, 0.06 }, { 1, 1 } }) or seq({ { 0, 1 }, { 0.18, 0.08 }, { 0.7, 0.32 }, { 1, 1 } }),
+			Color = ColorSequence.new(bil and Color3.fromRGB(24, 24, 30) or SMOKE), Rotation = bil and n(-20, 20) or n(0, 360),
+			RotSpeed = bil and n(-6, 6) or n(-25, 25), ZOffset = -3 }, nil, bil and { 1, 2.2 } or nil)
+		if bil then
+			propsFix(em.smoke, { Size = seq({ { 0, 5 }, { 1, 14 } }), Transparency = seq({ { 0, 1 }, { 0.18, 0.08 }, { 0.7, 0.32 }, { 1, 1 } }),
+				Color = ColorSequence.new(SMOKE), Rotation = n(0, 360), RotSpeed = n(-25, 25) }, { 0, 0, 1, 1 })
+		end
+		em.smokeMoon = hi and pe(moon, "billow", 1.6, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = 5, Lifetime = n(3.5, 4.5),
+			Speed = n(0.9, 1.5), Drag = 0.35, Acceleration = Vector3.new(0, 0.3, 0),
+			Size = bil and seq({ { 0, 5 }, { 0.5, 8 }, { 1, 10 } }) or seq({ { 0, 3.5 }, { 1, 9 } }),
+			Transparency = bil and seq({ { 0, 1 }, { 0.08, 0.12 }, { 0.8, 0.25 }, { 1, 1 } }) or seq({ { 0, 1 }, { 0.2, 0.32 }, { 0.7, 0.55 }, { 1, 1 } }),
+			Color = ColorSequence.new(Color3.fromRGB(176, 176, 178)), Rotation = bil and n(-20, 20) or n(0, 360),
+			RotSpeed = bil and n(-5, 5) or n(-20, 20), ZOffset = -3 }, bil and { 0, 0.3 } or { 0.1, 0.4 }, bil and { 1, 1.4 } or nil)
+		if bil and em.smokeMoon then
+			propsFix(em.smokeMoon, { Size = seq({ { 0, 3.5 }, { 1, 9 } }), Transparency = seq({ { 0, 1 }, { 0.2, 0.32 }, { 0.7, 0.55 }, { 1, 1 } }),
+				Rotation = n(0, 360), RotSpeed = n(-20, 20) }, { 0.1, 0.4, 1, 1 })
+		end
 		local glintT = seq({ { 0, 0.1 }, { 1, 0.1 } }) -- (a glint grows, holds and shrinks through its size: never a flash)
 		-- (pass 5.1: a twinkle's flipbook blooms, holds and shrinks the star itself, so its size and transparency stay steady
 		-- with just a soft start and end)
@@ -1479,7 +1509,7 @@ function End.build(ctx)
 			Speed = n(2.6, 2.9), SpreadAngle = Vector2.new(4, 4), Drag = 0.3, Size = seq({ { 0, 1.0 }, { 0.7, 0.8 }, { 1, 0 } }),
 			Transparency = seq({ { 0, 1 }, { 0.06, 0.02 }, { 0.75, 0.15 }, { 1, 1 } }), ZOffset = 0.4 }, WHITE_LE, WHITE_BR, "nearcam")
 		em.strandVoid = pe(hosts.strandVoid, "wisp", 5.2, { EmissionDirection = N_.Top, Rate = rate(18, 8), Lifetime = n(2.0, 2.3),
-			Speed = n(2.6, 2.9), SpreadAngle = Vector2.new(4, 4), Drag = 0.3, Size = seq({ { 0, 1.0 }, { 0.5, 1.7 }, { 1, 0.8 } }),
+			Speed = n(2.6, 2.9), SpreadAngle = Vector2.new(4, 4), Drag = 0.3, Size = seq({ { 0, 1.4 }, { 0.5, 2.4 }, { 1, 1.1 } }),
 			Transparency = seq({ { 0, 1 }, { 0.1, 0.1 }, { 0.7, 0.35 }, { 1, 1 } }), Color = ColorSequence.new(INK), Rotation = n(0, 360),
 			RotSpeed = n(-40, 40), ZOffset = 0.3 }, nil, nil, "nearcam")
 		-- P17 (pass 5.1): stars twinkle inside the clock's star window, between the rete's bars (locked to the dial, so they
@@ -1493,9 +1523,18 @@ function End.build(ctx)
 		if hi then
 			-- P7: a low mist bank round the pool's rim, only while standing on the ground (ShapePartial 0.8: the outer fifth
 			-- of the disc, so the galaxy inside stays clear)
-			pe(hosts.floorFx, "smoke5", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.8, EmissionDirection = N_.Top, Rate = 2.5,
-				Lifetime = n(6, 8), Speed = n(0.1, 0.25), Size = seq({ { 0, 8 }, { 1, 14 } }), Transparency = seq({ { 0, 1 }, { 0.3, 0.80 }, { 0.7, 0.82 }, { 1, 1 } }),
-				Color = ColorSequence.new(MIST), LockedToPart = true, Rotation = n(0, 360), RotSpeed = n(-6, 6) }, nil, nil, "ground")
+			-- (pass 5.1: te5_mistbank is one soft low fog bank, densest along its middle and thinning upward in layers: a
+			-- single image, because a 6-8 s particle would step through a flipbook. Kept level: the bank is wide and flat)
+			local mb = isTe5("mistbank")
+			local mist = pe(hosts.floorFx, "mistbank", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.8, EmissionDirection = N_.Top,
+				Rate = 2.5, Lifetime = n(6, 8), Speed = n(0.1, 0.25), Size = mb and seq({ { 0, 9 }, { 1, 15 } }) or seq({ { 0, 8 }, { 1, 14 } }),
+				Transparency = mb and seq({ { 0, 1 }, { 0.3, 0.55 }, { 0.7, 0.6 }, { 1, 1 } }) or seq({ { 0, 1 }, { 0.3, 0.80 }, { 0.7, 0.82 }, { 1, 1 } }),
+				Color = ColorSequence.new(MIST), LockedToPart = true, Rotation = mb and n(-4, 4) or n(0, 360),
+				RotSpeed = mb and n(-2, 2) or n(-6, 6) }, nil, nil, "ground")
+			if mb then
+				propsFix(mist, { Size = seq({ { 0, 8 }, { 1, 14 } }), Transparency = seq({ { 0, 1 }, { 0.3, 0.80 }, { 0.7, 0.82 }, { 1, 1 } }),
+					Rotation = n(0, 360), RotSpeed = n(-6, 6) }, { 0, 0, 1, 1 })
+			end
 		end
 		-- P8: starlight rises off the turning arms and swirls with them, in slow four-point twinkles (grow, hold, shrink);
 		-- black ash flakes rise against them. At Roblox's default zoom, where the floor is a few studs from the lens, the
@@ -1559,10 +1598,19 @@ function End.build(ctx)
 		do
 			local torso = char:FindFirstChild("UpperTorso") or char:FindFirstChild("Torso")
 			if torso and torso:IsA("BasePart") then
-				em.wisps = pe(torso, "smoke5", 5.2, { Shape = BOX, ShapeStyle = SURFACE, EmissionDirection = N_.Top, Rate = rate(7, 3), Lifetime = n(1.6, 2.2),
-					Speed = n(1.5, 2.5), SpreadAngle = Vector2.new(20, 20), Acceleration = Vector3.new(0, 1, 0), Size = seq({ { 0, 1.2 }, { 1, 3.4 } }),
-					Transparency = seq({ { 0, 1 }, { 0.2, 0.32 }, { 0.6, 0.55 }, { 1, 1 } }), Color = ColorSequence.new(Color3.fromRGB(200, 202, 208)),
-					ZOffset = -1.5, Rotation = n(0, 360), RotSpeed = n(-40, 40) }, { 0.2, 0.6 }, { 1.2, 2.0 }, "body")
+				-- (pass 5.1: te5_wisp is a faint tuft drawn up into curling incense-like tendrils; it starts small in its cell and
+				-- rises to the top of it, so it is drawn bigger and near upright, with less night glow than the old puff)
+				local wsp = isTe5("wisp")
+				em.wisps = pe(torso, "wisp", 5.2, { Shape = BOX, ShapeStyle = SURFACE, EmissionDirection = N_.Top, Rate = rate(7, 3), Lifetime = n(1.6, 2.2),
+					Speed = n(1.5, 2.5), SpreadAngle = Vector2.new(20, 20), Acceleration = Vector3.new(0, 1, 0),
+					Size = wsp and seq({ { 0, 2.2 }, { 1, 4.6 } }) or seq({ { 0, 1.2 }, { 1, 3.4 } }),
+					Transparency = wsp and seq({ { 0, 1 }, { 0.2, 0.1 }, { 0.75, 0.2 }, { 1, 1 } }) or seq({ { 0, 1 }, { 0.2, 0.32 }, { 0.6, 0.55 }, { 1, 1 } }),
+					Color = ColorSequence.new(Color3.fromRGB(200, 202, 208)), ZOffset = -1.5, Rotation = wsp and n(-15, 15) or n(0, 360),
+					RotSpeed = wsp and n(-10, 10) or n(-40, 40) }, wsp and { 0.2, 0.4 } or { 0.2, 0.6 }, wsp and { 1.2, 1.4 } or { 1.2, 2.0 }, "body")
+				if wsp then
+					propsFix(em.wisps, { Size = seq({ { 0, 1.2 }, { 1, 3.4 } }), Transparency = seq({ { 0, 1 }, { 0.2, 0.32 }, { 0.6, 0.55 }, { 1, 1 } }),
+						Rotation = n(0, 360), RotSpeed = n(-40, 40) }, { 0.2, 0.6, 1.2, 2.0 })
+				end
 				table.insert(charStuff, em.wisps)
 				-- (pass 5.1: the body's sparks are hot flecks with hairline tails, streaking up the body the way they fly)
 				table.insert(charStuff, pe(torso, "spark5", 5.2, { Shape = BOX, ShapeStyle = VOLUME, EmissionDirection = N_.Top, Rate = rate(16, 6),

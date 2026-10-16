@@ -64,6 +64,7 @@
     "galaxyArms": "galaxy4", "galaxyCore": "ornate", "engraving": "gring", "halo": "rim",
     "stream": "line", "ribbon": "line", "shards5": "ash", "smoke5": "puff", "mote": "glow", "glint5": "glint",
     "bokeh": "glow", "streak5": "spark", "ash5": "ash",
-    "twinkle": "sparkles", "billow": "puff", "wisp": "puff"
+    "twinkle": "sparkles", "billow": "puff", "wisp": "puff", "mistbank": "puff",
+    "spark5": "spark", "stardust": "sparkles"
   }
 }

@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 10_chunk_09_of_12.luau | step 10: piece 9 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (151582 bytes, checksum 322184148).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (154908 bytes, checksum 840125961).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "10_chunk_09_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-151582-322184148-12-938307881"
-local NEW_LEN, NEW_SUM = 151582, 322184148
+local RUN = "TheEnd-154908-840125961-12-402748328"
+local NEW_LEN, NEW_SUM = 154908, 840125961
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 12
-local LENS = { 13269, 13222, 13287, 13307, 13252, 13232, 13230, 13284, 13301, 13300, 13204, 5694 }
-local SUMS = { 882737169, 754366057, 266404745, 785979457, 290862805, 645616522, 300795074, 332029237, 56580994, 674174262, 959073682, 306083532 }
+local LENS = { 13303, 13296, 13287, 13167, 13232, 13273, 13188, 13300, 13244, 13299, 13292, 9027 }
+local SUMS = { 67409079, 948660274, 266404745, 816058228, 63700756, 500498415, 756191201, 562959745, 92959190, 314875523, 46584231, 495884184 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,76 @@ local function chunkOk(h, i)
 end
 
 local K = 9
--- piece 9 of 12 of the new source (13301 bytes, checksum 56580994, long bracket level 0)
+-- piece 9 of 12 of the new source (13244 bytes, checksum 92959190, long bracket level 0)
 local DATA = [[
+	end)
+	-- this wearer's dais sits a hair above (or below) the others', so two pools side by side never share a plane (Roblox
+	-- z-fights coplanar faces as a crawling shimmer). The layer surfaces repeat every 0.055 studs (engraving, base,
+	-- floor), so the three lifts are a third of that apart: your own pool on top (0.037), other players 0 or 0.018, so where
+	-- two pools overlap yours is the one you see.
+	do
+		local uid = 0
+		pcall(function()
+			local plr = Players:GetPlayerFromCharacter(char)
+			uid = plr and plr.UserId or #char.Name
+		end)
+		st.layer = ctx.isLocal and 0.0366 or 0.0183 * (uid % 2)
+	end
+
+	---------------------------------------------------------------- the wearer's own screen grade (real equips only)
+	-- It starts with the first frame the player can actually see (not while the roll cutscene still holds the camera), eases
+	-- back when the assembly ends, and never snaps: hiding or unequipping eases it out too.
+	local grade
+	st.gradeWanted, st.builtAt = CONFIG.GRADE and ctx.isLocal, os.clock()
+	local function gradeTo(target, dur, thenDestroy)
+		if not grade then return end
+		if gradeOwner ~= st then
+			grade = nil -- (another build took the grade over since: it is theirs to ease out)
+			return
+		end
+		if liveGradeTween then liveGradeTween:Cancel() end
+		liveGradeTween = TweenService:Create(grade, TweenInfo.new(dur, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), target)
+		liveGradeTween:Play()
+		if thenDestroy then
+			gradeToken += 1
+			local tok, g = gradeToken, grade
+			grade = nil -- (this aura lets go of it; a new equip within the fade takes it over instead of stacking a second one)
+			task.delay(dur + 0.05, function()
+				if gradeToken == tok and liveGrade == g then
+					g:Destroy()
+					liveGrade, liveGradeTween, gradeOwner = nil, nil, nil
+				end
+			end)
+		end
+	end
+
+	---------------------------------------------------------------- state
+	local fx = {}
+	local remote = not ctx.isLocal
+	local age = (CONFIG.ASSEMBLY and (CONFIG.ASSEMBLY_REMOTE or not remote)) and 0 or ASM_END
+	local VIEWER = CONFIG.VIEWER_ANCHOR
+	local near, visible, armHidden, bokehNear, grounded = true, true, false, false, true
+	local alphaW, alphaOn, settled = -1, false, false
+	local nq, nightClock = -1, 0
+	local nextEmit = 1
+	local accExtra, voidD = 0, (age >= ASM_END) and 8 or 0.6
+	local rt = 3.9
+	local daisY, lastGroundY = nil, nil
+	st.ltmOn, st.hlF, st.lightsOn, st.haloZ, st.hlA, st.fb, st.lod = false, -1, false, 1, 0, 0, 1
+	if age >= ASM_END then void.Size = voidSize else void.Size = voidSize * (0.6 / 8) end
+
+	---------------------------------------------------------------- event writes (never per frame in steady state)
+	local function refreshEmitters()
+		for _, e in ipairs(emitters) do
+			local want = e[4] and near and alphaOn
+			local kind = e[3]
+			if kind == "ground" then want = want and grounded
+			elseif kind == "bokeh" then want = want and not bokehNear
+			elseif kind == "body" then want = want and visible and st.footOk and not st.fpOn -- (they live on the character)
+			elseif kind == "nearcam" then want = want and not st.fpOn -- (the funnel and palm streaks and the air's sparkles: round the lens)
+			elseif kind == "speed" then want = want and st.speedOn end
+			if e[6] and st.ghostGui and not st.fxLtm then want = false end -- (a ghosted aura without emitter LTM: smoke off)
+			if want ~= e[5] then
 				e[1].Enabled = want
 				e[5] = want
 			end
@@ -325,84 +393,6 @@ local DATA = [[
 		local p0 = s.cf.Position
 		if p0.X ~= p0.X or p0.Y ~= p0.Y or p0.Z ~= p0.Z or s.hover ~= s.hover then return end
 		if remote and not near then
-			-- another player's aura past ~110 studs (about 40 px tall) runs every other frame, with both frames' time: the
-			-- springs and spins stay exact and it costs half
-			st.skipDt += dt
-			st.skipN = 1 - st.skipN
-			if st.skipN == 1 then return end
-			dt, st.skipDt = st.skipDt, 0
-		elseif st.skipDt > 0 then
-			dt += st.skipDt
-			st.skipDt = 0
-		end
-		if dt > 0.1 then dt = 0.1 end
-		age += dt
-		local asm = age < ASM_END
-		local t, now, g = s.t, s.now, s.glide
-		local cf = s.cf
-		local O = cf.Position + Vector3.new(0, s.hover, 0)
-		local a = s.alpha
-		if type(a) ~= "number" or a ~= a then a = 1 end
-		a = clamp(a, 0, 1)
-		local on = a >= 0.6 -- (the emitters follow the framework's fade only: the reveal below starts from an empty sky anyway)
-		if st.revealA < 1 then st.revealA = min(1, st.revealA + dt / 0.4) end -- (fading back in after a long hide)
-		a *= st.revealA
-		-- (the first frame after a long hide: the clock's swing, the zoom layout, the dais and the heights start where they
-		-- belong instead of springing in from where they were when the aura was hidden)
-		local snap = st.snap
-		st.snap = false
-		-- (shown again since the last frame: parent it now, so nothing is ever drawn at the positions it had when hidden)
-		if st.pendingRoot then
-			st.pendingRoot = false
-			root.Parent = ctx.container
-		end
-		if st.pendingGroups then
-			st.pendingGroups = false
-			setGroups()
-		end
-		-- the wearer's own grade starts with the first frame they can see (never over a scripted camera, e.g. a cutscene)
-		if st.gradeWanted and not st.gradeStarted and age < 4.5 then -- (not when the assembly is nearly over)
-			st.gradeStarted = true
-			local camG = workspace.CurrentCamera
-			-- (not for a character that has just spawned or respawned: a reset rebuilds the aura on the new character, which
-			-- is not an equip. Decided here rather than at build, when every CharacterAdded handler has run; and with a
-			-- 12 s window, as the framework may build only once the avatar has loaded)
-			local sa = spawnedAt[char]
-			if (sa and st.builtAt - sa < 12) or (ownGone and ownGoneChar[1] ~= char and st.builtAt - ownGone < 15) then
-				st.gradeWanted = false
-			elseif camG and camG.CameraType == Enum.CameraType.Scriptable then
-				st.gradeStarted = false
-			elseif camG then
-				if liveGrade and liveGrade.Parent then
-					grade = liveGrade -- (an earlier equip's grade still easing out: take it over, never stack a second one)
-				else
-					grade = new("ColorCorrectionEffect", { Name = "TheEndReveal" }, camG)
-					liveGrade = grade
-				end
-				gradeOwner = st
-				gradeToken += 1
-				gradeTo(GRADE_ON, 1.2)
-			end
-		end
-		if grade and not st.gradeOut and age >= 5.8 then
-			st.gradeOut = true
-			gradeTo(GRADE_OFF, 2.2, true)
-		end
-
-		-- 0. the wearer's state: how fast they travel (a teleport is ignored; on the ground only the horizontal speed counts,
-		-- so a jump is not a flight), and whether they sit
-		local lastO = st.lastO
-		st.lastO = O
-		-- (a teleport, to another island or a lobby pad: everything starts where it belongs instead of springing across)
-		if lastO and ((O - lastO).Magnitude >= 30 or abs(O.Y - lastO.Y) > 8) then snap = true end
-		if lastO then
-			local dO = O - lastO
-			if grounded then dO = Vector3.new(dO.X, 0, dO.Z) end
-			local d = dO.Magnitude
-			if d < 30 and dt > 0 then
-				st.speed += (d / dt - st.speed) * (1 - exp(-6 * dt))
-				if d / dt > 4 then
-					local u = dO / d
 ]]
 
 local function main()

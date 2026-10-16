@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 07_chunk_06_of_12.luau | step 7: piece 6 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (151582 bytes, checksum 322184148).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (154908 bytes, checksum 840125961).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "07_chunk_06_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-151582-322184148-12-938307881"
-local NEW_LEN, NEW_SUM = 151582, 322184148
+local RUN = "TheEnd-154908-840125961-12-402748328"
+local NEW_LEN, NEW_SUM = 154908, 840125961
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 12
-local LENS = { 13269, 13222, 13287, 13307, 13252, 13232, 13230, 13284, 13301, 13300, 13204, 5694 }
-local SUMS = { 882737169, 754366057, 266404745, 785979457, 290862805, 645616522, 300795074, 332029237, 56580994, 674174262, 959073682, 306083532 }
+local LENS = { 13303, 13296, 13287, 13167, 13232, 13273, 13188, 13300, 13244, 13299, 13292, 9027 }
+local SUMS = { 67409079, 948660274, 266404745, 816058228, 63700756, 500498415, 756191201, 562959745, 92959190, 314875523, 46584231, 495884184 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,11 @@ local function chunkOk(h, i)
 end
 
 local K = 6
--- piece 6 of 12 of the new source (13232 bytes, checksum 645616522, long bracket level 0)
+-- piece 6 of 12 of the new source (13273 bytes, checksum 500498415, long bracket level 0)
 local DATA = [[
+			local arms = carrier("GalaxyArms", DETAIL, GG1, Vector3.new(21, 0.05, 21))
+			surface(arms, Enum.NormalId.Top, 1024, 1.4, 2.4, "galaxyArms", 4.2, 5.2)
+		end
 		local core = carrier("GalaxyCore", CORE, GG2, Vector3.new(12, 0.05, 12))
 		surface(core, Enum.NormalId.Top, midCanvas, 1.5, 2.6, "galaxyCore", 4.0, 4.6)
 		-- the stage: an engraved clock ring 56 studs across round the pool (inked Roman numerals 3 studs tall, a minute track
@@ -277,9 +280,6 @@ local DATA = [[
 				local v, e = (sz.Min + sz.Max) / 2, (sz.Max - sz.Min) / 2
 				props.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, v, e), NumberSequenceKeypoint.new(1, v, e) })
 			end
-			for k, v in pairs(props) do p[k] = v end
-			p.LightEmission = le and le[1] or 0
-			p.Brightness = br and br[1] or 1
 ]]
 
 local function main()

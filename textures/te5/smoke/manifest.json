@@ -10,8 +10,8 @@
   "mode": "OneShot",
   "purpose": "P4a the void's dense ink smoke and P4b the moon's grey-silver smoke (one puff per particle life)",
   "uploadedId": null,
-  "notes": "Flipbook 4x4 OneShot: frame k shows the puff at life fraction (k + 0.5) / 16. A volumetric puff ray-marched in 3D (Beer-Lambert, key light upper front left with a shadow march, multiple-scattering lift, rim light from behind, sky from above): born dense and compact (visible radius ~0.19 of the cell), billows out in rolling cauliflower lobes (radius ~0.38 by frame 11), softens, and from frame ~11 thins into curling veils (texture mean alpha falls ~70 % over frames 11-15 by itself). Opaque core (alpha 1) in frames 0-10. Baked light comes from the upper left: keep the particle's Rotation within about +-20 deg (not 0-360) or the light turns with it. The puff grows inside its cell, so the emitter's Size curve should grow less than for te5_smoke (see the recommended settings).",
-  "sha256": "778509a82286ad0d449066688a0ab5ff4790dd7a4ab35bd24b73e6cea023a642"
+  "notes": "Flipbook 4x4 OneShot: frame k shows the puff at life fraction (k + 0.5) / 16. A volumetric puff ray-marched in 3D (Beer-Lambert, key light upper front left with a shadow march, multiple-scattering lift, rim light from behind, sky from above): born dense and compact (visible radius ~0.19 of the cell), billows out in rolling cauliflower lobes (radius ~0.38 by frame 11), softens, and from frame ~10 thins into curling veils (its own mean alpha falls ~75 % from the peak at frame 9 to frame 15). Opaque core (alpha 1) in frames 0-10. Baked light comes from the upper left: keep the particle's Rotation within about +-20 deg (not 0-360) or the light turns with it. The puff grows inside its cell, so the emitter's Size curve should grow less than for te5_smoke (see the recommended settings).",
+  "sha256": "f0bf69286689108185ce8c72061c0dc43af08298a12884eb8bed9284a24677fe"
  },
  {
   "name": "te5_wisp",
@@ -24,8 +24,8 @@
   "mode": "OneShot",
   "purpose": "P11 silver wisps rising off the wearer's shoulders and back",
   "uploadedId": null,
-  "notes": "Flipbook 4x4 OneShot (life ~1.6-2.2 s = 7-10 fps): thin twisted ribbons of smoke advected through curl noise -- a slender rising thread at birth that curls into incense-like tendrils (bright where a fold is edge-on, a veil where it is face-on) and thins out. OneShot, not Loop: the wisp's own life (thread -> curls -> fade) matches the particle's, every particle starts thin at the body, and a loop would have to fold back on itself (a visible cycle at 8-10 fps). It rises toward the TOP of the cell: keep Rotation within about +-15 deg.",
-  "sha256": "9b85876a5dd1dfb412cbe8910ac7f75735910a9b92641a181e48754fcac99630"
+  "notes": "Flipbook 4x4 OneShot (life ~1.6-2.2 s = 7-10 fps): seven thin twisted ribbons of smoke advected through curl noise and buoyancy -- born as a small tuft low in the cell (~0.15 of it), drawn up into tall incense-like curling tendrils (bright where a fold is edge-on, a veil where it is face-on), then spreading and thinning (its own mean alpha falls ~60 % from frame 9 to 15). OneShot, not Loop: the wisp's life (tuft -> curls -> fade) is the particle's, every particle starts small at the body, and a loop would have to fold back on itself (a visible cycle at 8-10 fps). It rises toward the TOP of the cell: keep Rotation within about +-15 deg (P11). For a strand of many small particles (P16) any rotation is fine.",
+  "sha256": "23e1a5bff6fec039cb829245f34011b067121893c2773a86afa8ed3b7cb0ba4e"
  },
  {
   "name": "te5_mistbank",

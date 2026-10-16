@@ -12,8 +12,10 @@
 #   te5_shards    (1024^2, Grid4x4 Loop)     shards5   a ray-traced shard of polished steel, one tumble in 16 frames
 #   te5_ash       (1024^2, Grid4x4 Loop)     ash5      a glowing ember flake tumbling, foreshortened (was one flake)
 #   te5_bokeh     (256^2)                    bokeh     an out-of-focus light disc (nine-blade iris)
-#   te5_smoke     (1024^2, Grid4x4 OneShot)  smoke5    unchanged (being replaced elsewhere): its code and PNG are
-#                                                      byte-identical to pass 5
+#   te5_smoke     (1024^2, Grid4x4 OneShot)  RETIRED   pass 5.1 draws lit volumetric smoke from textures/te5/smoke
+#                                                      (billow, wisp, mistbank). te5_smoke is still made, byte-identical,
+#                                                      into retired/ for these sheets, but it is not in the manifest, so
+#                                                      it is never uploaded or patched
 #
 # Only python3 + numpy + PIL (runs the same on Milo's Mac and in the cloud). Deterministic: every random source is
 # seeded, so a re-run gives byte-identical PNGs.
@@ -45,6 +47,13 @@ from PIL import Image, ImageDraw, ImageFont
 
 OUT = os.path.dirname(os.path.abspath(__file__))
 SHEETS = os.path.join(OUT, "sheets")
+RETIRED = {"te5_smoke"} # (made for the sheets' comparisons only: kept in retired/, out of the manifest and the uploads)
+
+
+def png_path(name):
+    if name in RETIRED:
+        return os.path.join(OUT, "retired", name + ".png")
+    return os.path.join(OUT, name + ".png")
 REPO_DIR = "textures/te5/particles"
 SS = 2                      # supersampling factor
 F32 = np.float32
@@ -278,7 +287,8 @@ def finish(name, P, A, grid=(1, 1), dither=False, seed=7):
             Cb[sl] = bleed(C[sl], a8[sl] > 0)
     g8 = quantise(np.clip(Cb, 0, 1), rng, dither)
     img = np.dstack([g8, g8, g8, a8])
-    Image.fromarray(img, "RGBA").save(os.path.join(OUT, name + ".png"), optimize=True)
+    os.makedirs(os.path.dirname(png_path(name)), exist_ok=True)
+    Image.fromarray(img, "RGBA").save(png_path(name), optimize=True)
     return img
 
 
@@ -1044,14 +1054,6 @@ MANIFEST = [
      "0.24-0.57 of its cell); with the turn's edge-on frames "
      "it covers less area than pass 5's flat quad, so draw it ~1.6x the fallback's size (pass 5 used 1.3x). "
      "FlipbookFramerate 10-14 (one turn in ~1.3 s), FlipbookStartRandom true. Opaque (alpha 1 inside, AA rim)."),
-    ("te5_smoke", "smoke5", "puff", "1024x1024", "Grid4x4", "OneShot",
-     "P4a/P4b two-tone orb smoke, P7 rim mist and P11 the body's silver wisps",
-     "Flipbook 4x4 OneShot. Review round 3: a dense billow filling ~80 % of its cell (body radius 0.37 -> 0.405, round "
-     "lobes reaching ~0.44), alpha ~0.93 over its inner half, per-cell mean alpha >= 0.30 in frames 0-11, torn wisps only "
-     "at the edge; it dissolves from the edge inward into ragged wisps in frames 12-15 only (mean alpha 0.36 -> 0.08). "
-     "RGB 0.75-1.0 internal shading lit from the upper left (the lobes' relief). Radial window reaches alpha 0 at 0.46 of "
-     "the cell. Frames 0-11 change gently (OneShot over a 3.5-4.5 s lifetime is ~4 fps); the dissolve frames play while "
-     "the emitter's own Transparency fades the particle out. Drawn at the same size as the pass-4 puff (no 1.3x)."),
     ("te5_mote", "mote", "glow", "128x128", "None", None,
      "Dust motes: P1 void swirl and P2 moon dust (review round 3: the air dust, floor motes and foot drips became glints)",
      "Pass 6: a soft photographic point of light, no ring: a hot core (alpha 1 to r ~0.05, half at 0.06), a gaussian glow "
@@ -1161,7 +1163,7 @@ def label(im, text, xy, sz=14, fill=(235, 235, 240)):
 
 
 def load(name, folder=None):
-    return np.asarray(Image.open(os.path.join(folder or OUT, name + ".png")).convert("RGBA"), F32) / 255.0
+    return np.asarray(Image.open(os.path.join(folder, name + ".png") if folder else png_path(name)).convert("RGBA"), F32) / 255.0
 
 
 def cell_of(img, g, k):
@@ -1760,7 +1762,7 @@ def check():
 
     imgs = {}
     for nm, (w, h) in SIZES.items():
-        im = Image.open(os.path.join(OUT, nm + ".png"))
+        im = Image.open(png_path(nm))
         a = np.asarray(im.convert("RGBA")).astype(np.int32)
         imgs[nm] = a
         ok(im.mode == "RGBA" and im.size == (w, h), f"{nm}: RGBA {w}x{h}")
@@ -2006,8 +2008,10 @@ def check():
     # --- the manifest matches the PNGs
     man = json.load(open(os.path.join(OUT, "manifest.json")))
     by = {e["name"]: e for e in man}
-    ok(set(by) == set(SIZES), "manifest: one entry per PNG")
+    ok(set(by) == set(SIZES) - RETIRED, "manifest: one entry per PNG (retired ones excluded)")
     for nm, (w, h) in SIZES.items():
+        if nm in RETIRED:
+            continue
         e = by.get(nm, {})
         ok(e.get("size") == f"{w}x{h}" and (e.get("layout") == "Grid4x4") == (nm in GRIDS)
            and e.get("uploadedId", "x") is None and e.get("fallbackTexKey") and e.get("texKey"),

@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 13_chunk_12_of_12.luau | step 13: piece 12 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (151582 bytes, checksum 322184148).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (154908 bytes, checksum 840125961).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "13_chunk_12_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-151582-322184148-12-938307881"
-local NEW_LEN, NEW_SUM = 151582, 322184148
+local RUN = "TheEnd-154908-840125961-12-402748328"
+local NEW_LEN, NEW_SUM = 154908, 840125961
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 12
-local LENS = { 13269, 13222, 13287, 13307, 13252, 13232, 13230, 13284, 13301, 13300, 13204, 5694 }
-local SUMS = { 882737169, 754366057, 266404745, 785979457, 290862805, 645616522, 300795074, 332029237, 56580994, 674174262, 959073682, 306083532 }
+local LENS = { 13303, 13296, 13287, 13167, 13232, 13273, 13188, 13300, 13244, 13299, 13292, 9027 }
+local SUMS = { 67409079, 948660274, 266404745, 816058228, 63700756, 500498415, 756191201, 562959745, 92959190, 314875523, 46584231, 495884184 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,87 @@ local function chunkOk(h, i)
 end
 
 local K = 12
--- piece 12 of 12 of the new source (5694 bytes, checksum 306083532, long bracket level 0)
+-- piece 12 of 12 of the new source (9027 bytes, checksum 495884184, long bracket level 0)
 local DATA = [[
+			alphaW = a
+			-- the emitters switch on in turn as their part of the machine locks in
+			local e = emitters[nextEmit]
+			if e and age >= e[2] then
+				while e and age >= e[2] do
+					e[4] = true
+					nextEmit += 1
+					e = emitters[nextEmit]
+				end
+				refreshEmitters()
+				refreshLights()
+			end
+		elseif not settled or a ~= alphaW then
+			-- the assembly has ended (snap everything to rest) or the framework is fading the aura out (or back in)
+			if not settled then
+				settled = true
+				if voidD ~= 8 then
+					voidD = 8
+					void.Size = voidSize
+				end
+				for _, e in ipairs(emitters) do e[4] = true end
+				nextEmit = #emitters + 1
+				refreshEmitters()
+				refreshLights()
+				fadeAll(a, false, 0.03)
+			else
+				fadeAll(a, false, 0.04)
+			end
+			alphaW = a
+		end
+		if isGrounded ~= grounded then
+			grounded = isGrounded
+			refreshEmitters()
+		end
+		-- the body's wisps and sparks come back a second after the aura is shown again (a quick hide/show never blinks them)
+		if not st.footOk and os.clock() - st.shownAt >= 1.1 then
+			st.footOk = true
+			refreshEmitters()
+		end
+		-- walking or flying: the void's ink smoke thins out and dies young, the moon's smoke and the body's wisps stop and
+		-- the moon dust halves, so no smog patches hang along the path (the body's sparks and the speed trail stream out
+		-- behind instead)
+		local slow = (st.smokeSlow and (g > 0.3 or st.speedOn)) or g > 0.6 or st.speedOn
+		if slow ~= st.smokeSlow then
+			st.smokeSlow = slow
+			em.smoke.Rate = slow and (low and 1 or 1.5) or (low and 4 or 10)
+			em.smoke.Lifetime = slow and n(1.0, 1.4) or n(3.5, 4.5)
+			if em.smokeMoon then em.smokeMoon.Rate = slow and 0 or 5 end
+			em.dust.Rate = (low and 5 or 10) * (slow and 0.5 or 1)
+			if em.wisps then em.wisps.Rate = slow and 0 or (low and 3 or 7) end
+			-- (the helix's strands: thin while travelling, so they leave a short glittering wake, not a long trail)
+			em.strandMoon.Rate = (low and 14 or 34) * (slow and 0.35 or 1)
+			em.strandVoid.Rate = slow and 0 or (low and 8 or 18)
+		end
+		if remote and cam and ownerHub then
+			-- another wearer's clock or orbs in front of your own clock (a friend beside or behind you): theirs step back
+			-- along your view (a spring) until they stand 12 studs behind your clock, smaller and still solid. Tested at
+			-- where they would stand without stepping back, and held 1.5 s, so they never swing back and forth
+			local ab = ownerHub - camPos
+			local len2 = ab:Dot(ab)
+			local y0 = st.yieldD
+			local Kp0, nz = K.Position - vl * y0, K.LookVector
+			local hit = false
+			if len2 > 1 then
+				local d0, d1 = (camPos - Kp0):Dot(nz), (ownerHub - Kp0):Dot(nz)
+				if d0 * d1 < 0 then hit = (camPos + ab * (d0 / (d0 - d1)) - Kp0).Magnitude < 14.5 end
+				hit = hit or segDist(moonC - vl * y0, camPos, ab, len2) < 5.5 or segDist(voidC - vl * y0, camPos, ab, len2) < 7.0
+			end
+			if hit then
+				st.yieldHold = 1.5
+				st.yieldT = clamp((ownerHub - Kp0):Dot(vl) + 12, 0, 48)
+			elseif st.yieldHold > 0 then
+				st.yieldHold -= dt
+				if st.yieldHold <= 0 then st.yieldT = 0 end
+			end
+			st.yieldD = snap and st.yieldT or st.yieldD + (st.yieldT - st.yieldD) * (1 - exp(-3 * dt))
+		end
+		if remote and st.ghostRemote and cam then
+			-- someone else's aura between you and your camera: test the segment from the camera to your own focus against
 			-- their clock disc and their orbs (those ghost together, with their GUIs, smoke and streams; enter at once, leave
 			-- after 1.2 s clear) and, separately, against their rings (only the rings ghost: a friend standing beside the
 			-- wearer looks through the rings, never through the clock; 0.6 s)

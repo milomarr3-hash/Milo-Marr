@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 12_chunk_11_of_12.luau | step 12: piece 11 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (151582 bytes, checksum 322184148).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (154908 bytes, checksum 840125961).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "12_chunk_11_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-151582-322184148-12-938307881"
-local NEW_LEN, NEW_SUM = 151582, 322184148
+local RUN = "TheEnd-154908-840125961-12-402748328"
+local NEW_LEN, NEW_SUM = 154908, 840125961
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 12
-local LENS = { 13269, 13222, 13287, 13307, 13252, 13232, 13230, 13284, 13301, 13300, 13204, 5694 }
-local SUMS = { 882737169, 754366057, 266404745, 785979457, 290862805, 645616522, 300795074, 332029237, 56580994, 674174262, 959073682, 306083532 }
+local LENS = { 13303, 13296, 13287, 13167, 13232, 13273, 13188, 13300, 13244, 13299, 13292, 9027 }
+local SUMS = { 67409079, 948660274, 266404745, 816058228, 63700756, 500498415, 756191201, 562959745, 92959190, 314875523, 46584231, 495884184 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,66 @@ local function chunkOk(h, i)
 end
 
 local K = 11
--- piece 11 of 12 of the new source (13204 bytes, checksum 959073682, long bracket level 1)
+-- piece 11 of 12 of the new source (13292 bytes, checksum 46584231, long bracket level 1)
 local DATA = [=[
+			local x, y, z = gd.cx, gd.cy, gd.cz
+			if asm then
+				-- spin up fast and wind down to the running pace (an integrated extra angle, so nothing jumps)
+				gd.extra = (gd.extra + rad((gd.sign * 300 - gd.rate) * exp(-4 * max(0, age - gd.a0))) * dt) % TAU
+				local u = (age - gd.a0) / (gd.a1 - gd.a0)
+				if u < 1 then
+					local kk = 1 - easeOutBack(u)
+					x, y, z = x + (gd.sx - x) * kk, y + (gd.sy - y) * kk, z + (gd.sz - z) * kk
+				end
+			end
+			GCF[gd.grp] = K * CFrame.new(x, y, z) * CFrame.Angles(0, 0, -((rad(gd.rate) * now + gd.extra) % TAU))
+		end
+		local th, tm, ts = 0, 0, rad(6 * (now % 60))
+		local crownY = 0
+		if asm then
+			local kk = 1 - easeOutBack((age - 3.6) / 1.2)
+			th, tm, ts = -rad(330) * kk, -rad(1050) * kk, ts - rad(720) * kk
+			crownY = 6 * (1 - easeOutBack((age - 4.2) / 0.6))
+		end
+		GCF[GHOUR] = K * CFrame.Angles(0, 0, -th) * CFrame.new(0, 0, 0.85)
+		GCF[GMIN] = K * CFrame.Angles(0, 0, -tm) * CFrame.new(0, 0, 1.15)
+		GCF[GSEC] = K * CFrame.Angles(0, 0, -ts) * CFrame.new(0, 0, 1.42)
+		GCF[GDUST] = K * CFrame.new(0, 0, 1.3) * CFrame.Angles(0, 0, -((rad(20) * now) % TAU)) -- (the time-dust ring turns clockwise)
+		GCF[GCROWN] = crownY ~= 0 and K * CFrame.new(0, crownY, 0) or K
+
+		-- 3. the dais layers and the balance wheel (just below the soles, never into the galaxy; on the dais when seated)
+		local gdir = CONFIG.GALAXY_DIR
+		GCF[GDAIS] = Gd
+		GCF[GG0] = Gd * CFrame.new(0, 0.15, 0) * CFrame.Angles(0, (rad(-6) * gdir * now) % TAU, 0)
+		GCF[GG1] = Gd * CFrame.new(0, 0.42, 0) * CFrame.Angles(0, (rad(9) * gdir * now) % TAU, 0)
+		GCF[GG2] = Gd * CFrame.new(0, 0.66, 0) * CFrame.Angles(0, (rad(-16) * gdir * now) % TAU, 0)
+		GCF[GENG] = Gd * CFrame.new(0, 0.04, 0) * CFrame.Angles(0, (rad(2.5) * gdir * now) % TAU, 0)
+		GCF[GFUNNEL] = Gd * CFrame.new(0, 0.8, 0) * CFrame.Angles(0, (rad(-70) * CONFIG.FUNNEL_DIR * t) % TAU, 0)
+		local wheelAngle = rad(160) * sin(TAU * t / 3.2) * (asm and smooth((age - 4.6) / 1.2) or 1)
+		local wheelY = O.Y - s.legLen - 0.9
+		wheelY += (dY + 1.2 - wheelY) * sitT
+		if wheelY < dY + 1.2 + 2.5 * slopeT then wheelY = dY + 1.2 + 2.5 * slopeT end
+		local Bw = CFrame.new(O.X, wheelY, O.Z) * CFrame.Angles(0, wheelAngle, 0)
+		GCF[GWHEEL] = Bw
+
+		-- 4. the armillary (body-anchored, upright: leaning it with the glide laid the dark equator across the head line from
+		-- the follow camera); on equip each ring rises from lying flat on the dais. It lifts a little whenever a ring's lowest
+		-- edge would dip into the galaxy layers (small avatars, slopes, sitting)
+		local Wr = W.Rotation
+		local R1 = Wr * CFrame.Angles(0, (rad(8) * t) % TAU, 0) * TILT33
+		local R2 = R1 * CFrame.Angles(rad(57) + rad(18) * sin(TAU * t / 19), 0, 0)
+		local R3 = R2 * CFrame.Angles(0, rad(23.4) + rad(14) * sin(TAU * t / 27 + 1.1), 0)
+		local n1, n2, n3 = R1.ZVector.Y, R2.ZVector.Y, R3.ZVector.Y
+		local drop = max(6.23 * sqrt(max(0, 1 - n1 * n1)) + 0.09 * abs(n1), 5.54 * sqrt(max(0, 1 - n2 * n2)) + 0.17 * abs(n2),
+			4.79 * sqrt(max(0, 1 - n3 * n3)) + 0.08 * abs(n3))
+		local baseY = 1.3 - 1.0 * sitT
+		local liftT = max(0, dY + 0.96 + 6.3 * slopeT - (O.Y + baseY - drop))
+		st.lift = snap and liftT or st.lift + (liftT - st.lift) * (1 - exp(-6 * dt))
+		if st.lift < liftT - 0.3 then st.lift = liftT - 0.3 end
+		local A0p = O + Vector3.new(0, baseY + st.lift, 0)
+		local F1 = CFrame.new(A0p) * R1
+		local F2 = CFrame.new(A0p) * R2
+		local F3 = CFrame.new(A0p) * R3
 		GCF[GF1], GCF[GF2], GCF[GF3] = F1, F2, F3
 		if asm then
 			-- (for the owner's close camera the rings wait flat on the dais until the hands have locked at XII, then close
@@ -279,85 +337,6 @@ local DATA = [=[
 				void.Size = voidSize * (d / 8)
 			end
 			fadeAll(a, true, 0.03)
-			alphaW = a
-			-- the emitters switch on in turn as their part of the machine locks in
-			local e = emitters[nextEmit]
-			if e and age >= e[2] then
-				while e and age >= e[2] do
-					e[4] = true
-					nextEmit += 1
-					e = emitters[nextEmit]
-				end
-				refreshEmitters()
-				refreshLights()
-			end
-		elseif not settled or a ~= alphaW then
-			-- the assembly has ended (snap everything to rest) or the framework is fading the aura out (or back in)
-			if not settled then
-				settled = true
-				if voidD ~= 8 then
-					voidD = 8
-					void.Size = voidSize
-				end
-				for _, e in ipairs(emitters) do e[4] = true end
-				nextEmit = #emitters + 1
-				refreshEmitters()
-				refreshLights()
-				fadeAll(a, false, 0.03)
-			else
-				fadeAll(a, false, 0.04)
-			end
-			alphaW = a
-		end
-		if isGrounded ~= grounded then
-			grounded = isGrounded
-			refreshEmitters()
-		end
-		-- the body's wisps and sparks come back a second after the aura is shown again (a quick hide/show never blinks them)
-		if not st.footOk and os.clock() - st.shownAt >= 1.1 then
-			st.footOk = true
-			refreshEmitters()
-		end
-		-- walking or flying: the void's ink smoke thins out and dies young, the moon's smoke and the body's wisps stop and
-		-- the moon dust halves, so no smog patches hang along the path (the body's sparks and the speed trail stream out
-		-- behind instead)
-		local slow = (st.smokeSlow and (g > 0.3 or st.speedOn)) or g > 0.6 or st.speedOn
-		if slow ~= st.smokeSlow then
-			st.smokeSlow = slow
-			em.smoke.Rate = slow and (low and 1 or 1.5) or (low and 4 or 10)
-			em.smoke.Lifetime = slow and n(1.0, 1.4) or n(3.5, 4.5)
-			if em.smokeMoon then em.smokeMoon.Rate = slow and 0 or 5 end
-			em.dust.Rate = (low and 5 or 10) * (slow and 0.5 or 1)
-			if em.wisps then em.wisps.Rate = slow and 0 or (low and 3 or 7) end
-			-- (the helix's strands: thin while travelling, so they leave a short glittering wake, not a long trail)
-			em.strandMoon.Rate = (low and 14 or 34) * (slow and 0.35 or 1)
-			em.strandVoid.Rate = slow and 0 or (low and 8 or 18)
-		end
-		if remote and cam and ownerHub then
-			-- another wearer's clock or orbs in front of your own clock (a friend beside or behind you): theirs step back
-			-- along your view (a spring) until they stand 12 studs behind your clock, smaller and still solid. Tested at
-			-- where they would stand without stepping back, and held 1.5 s, so they never swing back and forth
-			local ab = ownerHub - camPos
-			local len2 = ab:Dot(ab)
-			local y0 = st.yieldD
-			local Kp0, nz = K.Position - vl * y0, K.LookVector
-			local hit = false
-			if len2 > 1 then
-				local d0, d1 = (camPos - Kp0):Dot(nz), (ownerHub - Kp0):Dot(nz)
-				if d0 * d1 < 0 then hit = (camPos + ab * (d0 / (d0 - d1)) - Kp0).Magnitude < 14.5 end
-				hit = hit or segDist(moonC - vl * y0, camPos, ab, len2) < 5.5 or segDist(voidC - vl * y0, camPos, ab, len2) < 7.0
-			end
-			if hit then
-				st.yieldHold = 1.5
-				st.yieldT = clamp((ownerHub - Kp0):Dot(vl) + 12, 0, 48)
-			elseif st.yieldHold > 0 then
-				st.yieldHold -= dt
-				if st.yieldHold <= 0 then st.yieldT = 0 end
-			end
-			st.yieldD = snap and st.yieldT or st.yieldD + (st.yieldT - st.yieldD) * (1 - exp(-3 * dt))
-		end
-		if remote and st.ghostRemote and cam then
-			-- someone else's aura between you and your camera: test the segment from the camera to your own focus against
 ]=]
 
 local function main()
