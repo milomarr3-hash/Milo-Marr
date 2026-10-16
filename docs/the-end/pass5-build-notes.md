@@ -7,6 +7,10 @@ confirm is marked `-- STUDIO-VERIFY:` in the code and listed at the end of this 
 
 Renders for Milo: `docs/the-end/pass5-renders/` (see the list at the end).
 
+**Review round 1** (the last section of this page) changed many of the numbers in the sections above (budgets, decisions 5, 6,
+14, 15, the particle tuning, the known weaknesses). Those sections are kept as the record of the first build; where they
+disagree, the review-round-1 section and the spec (`pass5-spec.md`, updated to the built numbers) are current.
+
 ## What was built
 
 Everything in spec §3 to §17, with the spec's part counts: **360 moving parts on high quality, 149 on low** (one `BulkMoveTo` per
@@ -138,10 +142,192 @@ that the module uses until te5 is uploaded.
 | `05_night_back_owner_view.jpg` | Night, owner's view |
 | `06_day_side.jpg` | Day, from the wearer's right: the clock still faces the viewer, beyond the wearer |
 | `07_day_far.jpg` | Day, 130 studs: particles and fine detail dropped (far LOD); the silhouette still reads |
-| `08_clock_closeup.jpg` | Clock close-up (spec view P6): bezel, chapter ring, rete, sub-dial, gears behind the dial |
-| `09_assembly_strip.jpg` | The equip assembly, 0.6 s to 6.5 s |
+| `08_clock_closeup.jpg` | Close-up from the front and above (orbit 24°, 26° up, 27 studs): bezel, chapter ring, rete, the movement plate behind the dial, the void |
+| `09_assembly_strip.jpg` | The equip assembly, 0.7 s to 6.6 s |
 | `10_te5_day_studio.jpg` | After the te5 textures are uploaded: day, studio camera (numerals, accretion streaks, ribbon) |
 | `11_te5_night_front34.jpg` | After te5 upload: night, front 3/4 |
-| `12_te5_clock_closeup_night.jpg` | After te5 upload: clock close-up at night |
+| `12_te5_clock_closeup_night.jpg` | After te5 upload: the same close-up at night (star window, moon face, accretion) |
 | `13_pass4_vs_pass5_day.jpg` | The real pass-4 Studio screenshot next to the pass-5 preview from the same camera |
 | `14_contact_sheet.jpg` | All of the above on one page |
+
+## Review round 1
+
+Four critics reviewed the first build: an art director (AD1 to AD10), the wearer's and other players' view (W1 to W14), a
+Studio skeptic (F1 to F18) and a code review (CR1-01 to CR1-12). Duplicates were merged (W1 = F3, W2 = F1, W3 = F11, W7a = F12,
+F10 = CR1-11, F14b ~ CR1-10). Every priority-1 and priority-2 finding is implemented, and so is most of the priority-3 polish;
+the few that were declined or only partly done are listed with the reason. **Still nothing has run in Roblox Studio**: everything
+below is harness output, snapshot measurements and preview renders. The spec (`pass5-spec.md`) is updated to the built numbers.
+
+### What changed, and why
+
+**Engine safety**
+
+- **AD2 Luau register limit (P1).** `End.build` was 3 registers below Luau's 200 limit, so one more local anywhere would have
+  stopped the module compiling. Long-lived state moved into three tables (`st` for runtime state, `hosts` for carriers, `em` for
+  emitters that change later) and build steps into `do ... end` blocks: **70 registers spare**. New tool
+  `tools/harness/register_headroom.py` (adds dummy locals until `luau` refuses to compile; `--measure`) and a test in
+  `tools/harness/tests/run_tests.py` that fails below 16 spare.
+- **CR1-05, CR1-07 attributes.** Read again at every build (set an attribute, then unequip and equip). An upper-case attribute
+  that is not a flag warns once (catches typos), wrong types / NaN / infinity are ignored with a warning, numbers are clamped to
+  ranges (`RANGES`), the four direction flags take only the sign, and the hysteresis pairs are kept in order.
+- **CR1-06 TEX5 values.** `idOf` accepts `rbxassetid://123`, `"123"`, the number 123 and `rbxasset://` / `rbxthumb://`, trims
+  spaces, and warns once and falls back on anything else. `pending:<key>` (the preview renderer's placeholder) is still accepted,
+  but `roblox/install/make_payloads.py` now refuses to build payloads from a module that contains one, so it cannot ship.
+- **F9 texture loading.** At require, one background `ContentProvider:PreloadAsync` over the filled-in te5 ids (never blocks
+  require or build). A texture that fails to load is reported once and swapped for its pass-4 fallback everywhere it is used,
+  including the flipbook layout; later builds use the fallback straight away. Studio snippet S9 does the same check by hand.
+- **F6, F18 particle textures.** `te5_ash.png` is now 1024² (four 512-px flakes): Roblox only animates flipbooks on 1024²
+  textures. `te5_streak.png` is now a square 256² (particles are drawn square; the 64×256 capsule was squashed) and is drawn
+  2.2× the fallback's size. `patch_tex5.py` refuses to record or patch a Grid flipbook PNG that is not 1024². The palm intake
+  emitters are `LockedToPart`, so the streaks keep converging on a moving palm.
+- **CR1-08, CR1-09 beam fades.** 21 precomputed steps (≤ 5 % per step) and the step index is clamped, so an alpha slightly
+  outside [0, 1] can no longer throw every frame.
+- **CR1-10, F14, F13 lifecycle.** `destroy()` destroys the sub-models that far LOD or the near rule had parented to nil, and
+  clears every table. `update()` returns early while hidden. If something replaces the hands, the palms fall back to the body
+  carriers and the beams are re-pointed on the next event.
+- **CR1-12 readability.** The hands use named fields, `GGEAR` became `GGEAR0` (an offset), dead locals were dropped.
+
+**The wearer's camera** (W1 = F3, W2 = F1, W4, W8, W9)
+
+- **Close-camera layout.** Every judgement in the first build was made at Milo's 40-stud screenshot camera, but players play at
+  Roblox's 12.5-stud default zoom. A smoothed camera-closeness factor `cz` (0 at 30+ studs, 1 at 14; attributes `ZOOM_FAR` /
+  `ZOOM_NEAR`) now moves the clock 16 studs further back and 3 lower and leans it 24° more (so the dial still faces a camera that
+  looks down), and brings the orbs 6 studs further from the camera. Measured from the default zoom: camera-to-orb distance
+  11.6 → 16.9 studs, and the character is no longer framed by a wall of dial (render `zoom_fp_cmp`, and the `subject` view in
+  `tools/check_aura.sh`'s new default view list).
+- **Lag cap.** A right-drag or swipe swings the camera at 90 to 720°/s, where the yaw spring trailed 27 to 140° and threw the
+  orbs into the lens. The shown lag is now `L·tanh(x/L)` with `L = YAW_LAG_MAX` (22°). Measured: at 180°/s the nearest orb stays
+  17.5 studs from the camera (was 4.0), and in a 0.25 s half-turn flick 17.7 (was 3.9).
+- **First person** (`FIRST_PERSON_LIFT`): the owner's clock rises 16 studs and tips to face down, out of the level view; look up
+  to see it. Solid, no transparency.
+- **Near rules.** The rings hide below 10 studs from their centre and return above 11.5 (were 7 / 8: at the common 8.6 to 10-stud
+  zoom a ring passed 1.5 to 3.5 studs from the lens). The big bokeh shows only beyond 20 studs (hides below 18).
+
+**Other players** (W3 = F11, W5, W6)
+
+- **Remote ghosting** (`GHOST_REMOTE`). When another wearer's clock, rings or orbs stand between your camera and your character,
+  their parts take `LocalTransparencyModifier` in 3 steps (one burst of writes per step) and their GUIs, Highlight and corona switch
+  off (GUIs ignore that modifier). Enter at once, leave after 0.6 s clear. Measured with six wearers (`crowd`): the local player's
+  view of their own head blocked 61 % → 3 % of samples. New scenarios `pair_behind` and `pair_walkby`.
+- **Far silhouette** (W5, AD6). The rete star, the bow and the corona moved from Detail to Core, so far LOD (past ~110 studs) no
+  longer strips the clock's silhouette and its night glow in one frame. Far move list 266 → 290 parts (Detail is now 46 parts).
+- **Far beacon** (W6): built behind `FAR_BEACON`, **default off**: an ink-by-day, white-at-night spire seen only from far away,
+  steady, no pulse. It needs Milo's OK (it changes how the aura looks to the whole server).
+
+**The character matches the aura** (Milo: "floating, flying, sitting, walking")
+
+- **Jumps** (F2). Roblox's default JumpHeight 7.2 lifted the feet past the old fixed 7-stud "flying" threshold, so every jump
+  floated the dais. Now hysteresis `AIR_ON` 12 / `AIR_OFF` 9: in the new `jump` scenario the dais never moves and nothing flickers.
+- **Sitting** (W7a = F12). `Humanoid.Sit` is read every frame and smoothed: the dais sits at the lower of the ground ray (which
+  hits the seat top) and the feet, the clock lowers 3 and comes 2 closer (a throne back), the rings drop 1, the balance wheel rests
+  on the dais and the foot drips stop. Measured in the new `seated` scenario: clock vs dais −1.23 → +0.25, rings vs dais −1.19 →
+  +0.21, wheel vs dais −0.67 → +0.26 studs. (If the framework keeps its 2.4 hover on a seat, that is the framework's to fix:
+  Studio checklist.)
+- **Short avatars, slopes** (CR1-01). The clock's height is clamped so its bezel's lowest edge stays 1.2 above the dais; the rings
+  lift when their lowest edge would dip into it; the dais follows the ground down at 30/s (up at 8/s). Measured: `small_avatar`
+  clock vs dais −0.33 → +0.25, `downhill` −0.26 → +0.25.
+- **Floating free** (W10): the balance wheel hangs 0.9 below the soles (was 0.35), so the wearer floats above it instead of
+  standing on a hover-disc.
+- **Speed** (AD10, W11): a speed state (on above 12 studs/s, off below 8; horizontal only while grounded, so a jump is not a
+  flight) adds 4° of clock lean and turns on P12, a short trail of silver streaks behind the body (the 20th emitter). While
+  travelling the void and moon smoke thin out (rate and lifetime) so no trail of puffs hangs on the path.
+- **Unequip and hides** (CR1-04, F10 = CR1-11, W14). The screen grade starts with the first frame the wearer can see (not on wall
+  time at build), eases back in 0.4 s on hide and 0.8 s on destroy instead of snapping, and a quick re-equip takes over the live
+  grade instead of stacking a second one. After a hide of more than 0.5 s (e.g. the roll cutscene) the aura fades back in over
+  0.4 s instead of popping; the emitters follow only the framework's fade (this also removed the first build's `toggle_visible`
+  flicker warning).
+
+**The look** (AD1, AD3 to AD9, F4, F5, F17, W12, W13, CR1-02, CR1-03)
+
+- **AD1 solid dial (P1).** A black movement plate (C12, Ø 24.6, 1 part) closes the skeleton dial from behind, between the centre
+  wheel and the big gears, turning with the centre wheel. Grass, paths and sky no longer show through the clock; only the big
+  gears' teeth show past the rim. A **star window** (new texture `te5_star_window`, fallback the pass-4 galaxy drawn dimmer) turns
+  on it. The GUI sits on the plate itself, so no carrier part was needed (GUIs 11 → 12, the limit), and the moon halo stays.
+- **AD3 particles (P1).** Re-allocated inside §14: the ink smoke now boils off the void itself (Sphere surface, 4.5 → 12.5 studs,
+  peak 0.30) and silver smoke off the moon (3.5 → 9), both 3 studs back so the orbs' outlines stay crisp (their two carrier parts
+  were removed); the swirl (40/s, 0.9), moon dust (16/s, 0.6), galaxy motes (26/s, 0.7) and shards (7/s) grew; air dust became
+  fewer and bigger (8/s, 0.22 to 0.40). With te5 the smoke is drawn 1.3× bigger (te5_smoke's curls are wispier than the
+  pass-4 puff). Measured by rendering with and without particles (share of pixels changing by more than 24 levels; day studio /
+  day back / night studio): **fallback textures 1.2 / 0.9 / 1.8 % → 4.6 / 5.0 / 5.4 %**, **te5 textures 1.1 / 0.4 / 1.6 % →
+  3.0 / 2.5 / 3.5 %**. The critic's target (4 % studio, 2 % back) is met with the fallback textures that ship until the upload,
+  and with te5 in the back view; te5's day studio view stays at 3.0 % (see "Declined").
+- **AD4 moon (P2).** New texture `te5_moon` (a photographic full moon: maria, ~60 craters, rays, no ring). Once it is uploaded the
+  white ball, its 6 craters and the halo give way to a Ø 6 grey core with the face on a 9-stud billboard 4.4 studs toward the
+  camera (placed every frame), glowing 1.0 → 1.8 at night, outside the Highlight. Until then the geometry moon stays.
+- **AD5 void.** The accretion disc tilts 24° toward the viewer (was 15°: nearly edge-on at Milo's level framing), brightness
+  1.6; the photon ring has 18 segments (was 14, faceted up close); the lensed arc is 6 longer blocks; the veins are thinner (Neon
+  lines shimmer); plus the ink smoke corona above.
+- **AD6 night glow.** Corona kept at every distance (above); the moon's key light Range 22 → 26; the moon face glows at night.
+- **AD7 silver.** A SATIN token (150, 154, 164) on the odd bezel flutes and odd dais-rim blocks gives the metal light/dark
+  structure; the Highlight's day fill is 0.65 (was 0.55), with attributes `HIGHLIGHT_FILL` / `HIGHLIGHT_OUTLINE` for the Studio A/B.
+- **AD8 equator** is SATIN silver instead of dark steel: a bracelet, not a censor bar across the chest.
+- **AD9 ribbon** body is opaque (Transparency 0 between the end keypoints), so the sand no longer shows through it.
+- **F17 Neon** colours are neutral (LUME 240,240,242; VEIN 226,226,228; ARC 210,210,212): Neon saturates any tint.
+- **F4 Highlight** fades in over 5.65 to 6.35 s, after every silver part is solid (it painted the still-fading dais rim at full
+  strength, a pop). **W12** the galaxy floor and core fade in with the dais base (4.0 to 4.6). **W13** low quality: meridian and
+  equator 14 segments (+4), dais rim 16 (−4); still 149 parts.
+- **CR1-02 lights** never pop: `Enabled` flips only at Brightness 0; brightness fades with the assembly and the framework alpha.
+  **F16** the key light exists on high only (phones' voxel lighting re-lights a moving light in 4-stud blocks). **CR1-03** groups
+  returning from the near rule or far LOD are re-parented by the next update, together with that frame's positions.
+- **F5, F7, F8 Studio flips.** Each guess that only Studio can settle is now one attribute flip, no reinstall: `FLOW_SIGN`
+  (stream and ribbon flow; the ribbon's −0.5 was certainly wrong against the streams' +0.5), `ACC_DIR`, `FUNNEL_DIR`,
+  `GALAXY_DIR`, `WEDGE_SWAP`, `STREAK_FLIP`, `FRONT_FACES`, `SWIRL_POINTS` (`roblox/install/studio_checks.md` S8).
+
+**Harness and tools.** 9 new scenarios (`fast_turn`, `fast_turn90`, `camera_flick`, `pair_behind`, `pair_walkby`, `jump`,
+`seated`, `small_avatar`, `downhill`; 28 in all), the last six with the Studio-default follow camera. `tools/check_aura.sh` renders
+Roblox's default 12.5-stud zoom by default (`subject:-1,0,0.35,12.5`). The pass-4 baseline report was refreshed.
+
+### Declined or only partly done
+
+| Finding | What was done instead, and why |
+|---|---|
+| AD3 target with te5, day studio view (4 %) | 3.0 % (fallback 4.6 %; te5 back view 2.5 %, target 2 %). More would need bigger or denser smoke across the dial, which Milo asked to keep solid, or a higher rate than §14 allows (≤ 200/s). Judge in Studio, where bloom adds to the white particles. |
+| AD4 core Ø 7.8, colour (150, 153, 160), offset 4.05 | **Ø 6, (184, 186, 192), 4.4.** A billboard faces the camera's plane, not the ray: off-axis the 7.8 core poked out of the 9-stud face as a grey crescent at ~25° in the preview. Ø 6 stays hidden from 8 to 130 studs up to ~45°, and a mid-grey core hides any sliver that does show. |
+| AD1 star-window carrier, halo dropped | The GUI went on the plate itself (no extra part), and the GUI budget had room for the halo (12 = limit). |
+| AD6 key light Range 30 | **26.** The preview cannot judge aura light on the ground (FIDELITY), and a larger moving light re-lights more of the plaza every frame; 26 reaches the ground under the moon and the wearer. A one-line change if Studio says more. |
+| W6 far beacon | Built, **default off** (`FAR_BEACON`): it changes what the whole server sees and needs Milo's OK. No beam limit raised (when on, the far beacon replaces the 3 detail beams that are off when far). |
+| W7(b) equator swing cut while gliding | Measured worse: `glide` view-blocked 26 % → 39 % with the cut (the band then hangs level across the head line from the follow camera). Kept the swing. `glide` is 31 % now (the ring lift for clearance adds ~5 %). |
+| W10 wheel 1.1 below the soles | **0.9.** At 1.1 the wheel's underside came 0.08 above the galaxy-core plane (spec ≥ 0.2); 0.9 leaves 0.28. |
+| F7 two rim emitters per host | **One per host** behind `SWIRL_POINTS`: two would make 22 emitters (limit 20). The host's spin still curls each particle's path into a spiral arm. |
+| F15 weld each rigid group to one root and move ~45 roots | Not built blind: it changes the move model and only the MicroProfiler can say whether 360 CFrames per wearer cost too much. Added a MicroProfiler step with numbers (checklist 10). |
+| CR1-06 reject `pending:` | Kept for the preview renderer, which needs it to show te5 before upload; the payload builder refuses it instead. |
+| Strict type check | Default mode (what Studio's Script Analysis shows): 0 errors, 0 diagnostics. `--strict --api-only`: 65 findings, all inference artefacts of forcing `--!strict` on an untyped module (mixed tuple tables, `pe()` turning a NumberRange Size into a NumberSequence); none is a Roblox API mistake. |
+| Halo vs inlay plane at the 40-stud studio camera | 0.31 to 0.35 studs between the halo's square corners and the inlay plane's square corners, below §18.2's 0.4. The same in the first build at that camera; both corners are empty texels (rim-only halo, round inlay) and the harness's billboard-cut lint is silent. Accepted; Studio look. |
+
+### Checks run (cloud only)
+
+- **Harness, 28 scenarios:** 0 errors, 0 harness gaps, nothing left behind after `destroy()` in any scenario, no flicker,
+  0 new instances per frame, 1 BulkMoveTo per update, 0 steady-state GUI or Transparency writes (only event writes: night ticks
+  at dusk, ghost steps, hide/show). 3 warning kinds remain, all `translucent-layer` on the rim-only moon halo and night corona
+  (§7.3's allowed soft elements; the lint cannot tell rim-only images from uniform ones).
+- **Budgets** (no limit raised): parts 360 / 149 (355 / 146 with the te5 moon), far 290 / 145; emitters 20 / 12; rate ≈ 183/s
+  (+14 while the speed trail runs) / 56 (+6); beams 6 / 2; GUIs 12 / 8; PointLights 2 / 0; 1 Highlight; 70 spare registers.
+- **Geometry on snapshots** (spec §18.2, new scenarios included): rings vs body ≥ 1.68, rings vs orbs ≥ 2.34, rings vs the
+  accretion disc ≥ 0.77, shards vs hands ≥ 1.03, void disc vs the clock ≥ 3.3, clock vs dais ≥ 0.25, rings vs dais ≥ 0.21, wheel
+  vs dais ≥ 0.26 (seated, small avatar, slope and jump included), camera to the nearest orb ≥ 16.9 at the default zoom and ≥ 17.5
+  in fast turns and flicks; the clock always on the far side after the spring settles; no NaN.
+- **View of the wearer's head blocked** (samples, follow camera): idle 3 %, crowd 61 → 3 %, glide 26 → 31 %, the showcase
+  framings unchanged (38 % front, 27 % orbit: rings cross the body by design).
+- **Renders** (fallback and te5, day and night, 7 views each) compared with the first build side by side and looked at; the
+  14 curated renders in `docs/the-end/pass5-renders/` are regenerated from the final module.
+- **Typecheck:** default mode 0 / 0. **Payloads** regenerated with `make_payloads.py` and checked (`--check`).
+- Module size 111.7 KB (was 82.6 KB).
+
+### New STUDIO-VERIFY items (also in `roblox/install/studio_checks.md`)
+
+14. The te5 moon face covers its Ø 6 core when the moon sits at the screen's edge (no grey crescent at its side).
+15. Cylinder emitters with Surface style: do they also emit from the end caps? If the void swirl or the floor vortex sprays as a
+    flat sheet: `SWIRL_POINTS = true`.
+16. SurfaceGui Back face on the inlay and corona: mirrored or on the wrong side → `FRONT_FACES = true`.
+17. Directions, one flip each: streams and ribbon (`FLOW_SIGN`), accretion and swirl (`ACC_DIR`), floor vortex (`FUNNEL_DIR`),
+    galaxy arms (`GALAXY_DIR`), heart spikes (`WEDGE_SWAP`), streaks (`STREAK_FLIP`).
+18. Remote ghosting: `LocalTransparencyModifier` on another player's anchored aura parts and the GUIs switching off (2 players,
+    or S5 `IS_LOCAL = false`).
+19. The speed trail appears on runs and flights only (not on jumps) and streams out behind.
+20. The neutral Neon colours stay white under Bloom (compare with a white SmoothPlastic part).
+21. Auto roll: after the roll's Scriptable-camera hide the aura fades back in (no pop) and the grade never sits over the cutscene.
+22. MicroProfiler with 1 and 3 wearers, high and low: under ~0.6 ms of Luau per wearer, `BulkMoveTo` plus Highlight under 1 ms.
+23. Sitting on a Seat: does the framework keep its 2.4 hover while `Humanoid.Sit` is true? (A framework fix if so.)
+24. te5 textures load (S9 prints each id's status); a failed one is replaced by its fallback with one warning.
+25. The default-zoom layout and the first-person lift feel right while playing (the closeness factor uses the horizontal camera
+    distance, smoothed).

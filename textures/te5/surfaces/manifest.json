@@ -130,5 +130,29 @@
   "purpose": "Equinox-style ink ribbon beam B5 from the void into the dais",
   "notes": "Beam texture (x along, seamless 256 px). Ink body (14,14,18 +-6), white hairlines at |v| 0.415, faint waving centre filament. The white hairlines need a LIGHT Beam Color: use WHITE with te5_ribbon. The spec's B5 Color (12,12,16) multiplies them to black (keep (12,12,16) only for the 'line' fallback).",
   "uploadedId": null
+ },
+ {
+  "name": "te5_moon",
+  "file": "te5_moon.png",
+  "repoPath": "textures/te5/surfaces/te5_moon.png",
+  "texKey": "moon",
+  "fallbackTexKey": "moon",
+  "size": "1024x1024",
+  "layout": "None",
+  "purpose": "Photographic full-moon face for the moon's camera-facing sprite (review round 1, AD4; 9-stud BillboardGui)",
+  "notes": "North up, Earth-facing side: maria at grey 95-145 where the real ones are, highlands 212-240, ~60 craters with lit upper-left rims and shadowed floors, rayed Tycho/Copernicus/Kepler/Aristarchus, faint limb darkening. Hard alpha edge at r 0.985 (1.6 % ramp), no ring, no glow. With it uploaded the module swaps the white ball + craters + halo for a 6-stud grey core 4.4 studs behind this sprite; until then (fallback) it keeps the geometry moon.",
+  "uploadedId": null
+ },
+ {
+  "name": "te5_star_window",
+  "file": "te5_star_window.png",
+  "repoPath": "textures/te5/surfaces/te5_star_window.png",
+  "texKey": "starWindow",
+  "fallbackTexKey": "galaxy4",
+  "size": "1024x1024",
+  "layout": "None",
+  "purpose": "Deep-space window on the clock's solid movement plate behind the skeleton dial (review round 1, AD1)",
+  "notes": "Opaque near-black field (alpha 1 to r 0.985), faint grey Milky-Way band at 32 deg with dust lanes, ~2600 single-pixel stars and ~70 soft brighter ones (5 with tiny spikes). Turns with the centre wheel (+6 deg/s). Until uploaded it falls back to the pass-4 galaxy (galaxy4), drawn dimmer.",
+  "uploadedId": null
  }
 ]

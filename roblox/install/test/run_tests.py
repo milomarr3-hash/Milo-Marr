@@ -21,6 +21,7 @@ What is NOT proven: anything about the real Studio (that ScriptEditorService, St
 in the mock; the mock follows the Mac session's earlier successful installs, which used the same APIs). Never report
 an install as tested in Studio from this.
 """
+import glob
 import importlib.util
 import json
 import os
@@ -776,6 +777,9 @@ def t_patch_tex5():
 	for g in ("particles", "surfaces"):
 		os.makedirs(os.path.join(te5, g))
 		shutil.copy(os.path.join(REPO, "textures", "te5", g, "manifest.json"), os.path.join(te5, g, "manifest.json"))
+		# (the PNGs too: patch_tex5 checks flipbook textures are 1024x1024 before recording)
+		for png in glob.glob(os.path.join(REPO, "textures", "te5", g, "*.png")):
+			shutil.copy(png, os.path.join(te5, g, os.path.basename(png)))
 	entries = []
 	for g in ("particles", "surfaces"):
 		for e in json.load(open(os.path.join(te5, g, "manifest.json"))):

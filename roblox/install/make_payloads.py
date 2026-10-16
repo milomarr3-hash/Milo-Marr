@@ -86,6 +86,10 @@ def check_source(data: bytes, allow_cr: bool) -> str:
 				"read-back check would fail), or pass --allow-cr to try anyway")
 	if not data:
 		return "the file is empty"
+	if re.search(rb'"pending:\w+"', data):
+		return ("the module still holds a \"pending:<key>\" texture placeholder (the preview renderer's stand-in for a te5 PNG "
+				"that is not uploaded); in Roblox that is not an asset id. Use the repo's module, or fill TEX5 with "
+				"roblox/install/patch_tex5.py")
 	return ""
 
 

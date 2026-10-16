@@ -67,10 +67,10 @@
   "repoPath": "textures/te5/particles/te5_streak.png",
   "texKey": "streak5",
   "fallbackTexKey": "spark",
-  "size": "64x256",
+  "size": "256x256",
   "layout": "None",
   "purpose": "Matter streaks with VelocityParallel: P9 funnel and P10a/b palm intake",
-  "notes": "Vertical capsule y 0.06-0.94, 12 px wide: white core ~7 px (alpha 1), 2 px ink edges (RGB 15, alpha 0.9). The TOP end leads (brightest); the tail fades over the lower 40 %. If streaks fly tail-first in Studio, flip the image vertically before upload (VelocityParallel orientation check).",
+  "notes": "Square 256 px (Roblox draws particles square). Vertical capsule y 0.04-0.96, 22 px wide (1:10): white core ~13 px (alpha 1), ~4 px ink edges (RGB 15, alpha 0.9); the module draws it 2.2x the spark fallback's size. The TOP end leads (brightest); the tail fades over the lower 40 %. If streaks fly tail-first in Studio, flip the image vertically before upload (VelocityParallel orientation check).",
   "uploadedId": null
  },
  {
@@ -79,11 +79,11 @@
   "repoPath": "textures/te5/particles/te5_ash.png",
   "texKey": "ash5",
   "fallbackTexKey": "ash",
-  "size": "256x256",
+  "size": "1024x1024",
   "layout": "Grid2x2",
   "flipbookMode": "Random",
   "purpose": "P8b black ash flakes rising off the galaxy",
-  "notes": "Flipbook 2x2 Random: 4 charred flakes (7, 9, 8, 8 main corners with torn edges), extent 0.64-0.74 of the cell, >= 12 % padding. Body RGB 14-22 alpha 1 with fibre grain and a soft fold; 1 px silver (190) highlight on the upper-left edges.",
+  "notes": "1024x1024 (Roblox only animates flipbooks on 1024^2 textures). Flipbook 2x2 Random: 4 charred flakes in 512 px cells (7, 9, 8, 8 main corners with torn edges), extent 0.64-0.74 of the cell, >= 12 % padding. Body RGB 14-22 alpha 1 with fibre grain and a soft fold; 1 px silver (190) highlight on the upper-left edges.",
   "uploadedId": null
  }
 ]

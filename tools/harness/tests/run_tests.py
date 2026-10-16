@@ -6,6 +6,8 @@
      good_minimal.lua must come out clean.
   3. The REAL pass-4 module across all scenarios: it runs without errors in Studio, so it must run clean here
      (any error is a harness bug). --update-baseline rewrites baseline/pass4-report.md (+ .json).
+  4. Register headroom: the current THE END module still compiles with 16 more live locals in End.build (Luau's limit
+     is 200; one past it and the module fails to compile, so the aura shows nothing in Studio).
 
   python3 tools/harness/tests/run_tests.py            # everything
   python3 tools/harness/tests/run_tests.py -k bad_enum # only matching tests
@@ -234,6 +236,14 @@ def main():
                 print("FAIL typecheck %s: %s" % (name, (out + p.stderr)[-600:]))
     else:
         print("skip typecheck (set LUAU_LSP to a luau-lsp binary to include it)")
+    cur = os.path.join(REPO, "roblox", "ReplicatedStorage", "AuraFX", "TheEnd.lua")
+    if os.path.exists(cur) and (not a.k or a.k in "registers"):
+        p = subprocess.run([sys.executable, os.path.join(HARNESS, "register_headroom.py"), cur, "--spare", "16"], capture_output=True, text=True)
+        if p.returncode == 0:
+            print("ok   registers: " + p.stdout.strip())
+        else:
+            failed += 1
+            print("FAIL registers: " + (p.stdout + p.stderr).strip()[-400:])
     shutil.rmtree(tmp, ignore_errors=True)
     print("%d failed" % failed if failed else "all tests passed")
     return 1 if failed else 0

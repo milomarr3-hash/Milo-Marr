@@ -24,8 +24,14 @@ Context from the code (`roblox/ReplicatedStorage/AuraFX/TheEnd.lua`):
 - The AuraFX framework stops drawing auras while the camera is Scriptable, so every view here uses Roblox's normal Custom
   camera with a fixed zoom.
 - CONFIG flags are attributes on the ModuleScript with the same name and type (`USE_FILM_MESHES`, `FILM_*`, `HIGHLIGHT`,
-  `CLOCK_DIST`, `DEBUG`, ... see `local CONFIG` in the module). The module reads them once, when it is first required in
-  Play. A wrong type is ignored with a warning.
+  `CLOCK_DIST`, `DEBUG`, ... see `local DEFAULTS` in the module). Since review round 1 the module reads them **at every
+  build**: set an attribute (S8, or in Play from the command bar), then **unequip and equip** the aura. A wrong type, an
+  unknown UPPER_CASE name (a typo) or a number out of range is reported with a warning (out-of-range numbers are clamped).
+- Several Studio checks are **one attribute flip** instead of an edit + reinstall (the flips list is under "STUDIO-VERIFY
+  items" below): `FLOW_SIGN`, `ACC_DIR`, `FUNNEL_DIR`, `GALAXY_DIR` (-1 reverses a flow or spin), `WEDGE_SWAP`,
+  `STREAK_FLIP`, `FRONT_FACES`, `SWIRL_POINTS` (true fixes a wrong-looking result), `HIGHLIGHT_FILL` / `HIGHLIGHT_OUTLINE`
+  (the silver tone's day strength), `YAW_LAG_MAX`, `ZOOM_FAR` / `ZOOM_NEAR`, `NEAR_ARM_HIDE` / `NEAR_ARM_SHOW`, `AIR_ON` /
+  `AIR_OFF`. `FAR_BEACON = true` turns on a thin spire that only far-away players see (off until Milo says yes).
 
 ## The snippets
 
@@ -473,10 +479,13 @@ return string.format("TheEndTone %s on %d aura(s); screen_capture to compare", O
 ### S8. CONFIG flags (Edit)
 
 ```lua
--- Edit mode. Set / clear THE END's CONFIG overrides (attributes on the ModuleScript). Read when Play next starts.
+-- Edit mode. Set / clear THE END's CONFIG overrides (attributes on the ModuleScript). Read at every build (equip).
 local SET = {
 	-- USE_FILM_MESHES = true, FILM_BEZEL = true,
-	-- HIGHLIGHT = false,
+	-- HIGHLIGHT = false, HIGHLIGHT_FILL = 0.55,
+	-- FLOW_SIGN = -1, ACC_DIR = -1, FUNNEL_DIR = -1, GALAXY_DIR = -1,
+	-- WEDGE_SWAP = true, STREAK_FLIP = true, FRONT_FACES = true, SWIRL_POINTS = true,
+	-- FAR_BEACON = true,
 	-- DEBUG = true,
 }
 local CLEAR = {} -- names to remove, e.g. { "FILM_BEZEL" }
@@ -511,6 +520,35 @@ return "TheEnd overrides: " .. (#out > 0 and table.concat(out, ", ") or "none (a
 Flags set in Edit mode are saved with the place, and a later install doesn't touch them. After testing, keep only the
 ones Milo likes (`CLEAR_ALL = true` resets everything).
 
+### S9. Do the te5 textures load? (Edit)
+
+```lua
+-- Edit mode. Asks the engine for every filled-in TEX5 id of the installed module and prints the result of each.
+-- (Reads the module's Source, which Edit-mode execute_luau may do. If that is refused, paste the ids into IDS instead.)
+local IDS = {} -- e.g. { mote = "rbxassetid://123", ... } (only needed if Source cannot be read)
+local ok, src = pcall(function() return game:GetService("ReplicatedStorage").AuraFX.TheEnd.Source end)
+local body = ok and string.match(src, "local TEX5 = (%b{})") or ""
+local ids, keyOf = {}, {}
+for k, v in pairs(IDS) do
+	table.insert(ids, v)
+	keyOf[v] = k
+end
+for k, v in string.gmatch(body, "(%w+) = \"([^\"]*)\"") do
+	local d = string.match(v, "%d+")
+	if d then
+		local id = "rbxassetid://" .. d
+		table.insert(ids, id)
+		keyOf[id] = k
+	end
+end
+local out = {}
+game:GetService("ContentProvider"):PreloadAsync(ids, function(id, status)
+	table.insert(out, string.format("%s %s", keyOf[id] or id, status.Name))
+end)
+table.sort(out)
+return #ids == 0 and "TEX5 is empty (fallback textures)" or table.concat(out, ", ")
+```
+
 ## The checklist
 
 Start with `payloads/00_status.luau` (Edit). It should say `the NEW version`.
@@ -524,43 +562,64 @@ Start with `payloads/00_status.luau` (Edit). It should say `the NEW version`.
    flash**. Run S2: `grade: on`. Capture again at 9 s. Then take these, with `TURN_TO_OPEN = true` the first time:
    - `VIEW = "studio", CLOCK_TIME = 14, WAIT = 21` for day, then `CLOCK_TIME = 0.5, WAIT = 21` for night. Name them
      `real_day_studio.jpg` and `real_night_studio.jpg` if they go to `tools/baseline/pass5/`.
-   - `VIEW = "owner"` (default zoom: the dial face shows over your shoulders, hands at XII above your head, nothing blocks
-     your character), `"owner25"` (zoomed out to 25), `"first"` (first person: the rings and bokeh hide, and nothing
-     covers the lens), and `"high"` (as steep as the camera goes: the clock holds still, and you see the crown and bow).
-   - S4 orbit at 120 deg/s: the clock trails smoothly and shows its bezel band. No jitter, no snapping.
+   - `VIEW = "owner"` (Roblox's default zoom, 12.5 studs: since review round 1 the clock steps back, drops a little and
+     leans back as the camera comes in, and the orbs come behind you, so the whole dial with XII near the top, the moon
+     and the void all fit on screen; check the moon against the stats panel), `"owner25"` (zoomed out to 25: the
+     layout eases back to the 40-stud look), `"first"` (first person: the rings and bokeh hide, and the clock rises into
+     the sky, out of the level view; look up to see it), and `"high"` (as steep as the camera goes: the clock holds still,
+     and you see the crown and bow).
+   - S4 orbit at 120 deg/s: the clock trails smoothly and shows its bezel band. No jitter, no snapping. Then flick the
+     camera half a turn with the mouse as fast as you can: the clock and the orbs trail by at most ~22° (YAW_LAG_MAX) and
+     never swing into the lens.
    - `VIEW = "far"`: past 110 studs the particles stop and details drop, but the shape still reads.
    - `VIEW = "clock"` and `"void"` close-ups: the bezel band is thick, the flutes, the chapter-ring step, gears at 3
      depths, hands above the dial; on the void, the photon ring hugging the silhouette with a gap, the lensed arc, the
      heart and veins, and the disc's near half crossing in front.
    - Then `VIEW = "reset"`.
-3. **Movement** (S3, camera from S1 `owner25` or `studio`). `walk` and `fast`: the glide pose, the armillary leans, and the
-   clock drops and steps back. `jump`: the dais stays on the ground. `sit`. `air`: the dais floats about 2.4 under the
-   feet. For R6, use S5 with `RIG = "r6", IS_LOCAL = true, QUALITY = "high"`. The palm streams and foot drips find the R6
+3. **Movement** (S3, camera from S1 `owner25` or `studio`). `walk` and `fast`: the glide pose, the armillary leans, the
+   clock drops, steps back and leans a little more, a short trail of silver streaks streams out behind you, and the void's
+   smoke thins (no trail of puffs). `jump` with the place's real jump (JumpHeight 7.2 or JumpPower 50): the dais stays on
+   the ground. **Sit on a bench or seat**: the dais stays on the floor (not on the seat), the clock stands behind the seat
+   like a throne back, the balance wheel drops onto the dais and the foot drips stop. If your body still floats 2.4 above
+   the seat, that is the framework's hover (tell the session: the framework should zero the hover while
+   `Humanoid.Sit`). Walk **down a slope or stairs**: the dais keeps up (no lag), the rings never dip into it. `air`: the
+   dais floats about 2.4 under the feet. Also try a short avatar (a small bundle): nothing cuts the dais. For R6, use S5 with `RIG = "r6", IS_LOCAL = true, QUALITY = "high"`. The palm streams and foot drips find the R6
    arms and legs.
 4. **Day colour.** By day with `VIEW = "studio"`, run S7 `ON = false`, capture, then `ON = true`, capture. With the
    Highlight on, silver looks neutral, not cyan. The black void stays **pure black** in every shot.
 5. **Low quality.** S5 with `QUALITY = "low"` (and `IS_LOCAL = true` to see the assembly). S2 with
-   `WHO = "TheEndBench1"`: 149 parts, 9 emitters, 2 beams, 7 GUIs. It must still read as the clock, armillary,
+   `WHO = "TheEndBench1"`: 149 parts, 12 emitters (the speed trail is off while you stand still), 2 beams, 8 GUIs,
+   0 lights. It must still read as the clock, armillary,
    moon, void and dais. By hand: Test -> Device (a phone) or Esc -> Settings -> Graphics Quality 1-3, then rejoin. The
    framework picks low on phones and low graphics.
 6. **Other players.** S5 with `IS_LOCAL = false, QUALITY = "high"`. The stand-in's clock stands on the far side of the
    stand-in **from your camera** (S2 says `clock on the far side: true`). Its assembly plays and there is no grade on your
-   screen. For real: Milo can use Test -> Clients and Servers -> 2 players and watch Player1 equip from Player2's window.
+   screen. Walk so the stand-in is **between you and your camera**: its clock, rings and orbs fade to a see-through ghost
+   (in 3 quick steps) and come back 0.6 s after it is clear; your own character stays visible. For real: Milo can use Test -> Clients and Servers -> 2 players and watch Player1 equip from Player2's window.
 7. **Flow directions** (watch it live, or compare two captures about 0.5 s apart). The streams flow from each orb **into**
-   the palm, and the ribbon flows down from the void to the dais. The accretion streaks and the galaxy arms **trail**
-   their spin; they shouldn't lead it. The code says where to fix the signs (`-- STUDIO-VERIFY:` lines).
-8. **Particle shapes** (close-ups). The matter around the void spirals **inward**, and so does the funnel under the feet.
-   The palm intake converges on the palm. The rim glints sit on the bezel annulus, not across the dial. Metal shards
-   break off around 10-11 o'clock and fly into the void.
+   the palm, and the ribbon flows down from the void to the dais (all four use one sign: if they run backwards, S8
+   `FLOW_SIGN = -1`). The accretion streaks trail their spin (else `ACC_DIR = -1`), the galaxy arms trail theirs (else
+   `GALAXY_DIR = -1`), the floor vortex winds with the arms (else `FUNNEL_DIR = -1`). Re-equip after each flip.
+8. **Particle shapes** (close-ups). The matter around the void spirals **inward**, and so does the funnel under the feet
+   (if they spray as flat sheets over the disc: `SWIRL_POINTS = true`). The palm intake converges on the palm. The rim
+   glints sit on the bezel annulus, not across the dial. Metal shards break off around 10-11 o'clock and fly into the
+   void. Ink smoke boils off the void and silver smoke off the moon, both curling outward and up.
 9. **Film-mesh flags.** For each of `FILM_BEZEL, FILM_DIAL, FILM_RETE, FILM_HANDS, FILM_GEARS, FILM_MOON, FILM_VOID`:
    stop Play, run S8 with `CLEAR_ALL = true` and `SET = { USE_FILM_MESHES = true, <FLAG> = true }`, start Play, run S1
    `VIEW = "studio", EQUIP = true, WAIT = 9`, capture and note what you see. If the film hands point at the hub, also set
    `FILM_HAND_FLIP = true`. Keep only the flags Milo likes (S8 again). Without the film meshes in
    `ReplicatedStorage.AuraCinema.Assets.TheEnd`, each flag silently falls back to the built clock.
 10. **Performance.** S2's frame time before equipping, after equipping, and with S5 `COUNT = 2` (3 wearers on screen).
-    The target is less than 1.5 ms more per frame for one wearer on the Mac. For a closer look, open the MicroProfiler
-    (Ctrl+F6) by hand.
-11. **Wrap up.** Stop Play. Write the report (below). Update `docs/memory/aura-rng.md` (and the Mac project's
+    The target is less than 1.5 ms more per frame for one wearer on the Mac. Then open the MicroProfiler (Ctrl+F6) in
+    Play with 1 and with 3 wearers, on high and with the low graphics level, and write down: the Luau time of the aura's
+    update (target under 0.6 ms per wearer on the Mac) and the `BulkMoveTo` and `Highlight` scopes (target under 1 ms
+    together). If it is over, the next pass welds each rigid group to one root after the assembly and moves ~45 roots.
+11. **Auto roll.** With Auto roll on and THE END equipped, watch a few normal rolls: if the roll animation switches the
+    camera to Scriptable, the aura is hidden and shown again; since review round 1 it fades back in over 0.4 s (and the
+    foot drips wait a second) instead of popping. Report anything that still pops.
+12. **Textures load.** After the te5 upload, stop Play and run S9: every te5 id should say `Success`. (The module checks the same in the
+    background and falls back to the pass-4 texture for any that fails, with a warning in the Output.)
+13. **Wrap up.** Stop Play. Write the report (below). Update `docs/memory/aura-rng.md` (and the Mac project's
     `CHANGELOG.md`). Show Milo the thumbnails.
 
 ## STUDIO-VERIFY items
@@ -580,9 +639,16 @@ wrong. The spec's list (§19) and how to see each one:
 | Highlight on a Model of 200+ parts | day `studio` shot, S7 on/off | the whole silver model is toned evenly; no part is missing it |
 | Neon black under Bloom | night and day shots of the void | the void core is pure black, with no grey glow |
 | PointLight on an attachment of a moving part | night shots, S1 `air` and `walk` | the moon's key light and the wheel underlight move with the aura |
-| te5_streak orientation (VelocityParallel) | funnel and palm streaks, after the te5 upload | the bright end leads; if tail-first, flip the PNG (`upload_textures.md`) |
-| te5_ash 2x2 flipbook on a 256² texture | galaxy ash, after the te5 upload | flakes vary in shape; if one flake shows as 4 tiny ones, report it |
+| te5_streak orientation (VelocityParallel) | funnel, palm and speed-trail streaks, after the te5 upload | the bright end leads; if tail-first: S8 `STREAK_FLIP = true` |
+| te5_ash 2x2 flipbook (now 1024², 512-px cells) | galaxy ash, after the te5 upload | four different single flakes; one flake must never show as 4 tiny ones |
 | RenderFidelity on cloned film meshes | film flags on | no error in the Output (it's in a pcall) |
+| Cylinder + Surface emitters and their end caps | void close-up; funnel under the feet | matter moves inward in rings; if it sprays as a flat sheet: `SWIRL_POINTS = true` |
+| SurfaceGui Back face on the inlay / corona | `clock` close-up, night corona | if mirrored or on the wrong side: `FRONT_FACES = true` (pass 4's proven Front faces) |
+| The moon's photographic face (te5_moon) | moon close-up and at the screen edge | a full moon, no grey ball poking out at its side; if one does, report it (the core is 6 studs, the face 9) |
+| Neon colours stay neutral | night, Bloom on: compare the lume plots / heart with a white SmoothPlastic part | white, not pale blue |
+| Moving PointLights | night, high quality | the moon's light moves smoothly on the ground (the module has no light on low quality) |
+| Another wearer between you and your camera | 2 players, or S5 `IS_LOCAL = false` | their aura ghosts and returns; nothing of theirs stays opaque across your character |
+| The speed trail direction | walk / fly fast | silver streaks stream out **behind** you; if they lead: `STREAK_FLIP = true` |
 
 ## Reporting back
 

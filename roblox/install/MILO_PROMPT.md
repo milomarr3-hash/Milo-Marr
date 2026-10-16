@@ -14,7 +14,7 @@ not test anything in Studio, so you're the first to run it. Please:
    Edit mode. Run make_payloads.py first. Then send each payload with execute_luau (datamodel_type "Edit") as the file's
    exact text. Every result must start with OK before you go on; if not, follow the README's table. Never turn on
    HttpService, never publish, never delete anything in ServerStorage.AuraRNG_Backups.
-3. Test it once with the fallback textures (studio_checks.md steps 1-2). Then upload the 18 te5 textures
+3. Test it once with the fallback textures (studio_checks.md steps 1-2). Then upload the 20 te5 textures
    (roblox/install/upload_textures.md), record the ids, patch TEX5, re-make the payloads with --label pass5tex and
    install again.
 4. Test in Play with roblox/install/studio_checks.md: day (ClockTime 14) and night (0.5) from the "studio" camera, the

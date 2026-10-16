@@ -1,57 +1,69 @@
 # Aura harness report: `TheEnd.pass4-live.lua`
 
-Headless run against the mock Roblox runtime (tools/harness). **Not a Studio test**: no rendering, physics or real engine. Roblox API 0.742.0.7421053; seed 12345; 19 scenarios; generated 2026-10-14 08:17 UTC.
+Headless run against the mock Roblox runtime (tools/harness). **Not a Studio test**: no rendering, physics or real engine. Roblox API 0.742.0.7421053; seed 12345; 28 scenarios; generated 2026-10-14 11:45 UTC.
 
-**Verdict: CLEAN: no errors.** 17 warning kind(s).
+**Verdict: CLEAN: no errors.** 20 warning kind(s).
 
 ## Scenarios
 
 | scenario | frames | update us p50 / p95 | instances | BaseParts | emitters on | rate sum | alive est. | beams | GUIs | lights | highlights | parts moved/frame | new inst./frame | GUI writes/frame (steady) | view blocked |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| day_idle | 955 | 119 / 258 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 79% |
-| night_idle | 715 | 126 / 271 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 72% |
-| showcase_front | 715 | 195 / 368 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 2% |
-| camera_orbit | 1195 | 118 / 277 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 29% |
-| glide | 955 | 127 / 275 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 79% |
-| air | 835 | 173 / 319 | 178 | 23 | 16 | 186 | 691 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 76% |
-| dusk | 955 | 115 / 248 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 79% |
-| low_quality | 715 | 144 / 295 | 135 | 21 | 13 | 85 | 330 | 17 | 29 | 0 | 0 | 21 | 0 | 0 | 72% |
-| remote_wearer | 715 | 122 / 274 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | - |
-| far | 801 | 110 / 329 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 75% |
-| toggle_visible | 583 | 193 / 398 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 1.10 | 65% |
-| destroy_mid_assembly | 120 | 156 / 273 | 179 | 23 | 5 | 52 | 106 | 31 | 29 | 1 | 0 | 0 | 0 | 0 | 0% |
-| reequip | 775 | 143 / 384 | 179 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 48% |
-| respawn | 817 | 129 / 387 | 178 | 23 | 7 | 86 | 220 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 50% |
-| join_wearing | 595 | 125 / 281 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 66% |
-| r6_character | 715 | 151 / 325 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 72% |
-| film_meshes_present | 715 | 150 / 308 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 72% |
-| film_meshes_absent | 715 | 145 / 298 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 72% |
-| crowd | 715 | 155 / 365 | 1068 | 138 | 120 | 1539 | 5869 | 186 | 174 | 6 | 0 | 138 | 0 | 0 | 72% |
+| day_idle | 955 | 120 / 249 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 79% |
+| night_idle | 715 | 158 / 299 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 72% |
+| showcase_front | 715 | 125 / 365 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 2% |
+| camera_orbit | 1195 | 150 / 315 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 29% |
+| glide | 955 | 122 / 343 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 79% |
+| air | 835 | 112 / 336 | 178 | 23 | 16 | 186 | 691 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 76% |
+| dusk | 955 | 114 / 236 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 79% |
+| low_quality | 715 | 106 / 223 | 135 | 21 | 13 | 85 | 330 | 17 | 29 | 0 | 0 | 21 | 0 | 0 | 72% |
+| remote_wearer | 715 | 119 / 261 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | - |
+| far | 801 | 120 / 359 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 75% |
+| toggle_visible | 583 | 118 / 239 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 1.10 | 65% |
+| destroy_mid_assembly | 120 | 184 / 305 | 179 | 23 | 5 | 52 | 106 | 31 | 29 | 1 | 0 | 0 | 0 | 0 | 0% |
+| reequip | 775 | 124 / 282 | 179 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 48% |
+| respawn | 817 | 155 / 266 | 178 | 23 | 7 | 86 | 220 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 50% |
+| join_wearing | 595 | 164 / 388 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 66% |
+| r6_character | 715 | 111 / 231 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 72% |
+| film_meshes_present | 715 | 116 / 395 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 72% |
+| film_meshes_absent | 715 | 110 / 218 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 72% |
+| crowd | 715 | 154 / 361 | 1068 | 138 | 120 | 1539 | 5869 | 186 | 174 | 6 | 0 | 138 | 0 | 0 | 72% |
+| fast_turn | 715 | 107 / 219 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 63% |
+| fast_turn90 | 715 | 115 / 229 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 50% |
+| camera_flick | 715 | 123 / 284 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 43% |
+| pair_behind | 715 | 123 / 275 | 356 | 46 | 40 | 513 | 1956 | 62 | 58 | 2 | 0 | 46 | 0 | 0 | 72% |
+| pair_walkby | 835 | 124 / 270 | 356 | 46 | 40 | 513 | 1956 | 62 | 58 | 2 | 0 | 46 | 0 | 0 | 76% |
+| jump | 835 | 118 / 348 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 2.03 | 76% |
+| seated | 715 | 118 / 247 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 72% |
+| small_avatar | 835 | 154 / 277 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 76% |
+| downhill | 775 | 160 / 325 | 178 | 23 | 20 | 256 | 978 | 31 | 29 | 1 | 0 | 23 | 0 | 0 | 74% |
 
 Columns: census at ~10 s (steady state; if the aura is hidden then, the last census where it was shown); `alive est.` = sum over enabled emitters of Rate x mean Lifetime; `update us` is the real Lua time of one `fx.update` in the mock (indicative only, the mock's property access is slower than Roblox's); `view blocked` = share of samples where an opaque aura part (or an opaque SurfaceGui plane) sits between the camera and the wearer's head.
 
 ## Errors (0)
 
 None.
-## Warnings (17 kinds)
+## Warnings (20 kinds)
 
-- **[billboard-cut]** Moon's 10.8-stud sprite (solid, camera-facing) crosses SurfaceGui planes, which cut it in Roblox (x17; air RingA/RingB 93%; camera_orbit RingB 54%; crowd DialInner/DialMid/DialOuter/Hands/RingA/RingB/Shards/Void 100%; day_idle RingA/RingB 72%; dusk RingA/RingB 72%; far Hands/RingB/Shards 70%; film_meshes_absent RingA/RingB 80%; film_meshes_present RingA/RingB 80%; glide RingA/RingB/Shards 83%; join_wearing DialInner/DialMid/DialOuter/Hands/RingB/Shards 83%; low_quality RingA/RingB 80%; night_idle RingA/RingB 80%; r6_character RingA/RingB 80%; reequip DialMid/DialOuter/RingB/Shards/Void 60%; remote_wearer RingB 80%; showcase_front RingB 80%; toggle_visible RingA/RingB 71%)
-- **[billboard-cut]** Void's 12.5-stud sprite (solid, camera-facing) crosses SurfaceGui planes, which cut it in Roblox (x10; camera_orbit RingB 62%; crowd DialInner/DialMid/DialOuter/Hands/RingA/RingB/Shards/Void 100%; day_idle RingB 44%; dusk RingB 44%; far RingB/Shards 50%; glide RingB/Shards 44%; join_wearing DialInner/DialMid/DialOuter/Void 33%; reequip RingB 100%; remote_wearer RingB 60%; showcase_front RingB 40%)
-- **[billboard-cut]** Void's 19.0-stud sprite (solid, camera-facing) crosses SurfaceGui planes, which cut it in Roblox (x16; air RingB 43%; camera_orbit Ground/GroundRing/RingA/RingB/Shards/Swirl/Void 73%; crowd DialInner/DialMid/DialOuter/Ground/GroundRing/Hands/RingA/RingB/Shards/Swirl/Void 100%; day_idle RingA/RingB 50%; dusk RingA/RingB 50%; far RingA/RingB 80%; film_meshes_absent RingA/RingB 60%; film_meshes_present RingA/RingB 60%; glide RingA/RingB 61%; join_wearing DialInner/DialMid/DialOuter/Hands/RingA/RingB/Shards/Void 100%; low_quality RingA/RingB 60%; night_idle RingA/RingB 60%; r6_character RingA/RingB 60%; remote_wearer RingB 80%; showcase_front RingB 80%; toggle_visible RingB 43%)
-- **[billboard-cut]** Void's 3.2-stud sprite (solid, camera-facing) crosses SurfaceGui planes, which cut it in Roblox (x1; crowd Shards/Void 33%)
-- **[billboard-cut]** Void's 7.0-stud sprite (solid, camera-facing) crosses SurfaceGui planes, which cut it in Roblox (x4; camera_orbit RingB 35%; crowd DialMid/Shards/Void 33%; far RingB 30%; reequip RingB 40%)
-- **[translucent-layer]** DialInner.SurfaceGui: a 30-stud image layer at transparency 0.75 (opacity rule: nothing over 6 studs at 0.3..0.8) (x23; all scenarios except destroy_mid_assembly)
-- **[translucent-layer]** DialMid.SurfaceGui: a 30-stud image layer at transparency 0.75 (opacity rule: nothing over 6 studs at 0.3..0.8) (x23; all scenarios except destroy_mid_assembly)
-- **[translucent-layer]** DialOuter.SurfaceGui: a 30-stud image layer at transparency 0.70 (opacity rule: nothing over 6 studs at 0.3..0.8) (x23; all scenarios except destroy_mid_assembly)
-- **[translucent-layer]** GroundRing.SurfaceGui: a 58-stud image layer at transparency 0.31 (opacity rule: nothing over 6 studs at 0.3..0.8) (x22; all scenarios except air, destroy_mid_assembly)
-- **[translucent-layer]** Moon.BillboardGui: a 18-stud sprite at transparency 0.50 (opacity rule: nothing over 6 studs at 0.3..0.8) (x23; all scenarios except destroy_mid_assembly)
-- **[translucent-layer]** Moon.BillboardGui: a 24-stud sprite at transparency 0.72 (opacity rule: nothing over 6 studs at 0.3..0.8) (x23; all scenarios except destroy_mid_assembly)
-- **[translucent-layer]** RingA.SurfaceGui: a 18-stud image layer at transparency 0.55 (opacity rule: nothing over 6 studs at 0.3..0.8) (x46; all scenarios except destroy_mid_assembly)
-- **[translucent-layer]** RingB.SurfaceGui: a 23-stud image layer at transparency 0.70 (opacity rule: nothing over 6 studs at 0.3..0.8) (x46; all scenarios except destroy_mid_assembly)
-- **[translucent-layer]** Shards.BillboardGui: a 32-stud sprite at transparency 0.60 (opacity rule: nothing over 6 studs at 0.3..0.8) (x23; all scenarios except destroy_mid_assembly)
-- **[translucent-layer]** Shards.SurfaceGui: a 48-stud image layer at transparency 0.62 (opacity rule: nothing over 6 studs at 0.3..0.8) (x23; all scenarios except destroy_mid_assembly)
-- **[translucent-layer]** Swirl.SurfaceGui: a 36-stud image layer at transparency 0.68 (opacity rule: nothing over 6 studs at 0.3..0.8) (x22; all scenarios except air, destroy_mid_assembly)
-- **[view-blocked]** from the default camera behind the wearer, solid aura parts cover the wearer's head (DialInner, DialMid, DialOuter, Hands, Void) (x12; air 76%; day_idle 79%; dusk 79%; film_meshes_absent 72%; film_meshes_present 72%; glide 79%; join_wearing 66%; low_quality 72%; night_idle 72%; r6_character 72%; reequip 48%; respawn 50%)
+- **[billboard-cut]** Moon's 10.8-stud sprite (solid, camera-facing) crosses SurfaceGui planes, which cut it in Roblox (x26; air RingA/RingB 93%; camera_flick RingB 70%; camera_orbit RingB 54%; crowd DialInner/DialMid/DialOuter/Hands/RingA/RingB/Shards/Void 100%; day_idle RingA/RingB 72%; downhill RingA/RingB/Shards 83%; dusk RingA/RingB 72%; far Hands/RingB/Shards 70%; fast_turn RingA/RingB 70%; fast_turn90 RingB 70%; film_meshes_absent RingA/RingB 80%; film_meshes_present RingA/RingB 80%; glide RingA/RingB/Shards 83%; join_wearing DialInner/DialMid/DialOuter/Hands/RingB/Shards 83%; jump RingA/RingB 86%; low_quality RingA/RingB 80%; night_idle RingA/RingB 80%; pair_behind DialInner/DialMid/DialOuter/Hands/RingA/RingB/Shards/Void 100%; pair_walkby DialInner/DialMid/DialOuter/Hands/RingA/RingB/Shards/Void 100%; r6_character RingA/RingB 80%; reequip DialMid/DialOuter/RingB/Shards/Void 60%; remote_wearer RingB 80%; seated RingA/RingB 80%; showcase_front RingB 80%; small_avatar DialMid/DialOuter/RingA/RingB/Shards/Void 93%; toggle_visible RingA/RingB 71%)
+- **[billboard-cut]** Void's 12.5-stud sprite (solid, camera-facing) crosses SurfaceGui planes, which cut it in Roblox (x12; camera_orbit RingB 62%; crowd DialInner/DialMid/DialOuter/Hands/RingA/RingB/Shards/Void 100%; day_idle RingB 44%; dusk RingB 44%; far RingB/Shards 50%; glide RingB/Shards 44%; join_wearing DialInner/DialMid/DialOuter/Void 33%; pair_behind DialInner/DialMid/DialOuter/Hands/Shards/Void 50%; pair_walkby DialInner/DialMid/DialOuter/RingB/Void 57%; reequip RingB 100%; remote_wearer RingB 60%; showcase_front RingB 40%)
+- **[billboard-cut]** Void's 19.0-stud sprite (solid, camera-facing) crosses SurfaceGui planes, which cut it in Roblox (x25; air RingB 43%; camera_flick DialInner/DialMid/DialOuter/Hands/RingA/RingB/Shards/Void 100%; camera_orbit Ground/GroundRing/RingA/RingB/Shards/Swirl/Void 73%; crowd DialInner/DialMid/DialOuter/Ground/GroundRing/Hands/RingA/RingB/Shards/Swirl/Void 100%; day_idle RingA/RingB 50%; downhill RingA/RingB 58%; dusk RingA/RingB 50%; far RingA/RingB 80%; fast_turn DialInner/DialMid/DialOuter/Hands/RingA/RingB/Shards/Void 50%; fast_turn90 DialInner/DialOuter/Hands/RingB/Shards 70%; film_meshes_absent RingA/RingB 60%; film_meshes_present RingA/RingB 60%; glide RingA/RingB 61%; join_wearing DialInner/DialMid/DialOuter/Hands/RingA/RingB/Shards/Void 100%; jump RingB 43%; low_quality RingA/RingB 60%; night_idle RingA/RingB 60%; pair_behind DialInner/DialMid/DialOuter/Hands/RingA/RingB 100%; pair_walkby DialInner/RingA/RingB/Shards 100%; r6_character RingA/RingB 60%; remote_wearer RingB 80%; seated RingA/RingB 60%; showcase_front RingB 80%; small_avatar RingA/RingB 86%; toggle_visible RingB 43%)
+- **[billboard-cut]** Void's 3.2-stud sprite (solid, camera-facing) crosses SurfaceGui planes, which cut it in Roblox (x2; crowd Shards/Void 33%; pair_behind Shards/Void 30%)
+- **[billboard-cut]** Void's 7.0-stud sprite (solid, camera-facing) crosses SurfaceGui planes, which cut it in Roblox (x5; camera_orbit RingB 35%; crowd DialMid/Shards/Void 33%; far RingB 30%; pair_behind DialInner/DialMid/DialOuter/Hands/Shards/Void 40%; reequip RingB 40%)
+- **[gui-writes-per-frame]** ImageLabel.ImageTransparency is written in 51% of steady frames (2.0 writes/frame): per-frame GUI property writes stall Roblox; write GUIs only when a value changes (x1; jump)
+- **[translucent-layer]** DialInner.SurfaceGui: a 30-stud image layer at transparency 0.75 (opacity rule: nothing over 6 studs at 0.3..0.8) (x34; all scenarios except destroy_mid_assembly)
+- **[translucent-layer]** DialMid.SurfaceGui: a 30-stud image layer at transparency 0.75 (opacity rule: nothing over 6 studs at 0.3..0.8) (x34; all scenarios except destroy_mid_assembly)
+- **[translucent-layer]** DialOuter.SurfaceGui: a 30-stud image layer at transparency 0.70 (opacity rule: nothing over 6 studs at 0.3..0.8) (x34; all scenarios except destroy_mid_assembly)
+- **[translucent-layer]** GroundRing.SurfaceGui: a 58-stud image layer at transparency 0.31 (opacity rule: nothing over 6 studs at 0.3..0.8) (x32; all scenarios except air, destroy_mid_assembly, jump)
+- **[translucent-layer]** GroundRing.SurfaceGui: a 58-stud image layer at transparency 0.35 (opacity rule: nothing over 6 studs at 0.3..0.8) (x1; jump)
+- **[translucent-layer]** Moon.BillboardGui: a 18-stud sprite at transparency 0.50 (opacity rule: nothing over 6 studs at 0.3..0.8) (x34; all scenarios except destroy_mid_assembly)
+- **[translucent-layer]** Moon.BillboardGui: a 24-stud sprite at transparency 0.72 (opacity rule: nothing over 6 studs at 0.3..0.8) (x34; all scenarios except destroy_mid_assembly)
+- **[translucent-layer]** RingA.SurfaceGui: a 18-stud image layer at transparency 0.55 (opacity rule: nothing over 6 studs at 0.3..0.8) (x68; all scenarios except destroy_mid_assembly)
+- **[translucent-layer]** RingB.SurfaceGui: a 23-stud image layer at transparency 0.70 (opacity rule: nothing over 6 studs at 0.3..0.8) (x68; all scenarios except destroy_mid_assembly)
+- **[translucent-layer]** Shards.BillboardGui: a 32-stud sprite at transparency 0.60 (opacity rule: nothing over 6 studs at 0.3..0.8) (x34; all scenarios except destroy_mid_assembly)
+- **[translucent-layer]** Shards.SurfaceGui: a 48-stud image layer at transparency 0.62 (opacity rule: nothing over 6 studs at 0.3..0.8) (x34; all scenarios except destroy_mid_assembly)
+- **[translucent-layer]** Swirl.SurfaceGui: a 36-stud image layer at transparency 0.68 (opacity rule: nothing over 6 studs at 0.3..0.8) (x32; all scenarios except air, destroy_mid_assembly, jump)
+- **[translucent-layer]** Swirl.SurfaceGui: a 36-stud image layer at transparency 0.70 (opacity rule: nothing over 6 studs at 0.3..0.8) (x1; jump)
+- **[view-blocked]** from the default camera behind the wearer, solid aura parts cover the wearer's head (DialInner, DialMid, DialOuter, Hands, Void) (x18; air 76%; day_idle 79%; downhill 74%; dusk 79%; film_meshes_absent 72%; film_meshes_present 72%; glide 79%; join_wearing 66%; jump 76%; low_quality 72%; night_idle 72%; pair_behind 72%; pair_walkby 76%; r6_character 72%; reequip 48%; respawn 50%; seated 72%; small_avatar 76%)
 
 ## Cost and per-frame work
 
@@ -60,7 +72,7 @@ Reference scenario `day_idle` (955 frames, 535 steady):
 - Instances in the aura: 178 (BaseParts 23, MeshParts 0, attachments 44); emitters 20 (20 enabled), rate sum 256.5/s, ~978 particles alive, particle area ~19244 stud^2; beams 31 (544 segments); GUIs 29 (29 images, 17.6 Mpx of SurfaceGui canvas); lights 1 (0 with shadows); highlights 0; trails 0.
 - By class: Attachment 44, Beam 31, ImageLabel 29, Part 23, ParticleEmitter 20, SurfaceGui 19, BillboardGui 10, Folder 1, PointLight 1
 - Busiest emitters: Dust.ParticleEmitter (270 alive); Ground.ParticleEmitter (150 alive); DialOuter.ParticleEmitter (68 alive); Ground.ParticleEmitter (57 alive); Ground.ParticleEmitter (56 alive)
-- fx.update: 955 calls, mean 140 us, p50 119, p95 258, max 2275 (mock time); build 5.6 ms.
+- fx.update: 955 calls, mean 137 us, p50 120, p95 249, max 1447 (mock time); build 4.5 ms.
 - BulkMoveTo: 23.0 parts/frame in 1.0 call(s)/frame (steady).
 
 Property writes per frame made inside `fx.update` (avg over all frames / steady state after the assembly; max):
@@ -76,7 +88,7 @@ Property writes per frame made inside `fx.update` (avg over all frames / steady 
 | Beam.Enabled | effect | 0.01 | 0.00 | 2 | 6 |
 | PointLight.Enabled | effect | 0.01 | 0.00 | 1 | 6 |
 
-Tween-driven writes: ColorCorrectionEffect.Contrast 0.22/frame (max 1), ColorCorrectionEffect.TintColor 0.22/frame (max 1), ColorCorrectionEffect.Brightness 0.22/frame (max 1), ColorCorrectionEffect.Saturation 0.22/frame (max 1)
+Tween-driven writes: ColorCorrectionEffect.Brightness 0.22/frame (max 1), ColorCorrectionEffect.TintColor 0.22/frame (max 1), ColorCorrectionEffect.Saturation 0.22/frame (max 1), ColorCorrectionEffect.Contrast 0.22/frame (max 1)
 
 Redundant writes (same value written again) inside update: BillboardGui.Enabled 0.11/frame, ParticleEmitter.Enabled 0.10/frame, Beam.Transparency 0.03/frame, ImageLabel.ImageTransparency 0.03/frame, Beam.Enabled 0.01/frame, PointLight.Enabled 0.01/frame, BillboardGui.Size 0.00/frame
 
@@ -110,6 +122,15 @@ Module-level connections (made once when the module is required; they live for t
 | film_meshes_present | 72% (86 of 120) | DialInner 86, DialMid 86, DialOuter 86, Hands 86, Void 86 |
 | film_meshes_absent | 72% (86 of 120) | DialInner 86, DialMid 86, DialOuter 86, Hands 86, Void 86 |
 | crowd | 72% (86 of 120) | Void 162, DialInner 152, DialMid 152, DialOuter 152, Hands 152 |
+| fast_turn | 63% (76 of 120) | DialInner 75, DialMid 75, DialOuter 75, Hands 75, Void 75 |
+| fast_turn90 | 50% (60 of 120) | Void 58, Hands 55, DialInner 54, DialMid 54, DialOuter 54 |
+| camera_flick | 43% (52 of 120) | Void 51, DialInner 47, DialMid 47, DialOuter 47, Hands 47 |
+| pair_behind | 72% (86 of 120) | DialInner 172, DialMid 172, DialOuter 172, Hands 172, Void 172 |
+| pair_walkby | 76% (106 of 140) | DialInner 107, DialMid 107, DialOuter 107, Hands 107, Void 107 |
+| jump | 76% (106 of 140) | DialInner 106, DialMid 106, DialOuter 106, Hands 106, Void 106 |
+| seated | 72% (86 of 120) | DialInner 86, DialMid 86, DialOuter 86, Hands 86, Void 86 |
+| small_avatar | 76% (106 of 140) | DialInner 106, DialMid 106, DialOuter 106, Hands 106, Void 106 |
+| downhill | 74% (96 of 130) | DialInner 96, DialMid 96, DialOuter 96, Hands 96, Void 96 |
 
 ## Harness gaps hit
 
@@ -166,3 +187,12 @@ None: every API the module used is implemented by the mock.
 - **film_meshes_present**: ReplicatedStorage.AuraCinema.Assets.TheEnd holds fake film meshes (RingG, Dial, Astrolabe, Hand, Gear, Oblivion.Moon/SmoothSphere)
 - **film_meshes_absent**: ReplicatedStorage.AuraCinema.Assets.TheEnd exists but is empty (the fallback path)
 - **crowd**: Six wearers at once (the local player + 5 others in a ring of radius 25): per-client cost scaling
+- **fast_turn**: Idle; follow camera 16 behind / 6 up, then it orbits at 180 deg/s for 2 s from t = 8 (a right-drag / swipe)
+- **fast_turn90**: Idle; follow camera 16 / 6, orbiting at 90 deg/s for 2 s from t = 8
+- **camera_flick**: Idle; the follow camera flicks half a turn round the wearer in 0.25 s at t = 8 (a mouse flick)
+- **pair_behind**: Local wearer, default follow camera; a remote wearer stands 7 studs behind-right (between you and your camera)
+- **pair_walkby**: Local wearer idle, follow camera; a remote wearer walks across behind you (z = 8) from x = -30 to +30
+- **jump**: Idle, follow camera; from t = 7 a full Roblox jump (JumpHeight 7.2, gravity 196.2) every 2 s
+- **seated**: Day; the wearer sits on a 1-stud-tall Seat (Humanoid.Sit, SeatPart): the ground ray hits the seat top
+- **small_avatar**: Day, idle then walking; a short R15 avatar (HipHeight 1.4: the HumanoidRootPart 2.4 above the ground)
+- **downhill**: Day; walks forward at 16 studs/s while the ground drops 6 studs/s (t = 8..11): the dais must not lag behind

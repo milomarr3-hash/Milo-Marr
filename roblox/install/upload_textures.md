@@ -1,10 +1,14 @@
 # Uploading the te5 textures and filling TEX5
 
-Pass 5 has 18 new textures, all code-generated PNGs of 1024² or smaller:
+Pass 5 has 20 new textures, all code-generated PNGs of 1024² or smaller:
 
-- 7 particle textures in `textures/te5/particles/`: shards, smoke, mote, glint, bokeh, streak and ash.
-- 11 surface textures in `textures/te5/surfaces/`: dial inlay, sub-dial, accretion, galaxy floor/arms/core, engraving,
-  halo, hairspring, stream and ribbon.
+- 7 particle textures in `textures/te5/particles/`: shards, smoke, mote, glint, bokeh, streak and ash. (Review round 1
+  re-exported two of them: te5_ash is now 1024² - Roblox only animates flipbooks on 1024² textures - and te5_streak is a
+  256² square, because particles are drawn square.)
+- 13 surface textures in `textures/te5/surfaces/`: dial inlay, sub-dial, accretion, galaxy floor/arms/core, engraving,
+  halo, hairspring, stream, ribbon, and (review round 1) the photographic **moon** face and the **star window** on the
+  clock's movement plate. With te5_moon uploaded the module swaps the white ball + craters + halo for the photographic
+  face; until then it keeps the geometry moon.
 
 Their `manifest.json` files list each one's `texKey` (its key in the module's `TEX5` table) and `uploadedId` (still
 `null`). Until a key has an id, the aura uses that texture's pass-4 fallback. So upload them **after** the first install
@@ -31,7 +35,8 @@ upload_image  imagePaths: [".../particles/te5_streak.png", ".../particles/te5_as
                            ".../surfaces/te5_dial_inlay.png", ".../surfaces/te5_subdial.png", ".../surfaces/te5_accretion.png"]
 upload_image  imagePaths: [".../surfaces/te5_galaxy_floor.png", ".../surfaces/te5_galaxy_arms.png",
                            ".../surfaces/te5_galaxy_core.png", ".../surfaces/te5_engraving.png", ".../surfaces/te5_halo.png"]
-upload_image  imagePaths: [".../surfaces/te5_hairspring.png", ".../surfaces/te5_stream.png", ".../surfaces/te5_ribbon.png"]
+upload_image  imagePaths: [".../surfaces/te5_hairspring.png", ".../surfaces/te5_stream.png", ".../surfaces/te5_ribbon.png",
+                           ".../surfaces/te5_moon.png", ".../surfaces/te5_star_window.png"]
 ```
 
 (`...` stands for `http://127.0.0.1:8765`. Always write the full URL.)
@@ -49,7 +54,7 @@ Then stop the web server (kill the background `http.server`).
 
 ## B. By hand with Studio's Asset Manager
 
-1. In Studio, open **View -> Asset Manager** and click **Bulk Import**. Pick all 18 PNGs from `textures/te5/particles/`
+1. In Studio, open **View -> Asset Manager** and click **Bulk Import**. Pick all 20 PNGs from `textures/te5/particles/`
    and `textures/te5/surfaces/`.
 2. When they are done, open **Images** in the Asset Manager. Right-click each one, choose **Copy Asset ID**, and note
    which file it belongs to.
@@ -80,11 +85,19 @@ What the commands do:
 ## Notes
 
 - **Moderation:** a new image can show as blank or grey until Roblox approves it. Wait a few minutes before judging how it
-  looks in Play.
+  looks in Play. The module asks ContentProvider for every filled-in te5 id when it loads; one that does not load (wrong
+  id, rejected, still pending) is reported in the Output (`TheEnd: te5 texture ... did not load ...; using its pass-4
+  fallback`) and swapped for its fallback, so the aura never shows a blank.
+- **Flipbooks must be 1024²:** `patch_tex5.py record` and `patch` refuse to run while a texture whose manifest layout is a
+  `Grid...` flipbook is not exactly 1024x1024 (the engine would show the whole sheet on every particle).
+- **Never ship a preview placeholder:** `make_payloads.py` refuses a module whose `TEX5` still holds a `"pending:<key>"`
+  string (the cloud renderer's stand-in for a texture that is not uploaded).
 - **Re-uploading one texture** (for example a fix after a Studio check): edit or flip the PNG and upload just that file.
   Then run `record <file>=<new id> --force`, `patch`, `make_payloads.py ... --label pass5texN`, and install.
   - te5_streak: if the streaks fly tail-first (STUDIO-VERIFY: VelocityParallel puts the texture's top along the
-    velocity), flip it with `python3 -c "from PIL import Image; p='textures/te5/particles/te5_streak.png'; Image.open(p).transpose(Image.FLIP_TOP_BOTTOM).save(p)"`
+    velocity), the quickest fix is no re-upload at all: set the ModuleScript attribute `STREAK_FLIP = true` (see
+    `studio_checks.md`). To fix the PNG itself instead, flip it with
+    `python3 -c "from PIL import Image; p='textures/te5/particles/te5_streak.png'; Image.open(p).transpose(Image.FLIP_TOP_BOTTOM).save(p)"`
     and re-upload.
 - **Re-running a texture generator** (`textures/te5/*/make_te5_*.py`) rewrites its manifest with `uploadedId: null`. The
   ids are still in `textures/te5/uploaded.md` and in the module's `TEX5`. Record them again from there.

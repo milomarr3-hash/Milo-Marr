@@ -3,7 +3,7 @@
 #
 #   tools/check_aura.sh MODULE.lua OUTDIR [options]
 #
-#   1. the harness runs the module in all 19 scenarios           -> OUTDIR/harness/report.md (+ report.json, snapshots/)
+#   1. the harness runs the module in all 28 scenarios           -> OUTDIR/harness/report.md (+ report.json, snapshots/)
 #   2. the harness runs day_idle and night_idle once per view, with the camera of that view, and snapshots t = 8 s
 #      (so anything the module places from the camera, like pass 5's viewer-anchored clock, is placed for that view)
 #                                                                -> OUTDIR/views/snapshots/<scenario>@<view>/
@@ -13,9 +13,10 @@
 #
 # Options:
 #   --time T          snapshot time in seconds after the scenario starts (default 8: pass 4 has fully assembled by ~6.5 s)
-#   --views LIST      default "studio,front34,back,side,far,closeup" (studio = the camera of the real pass-4 Studio
-#                     captures; the others are tools/preview/web/views.js presets; orbit:AZ,EL,DIST[,TY] and
-#                     subject:F,R,U,ZOOM also work, e.g. --views "front34,orbit:200,10,30")
+#   --views LIST      default "studio,front34,back,side,far,closeup,subject:-1,0,0.35,12.5" (studio = the camera of the
+#                     real pass-4 Studio captures; subject:-1,0,0.35,12.5 = Roblox's default 12.5-stud zoom behind the
+#                     wearer, what players actually see; the others are tools/preview/web/views.js presets;
+#                     orbit:AZ,EL,DIST[,TY] and subject:F,R,U,ZOOM also work, e.g. --views "front34,orbit:200,10,30")
 #   --quick           skip step 1 (only the day/night view runs; their report is in OUTDIR/views/report.md)
 #   --no-render       stop after the harness
 #   --seed N          harness seed (default 12345; the orbiting moon/void phase depends on it)
@@ -32,7 +33,7 @@ usage() { sed -n '2,29p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
 [ $# -ge 2 ] || usage 2
 case "$1" in -h|--help) usage 0;; esac
 MODULE=$1; OUT=$2; shift 2
-T=8; VIEWS="studio,front34,back,side,far,closeup"; FULL=1; RENDER=1; SEED=12345; SS=1; SIZE=game; REAL_DAY=""; REAL_NIGHT=""
+T=8; VIEWS="studio,front34,back,side,far,closeup,subject:-1,0,0.35,12.5"; FULL=1; RENDER=1; SEED=12345; SS=1; SIZE=game; REAL_DAY=""; REAL_NIGHT=""
 while [ $# -gt 0 ]; do
 	case "$1" in
 		--time) T=$2; shift;;

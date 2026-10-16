@@ -292,4 +292,122 @@ do
 			for i = 2, #S.recs do placeWearer(S.recs[i], S.recs[i].homePos, S.recs[i].homeYaw) end
 			setCamera(v3(0, 30, 60), v3(0, 4, 0))
 		end)
+
+	-------------------------------------------------------------------------------------- added in THE END pass-5 review round 1
+	-- (camera swings, other wearers, jumps, seats, small avatars, slopes: what players do that the first 19 never did)
+	local function turnCam(S, t, degPerSec)
+		local a = math.clamp(t - 8, 0, 2) * rad(degPerSec)
+		local focus = v3(0, 4.5, 0)
+		setCamera(focus + v3(16 * sin(a), 6, 16 * cos(a)), focus)
+	end
+	def("fast_turn", "Idle; follow camera 16 behind / 6 up, then it orbits at 180 deg/s for 2 s from t = 8 (a right-drag / swipe)",
+		{ duration = 12, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt) placeWearer(S.rec, v3(0, 3, 0), 0) turnCam(S, t, 180) end)
+	def("fast_turn90", "Idle; follow camera 16 / 6, orbiting at 90 deg/s for 2 s from t = 8",
+		{ duration = 12, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt) placeWearer(S.rec, v3(0, 3, 0), 0) turnCam(S, t, 90) end)
+	def("camera_flick", "Idle; the follow camera flicks half a turn round the wearer in 0.25 s at t = 8 (a mouse flick)",
+		{ duration = 12, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt)
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			local hcf = H.rawGet(S.rec.hrp, "CFrame")
+			local yaw = math.atan2(-hcf.LookVector.X, -hcf.LookVector.Z) + math.clamp((t - 8) / 0.25, 0, 1) * pi
+			local focus = hcf.Position + v3(0, 1.5, 0)
+			setCamera(focus + CFrame.Angles(0, yaw, 0) * v3(0, 6, 16), focus)
+		end)
+	def("pair_behind", "Local wearer, default follow camera; a remote wearer stands 7 studs behind-right (between you and your camera)",
+		{ duration = 12, clock = 14 },
+		function(S)
+			S.rec = oneWearer(S)
+			local other = H.makePlayer("Player2", 1002)
+			local char, info = H.spawnCharacter(other, "R15", v3(4, 0, 7), 0)
+			S.rec2 = H.newRec(other, char, info, false)
+			placeWearer(S.rec2, v3(4, 3, 7), 0)
+			S.equipAt = { { rec = S.rec, t = 0.1 }, { rec = S.rec2, t = 0.1 } }
+		end,
+		function(S, t, dt)
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			placeWearer(S.rec2, v3(4, 3, 7), 0)
+			followCam(S.rec, 16, 6, dt)
+		end)
+	def("pair_walkby", "Local wearer idle, follow camera; a remote wearer walks across behind you (z = 8) from x = -30 to +30",
+		{ duration = 14, clock = 14 },
+		function(S)
+			S.rec = oneWearer(S)
+			local other = H.makePlayer("Player2", 1002)
+			local char, info = H.spawnCharacter(other, "R15", v3(-30, 0, 8), -pi / 2)
+			S.rec2 = H.newRec(other, char, info, false)
+			placeWearer(S.rec2, v3(-30, 3, 8), -pi / 2)
+			S.equipAt = { { rec = S.rec, t = 0.1 }, { rec = S.rec2, t = 0.1 } }
+		end,
+		function(S, t, dt)
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			local x = -30 + max(0, t - 7) * 10
+			placeWearer(S.rec2, v3(min(x, 30), 3, 8), -pi / 2, (t > 7 and x < 30) and v3(1, 0, 0) or nil)
+			followCam(S.rec, 16, 6, dt)
+		end)
+	def("jump", "Idle, follow camera; from t = 7 a full Roblox jump (JumpHeight 7.2, gravity 196.2) every 2 s",
+		{ duration = 14, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt)
+			local h = 0
+			if t >= 7 then
+				local v0 = math.sqrt(2 * 196.2 * 7.2)
+				local u = (t - 7) % 2
+				h = max(0, v0 * u - 0.5 * 196.2 * u * u)
+			end
+			placeWearer(S.rec, v3(0, 3 + h, 0), 0)
+			followCam(S.rec, 16, 6, dt)
+		end)
+	def("seated", "Day; the wearer sits on a 1-stud-tall Seat (Humanoid.Sit, SeatPart): the ground ray hits the seat top",
+		{ duration = 12, clock = 14 },
+		function(S)
+			S.rec = oneWearer(S)
+			S.seat = H.make("Seat", { Name = "Bench", Size = v3(3, 1, 3), CFrame = CFrame.new(0, 1, 0), Anchored = true }, H.workspace)
+			S.equipAt = { { rec = S.rec, t = 0.1 } }
+		end,
+		function(S, t, dt)
+			local sit = t >= 2
+			D[S.rec.hum].props.Sit = sit
+			D[S.rec.hum].props.SeatPart = sit and S.seat or nil
+			placeWearer(S.rec, v3(0, sit and 3.0 or 4.5, 0), 0)
+			followCam(S.rec, 16, 6, dt)
+		end)
+	def("small_avatar", "Day, idle then walking; a short R15 avatar (HipHeight 1.4: the HumanoidRootPart 2.4 above the ground)",
+		{ duration = 14, clock = 14 },
+		function(S)
+			S.rec = oneWearer(S)
+			D[S.rec.hum].props.HipHeight = 1.4
+			S.pos, S.yaw = v3(0, 2.4, 0), 0
+			S.equipAt = { { rec = S.rec, t = 0.1 } }
+		end,
+		function(S, t, dt)
+			local md = nil
+			if t >= 8 then
+				S.yaw += rad(9) * dt
+				local look = v3(-sin(S.yaw), 0, -cos(S.yaw))
+				S.pos += look * 16 * dt
+				md = look
+			end
+			placeWearer(S.rec, S.pos, S.yaw, md)
+			followCam(S.rec, 16, 6, dt)
+		end)
+	def("downhill", "Day; walks forward at 16 studs/s while the ground drops 6 studs/s (t = 8..11): the dais must not lag behind",
+		{ duration = 13, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } S.pos = v3(0, 3, 0) end,
+		function(S, t, dt)
+			local md = nil
+			local gy = -6 * math.clamp(t - 8, 0, 3)
+			if t >= 8 and t < 11 then
+				S.pos += v3(0, 0, -16 * dt)
+				md = v3(0, 0, -1)
+			end
+			S.pos = v3(S.pos.X, gy + 3, S.pos.Z)
+			D[H.plaza].props.CFrame = CFrame.new(0, gy - 0.5, 0)
+			placeWearer(S.rec, S.pos, 0, md)
+			followCam(S.rec, 16, 6, dt)
+		end)
 end

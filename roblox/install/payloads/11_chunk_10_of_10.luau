@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 08_chunk_07_of_07.luau | step 8: piece 7 of 7
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (82580 bytes, checksum 413068034).
+-- AuraRNG Studio install kit | 11_chunk_10_of_10.luau | step 11: piece 10 of 10
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (123861 bytes, checksum 523677650).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "08_chunk_07_of_07.luau"
+local FILE = "11_chunk_10_of_10.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-82580-413068034-7-175648338"
-local NEW_LEN, NEW_SUM = 82580, 413068034
+local RUN = "TheEnd-123861-523677650-10-457228033"
+local NEW_LEN, NEW_SUM = 123861, 523677650
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 7
-local LENS = { 13394, 13390, 13386, 13387, 13372, 13337, 2314 }
-local SUMS = { 747760660, 546838554, 282322451, 777563289, 713911797, 449542432, 103059902 }
+local N = 10
+local LENS = { 13381, 13376, 13386, 13381, 13350, 13333, 13298, 13314, 13338, 3704 }
+local SUMS = { 138302907, 144820895, 284418912, 946852927, 737433606, 204697128, 129328051, 22255047, 37178664, 110492221 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -67,20 +67,21 @@ local function chunkOk(h, i)
 	return v ~= nil and v:IsA("StringValue") and #v.Value == LENS[i] and sum(v.Value) == SUMS[i]
 end
 
-local K = 7
--- piece 7 of 7 of the new source (2314 bytes, checksum 103059902, long bracket level 0)
+local K = 10
+-- piece 10 of 10 of the new source (3704 bytes, checksum 110492221, long bracket level 0)
 local DATA = [[
-			if (not bokehNear and camDist < 9) or (bokehNear and camDist > 10) then
-				bokehNear = not bokehNear
-				refreshEmitters()
+			if occA then st.armHold = 0.6 elseif st.armHold > 0 then st.armHold -= dt end
+			local tgtA = st.armHold > 0 and 1 or 0
+			if st.armG ~= tgtA then
+				st.armG = tgtA > st.armG and min(1, st.armG + 5 * dt) or max(0, st.armG - 5 * dt)
+				local qa = math.floor(st.armG * 3 + 0.5) / 3
+				if qa ~= st.armGQ then
+					st.armGQ = qa
+					writeRings()
+				end
 			end
-		end
-		if isGrounded ~= grounded then
-			grounded = isGrounded
-			refreshEmitters()
-		end
-		-- body-anchored fallback: the owner sees through the clock while it stands between the camera and the head
-		if not VIEWER and ctx.isLocal then
+		elseif not VIEWER and ctx.isLocal then
+			-- body-anchored fallback: the owner sees through the clock while it stands between the camera and the head
 			local head = O + Vector3.new(0, 2, 0)
 			local nz = K.LookVector
 			local d0, d1 = (camPos - K.Position):Dot(nz), (head - K.Position):Dot(nz)
@@ -89,9 +90,11 @@ local DATA = [[
 				local hit = camPos + (head - camPos) * (d0 / (d0 - d1))
 				cross = (hit - K.Position).Magnitude < 14
 			end
-			if cross ~= ltmOn then
-				ltmOn = cross
+			if cross ~= st.ltmOn then
+				st.ltmOn = cross
 				for _, p in ipairs(clockParts) do p.LocalTransparencyModifier = cross and 0.5 or 0 end
+				-- (GUIs ignore LocalTransparencyModifier: the dial's inlay, star window and sub-dial switch off meanwhile)
+				hosts.inlayGui.Enabled, hosts.subdialGui.Enabled, hosts.plateGui.Enabled = not cross, not cross, not cross
 			end
 		end
 		nightClock += dt
@@ -108,9 +111,29 @@ local DATA = [[
 	end
 
 	function fx.setVisible(on)
-		if destroyed then return end
+		if destroyed or on == visible then return end
 		visible = on
-		root.Parent = on and ctx.container or nil
+		if on then
+			-- (parented again by the next update, together with that frame's positions; after a long hide it fades back in
+			-- instead of popping, and the foot drips wait a second)
+			st.pendingRoot = true
+			st.shownAt = os.clock()
+			st.lastO = nil -- (the distance walked while hidden is not a speed)
+			if st.hiddenAt and st.shownAt - st.hiddenAt > 0.5 then
+				st.revealA, st.snap = 0, true
+				if nq >= 0 then applyNight(nightStep()) end -- (dusk may have passed meanwhile; the reveal starts from nothing)
+			end
+		else
+			root.Parent = nil
+			st.pendingRoot = false
+			st.hiddenAt = os.clock()
+			st.footOk = false
+			if grade then
+				-- (never left on top of a cutscene or a hidden aura)
+				st.gradeOut = true
+				gradeTo(GRADE_OFF, 0.4, true)
+			end
+		end
 		refreshEmitters()
 		refreshLights()
 	end
@@ -118,7 +141,7 @@ local DATA = [[
 	function fx.setDetail(isNear)
 		if destroyed then return end
 		near = isNear
-		setGroups()
+		if isNear then st.pendingGroups = true else setGroups() end -- (shown again by the next update, at fresh positions)
 		refreshEmitters()
 		refreshLights()
 	end
@@ -126,19 +149,16 @@ local DATA = [[
 	function fx.destroy()
 		if destroyed then return end
 		destroyed = true
-		root:Destroy()
-		if gradeConn then gradeConn:Disconnect() end
-		if gradeIn then gradeIn:Cancel() end
-		if gradeOut then gradeOut:Cancel() end
-		if grade then
-			grade:Destroy()
-			grade = nil
+		if grade then gradeTo(GRADE_OFF, 0.8, true) end -- (the screen eases back instead of snapping)
+		for h = 1, 4 do
+			for _, hp in ipairs(holders[h]) do hp[1]:Destroy() end -- (also the groups hidden by far LOD or the near rule)
 		end
+		root:Destroy()
 		for _, o in ipairs(charStuff) do o:Destroy() end
-		table.clear(charStuff)
-		table.clear(act)
-		table.clear(actParts)
-		table.clear(acf)
+		for _, tb in ipairs({ charStuff, act, actParts, acf, PP, solids, images, brights, emitters, emitNight, beams, clockParts, ghostParts, ringParts,
+			ghostGuis, gearData }) do
+			table.clear(tb)
+		end
 		nAct = 0
 	end
 
@@ -199,7 +219,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "09_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "12_apply.luau"))
 end
 
 local ok, res = pcall(main)

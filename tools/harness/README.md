@@ -11,7 +11,7 @@ It is a strong filter, not a replacement for Studio: see [What it can't tell you
 ## Quick start
 
 ```sh
-# all 19 scenarios, report + snapshots in tools/harness/out/<module>/
+# all 28 scenarios, report + snapshots in tools/harness/out/<module>/
 python3 tools/harness/run_aura.py roblox/ReplicatedStorage/AuraFX/TheEnd.pass4-live.lua
 
 # a few scenarios, custom output, extra snapshot frames (frames, or t= seconds)
@@ -87,6 +87,13 @@ end of every scenario the aura is destroyed and the harness keeps running 1.5 s 
 | `film_meshes_present` | fake `ReplicatedStorage.AuraCinema.Assets.TheEnd` (RingG, Dial, Astrolabe, Hand, Gear, Oblivion.Moon / SmoothSphere) with deliberately varied native sizes/orientations |
 | `film_meshes_absent` | that folder exists but is empty (fallback path) |
 | `crowd` | six wearers at once (cost scaling, Highlight cap) |
+| `fast_turn`, `fast_turn90` | the follow camera orbits at 180 / 90 deg/s for 2 s (a right-drag or a swipe) |
+| `camera_flick` | the follow camera flicks half a turn in 0.25 s (a mouse flick) |
+| `pair_behind`, `pair_walkby` | a second (remote) wearer stands / walks between the local wearer and the camera |
+| `jump` | Roblox's default jump (JumpHeight 7.2, gravity 196.2) every 2 s |
+| `seated` | the wearer sits on a Seat (`Humanoid.Sit`, `SeatPart`): the ground ray hits the seat top |
+| `small_avatar` | a short R15 (HipHeight 1.4), idle then walking |
+| `downhill` | walking while the ground drops 6 studs/s (the plaza part moves down) |
 
 The world: a plaza part at y = 0 (the only thing rays hit), the camera, `Lighting` with the place's Bloom
 (Intensity 1, Size 24, Threshold 2), players `Player1` (local) ... with R15 characters built like Roblox's

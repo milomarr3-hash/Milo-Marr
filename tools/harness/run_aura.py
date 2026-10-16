@@ -326,7 +326,7 @@ def fmt(x, nd=1):
 
 CAMERA_OVERRIDES = {}  # scenario label -> camera spec name (set in main; the follow-camera checks skip these)
 FOLLOW_CAM = {"day_idle", "night_idle", "glide", "dusk", "low_quality", "r6_character", "film_meshes_present", "film_meshes_absent",
-              "join_wearing", "respawn", "reequip", "air"}
+              "join_wearing", "respawn", "reequip", "air", "pair_behind", "pair_walkby", "jump", "seated", "small_avatar", "downhill"}
 
 
 def derive_warnings(s, name):

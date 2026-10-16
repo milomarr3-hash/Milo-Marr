@@ -59,6 +59,33 @@ def load_manifests(root):
 	return out
 
 
+def png_size(path):
+	"""(width, height) of a PNG from its header (standard library only), or None."""
+	try:
+		with open(path, "rb") as f:
+			head = f.read(24)
+	except OSError:
+		return None
+	if len(head) < 24 or head[:8] != b"\x89PNG\r\n\x1a\n":
+		return None
+	return int.from_bytes(head[16:20], "big"), int.from_bytes(head[20:24], "big")
+
+
+def flipbook_problems(manifests):
+	"""Roblox only animates particle flipbooks on 1024x1024 textures ("Particle texture must be 1024 by 1024 to use
+	flipbooks"): any texture whose manifest layout is a Grid must be exactly that, or every particle shows the whole sheet."""
+	out = []
+	for p, entries in manifests:
+		for e in entries:
+			if str(e.get("layout") or "None").startswith("Grid"):
+				png = os.path.join(os.path.dirname(p), e.get("file") or "")
+				sz = png_size(png)
+				if sz != (1024, 1024):
+					out.append(f"{e.get('file')}: flipbook layout {e.get('layout')} needs a 1024x1024 PNG, this one is "
+							   f"{'%dx%d' % sz if sz else 'unreadable'} (re-export it before uploading)")
+	return out
+
+
 def save_manifest(path, entries):
 	data = (json.dumps(entries, indent=1, ensure_ascii=False) + "\n").encode("utf-8")
 	with open(path, "rb") as f:
@@ -260,6 +287,13 @@ def main(argv=None):
 	a = ap.parse_args(argv)
 	md = a.uploaded_md or os.path.join(a.manifests, "uploaded.md")
 	manifests = load_manifests(a.manifests)
+	if a.command in ("record", "patch"):
+		bad = flipbook_problems(manifests)
+		if bad:
+			print("patch_tex5: refusing to " + a.command + ":")
+			for b in bad:
+				print("  " + b)
+			return 2
 
 	if a.command == "record":
 		pairs = []

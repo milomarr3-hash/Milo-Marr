@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 02_chunk_01_of_07.luau | step 2: piece 1 of 7
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (82580 bytes, checksum 413068034).
+-- AuraRNG Studio install kit | 02_chunk_01_of_10.luau | step 2: piece 1 of 10
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (123861 bytes, checksum 523677650).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "02_chunk_01_of_07.luau"
+local FILE = "02_chunk_01_of_10.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-82580-413068034-7-175648338"
-local NEW_LEN, NEW_SUM = 82580, 413068034
+local RUN = "TheEnd-123861-523677650-10-457228033"
+local NEW_LEN, NEW_SUM = 123861, 523677650
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 7
-local LENS = { 13394, 13390, 13386, 13387, 13372, 13337, 2314 }
-local SUMS = { 747760660, 546838554, 282322451, 777563289, 713911797, 449542432, 103059902 }
+local N = 10
+local LENS = { 13381, 13376, 13386, 13381, 13350, 13333, 13298, 13314, 13338, 3704 }
+local SUMS = { 138302907, 144820895, 284418912, 946852927, 737433606, 204697128, 129328051, 22255047, 37178664, 110492221 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,7 +68,7 @@ local function chunkOk(h, i)
 end
 
 local K = 1
--- piece 1 of 7 of the new source (13394 bytes, checksum 747760660, long bracket level 1)
+-- piece 1 of 10 of the new source (13381 bytes, checksum 138302907, long bracket level 1)
 local DATA = [=[
 --[[
 	AuraFX.TheEnd — 『 THE END 』 worn (1 in 1,000,000,000). Midnight of the universe, worn: black, white and silver only.
@@ -138,38 +138,115 @@ local TEX = {
 	dialInner = "rbxassetid://134434932210706", hands4 = "rbxassetid://120547039021938", galaxy4 = "rbxassetid://91068008644782",
 }
 -- pass 5 (textures/te5/surfaces, textures/te5/particles): filled in on the Mac after upload. "" = not uploaded yet;
--- "rbxassetid://123" and bare digits both work. Until a key is filled in it falls back to a pass-4 texture (FALLBACK).
+-- "rbxassetid://123", "123" and the number 123 all work. Until a key is filled in (or if its upload fails to load in the
+-- game) it falls back to a pass-4 texture (FALLBACK), so the aura always looks complete.
 local TEX5 = {
 	dialInlay = "", subdial = "", accretion = "", galaxyFloor = "", galaxyArms = "", galaxyCore = "", engraving = "",
-	halo = "", hairspring = "", stream = "", ribbon = "",
+	halo = "", stream = "", ribbon = "", moon = "", starWindow = "",
 	shards5 = "", smoke5 = "", mote = "", glint5 = "", bokeh = "", streak5 = "", ash5 = "",
 }
-local TEX5_LAYOUT = { shards5 = { "Grid4x4", "Loop" }, smoke5 = { "Grid4x4", "OneShot" }, ash5 = { "Grid2x2", "Random" } }
+-- (te5_ash is one 256² flake: random rotation and spin vary it, and it costs a quarter of a 1024² flipbook sheet)
+local TEX5_LAYOUT = { shards5 = { "Grid4x4", "Loop" }, smoke5 = { "Grid4x4", "OneShot" } }
 local FALLBACK = { -- key -> { pass-4 TEX key, flipbook layout, mode }
 	dialInlay = { "dialOuter" }, subdial = { "dialInner" }, accretion = { "galaxy4" }, galaxyFloor = { "galaxy4" },
-	galaxyArms = { "galaxy4" }, galaxyCore = { "ornate" }, engraving = { "gring" }, halo = { "rim" }, hairspring = { "swirl" },
-	stream = { "line" }, ribbon = { "line" },
+	galaxyArms = { "galaxy4" }, galaxyCore = { "ornate" }, engraving = { "gring" }, halo = { "rim" },
+	stream = { "line" }, ribbon = { "line" }, moon = { "moon" }, starWindow = { "galaxy4" },
 	shards5 = { "ash", "None", "Loop" }, smoke5 = { "puff", "Grid4x4", "OneShot" }, mote = { "glow" }, glint5 = { "glint" },
 	bokeh = { "glow" }, streak5 = { "spark" }, ash5 = { "ash", "None", "Loop" },
 }
-local function idOf(v)
-	if type(v) ~= "string" or v == "" then return nil end
-	if string.match(v, "^%d+$") then return "rbxassetid://" .. v end
-	return v
+local warned = {}
+local function warnOnce(key, msg)
+	if not warned[key] then
+		warned[key] = true
+		warn(msg)
+	end
 end
+-- a TEX5 value -> a content id, or nil (not filled in, or not an asset id: then the fallback is used and we say so once).
+-- "pending:<key>" is the preview renderer's placeholder for a te5 PNG that is not uploaded yet (tools/); it is never
+-- shipped: roblox/install/make_payloads.py refuses a module that still holds one.
+local function idOf(v, key)
+	if type(v) == "number" and v == v and v >= 1 and v < 1e18 then v = string.format("%d", math.floor(v)) end
+	if type(v) ~= "string" then return nil end
+	v = string.match(v, "^%s*(.-)%s*$")
+	if v == "" then return nil end
+	if string.match(v, "^%d+$") then return "rbxassetid://" .. v end
+	if string.match(v, "^rbxassetid://%d+$") or string.match(v, "^rbxasset://") or string.match(v, "^rbxthumb://")
+		or string.match(v, "^pending:%w+$") then
+		return v
+	end
+	warnOnce("tex5:" .. tostring(key), string.format("TheEnd: TEX5.%s = %q is not an asset id; using the pass-4 fallback", tostring(key), v))
+	return nil
+end
+local failed = {} -- te5 keys whose upload did not load in this game (ContentProvider said so): they use the fallback
 -- T(key) -> id, flipbook layout name, flipbook mode name (layout "None" when it is not a flipbook). Accepts a TEX5 key or
 -- a pass-4 TEX key. The layout comes from whichever texture is used, because a fallback can be laid out differently.
 local function T(key)
-	local id = idOf(TEX5[key])
+	local id = not failed[key] and idOf(TEX5[key], key)
 	if id then
 		local l = TEX5_LAYOUT[key]
 		return id, l and l[1] or "None", l and l[2] or "Loop"
 	end
 	local f = FALLBACK[key]
 	if f then return TEX[f[1]], f[2] or "None", f[3] or "Loop" end
-	return TEX[key] or "", "None", "Loop"
+	local t = TEX[key]
+	if not t then warnOnce("texkey:" .. tostring(key), "TheEnd: no texture called " .. tostring(key)) end
+	return t or "", "None", "Loop"
 end
-local function isTe5(key) return idOf(TEX5[key]) ~= nil end
+local function isTe5(key) return not failed[key] and idOf(TEX5[key], key) ~= nil end
+-- every live image, beam and emitter that uses a te5 key, so a texture that fails to load can be swapped for its fallback;
+-- fixUps[o] puts back what the build chose because the te5 texture was there (a colour, a brightness, a size)
+local texUsers = setmetatable({}, { __mode = "k" })
+local fixUps = setmetatable({}, { __mode = "k" })
+local function applyTex(o, key)
+	local id, layout, mode = T(key)
+	if o:IsA("ImageLabel") then
+		o.Image = id
+	elseif o:IsA("Beam") then
+		o.Texture = id
+	elseif o:IsA("ParticleEmitter") then
+		o.Texture = id
+		o.FlipbookLayout = Enum.ParticleFlipbookLayout[layout]
+		if layout ~= "None" then o.FlipbookMode = Enum.ParticleFlipbookMode[mode] end
+	end
+	if TEX5[key] then texUsers[o] = key end
+end
+-- ask the engine for every filled-in te5 texture once (in the background: never blocks require or build). One that does
+-- not load (wrong id, still in moderation, rejected) is reported and swapped for its pass-4 fallback everywhere. A slow
+-- phone or a cold cache can time out: that id is asked for once more 20 s later before anything is swapped.
+do
+	local ids, keyOf, retried = {}, {}, {}
+	for k in pairs(TEX5) do
+		local id = idOf(TEX5[k], k)
+		if id and not string.match(id, "^pending:") then
+			table.insert(ids, id)
+			keyOf[id] = k
+		end
+	end
+	local function onStatus(id, status)
+		local k = keyOf[id]
+		if not k or failed[k] or status == Enum.AssetFetchStatus.Success then return end
+		if status ~= Enum.AssetFetchStatus.Failure and not retried[k] then
+			retried[k] = true
+			task.delay(20, function()
+				pcall(function() game:GetService("ContentProvider"):PreloadAsync({ id }, onStatus) end)
+			end)
+			return
+		end
+		failed[k] = true
+		warn(string.format("TheEnd: te5 texture %s (%s) did not load (%s); using its pass-4 fallback", k, id, tostring(status)))
+		for o, ok in pairs(texUsers) do
+			if ok == k then
+				pcall(applyTex, o, k)
+				if fixUps[o] then pcall(fixUps[o]) end
+			end
+		end
+	end
+	if #ids > 0 then
+		task.spawn(function()
+			pcall(function() game:GetService("ContentProvider"):PreloadAsync(ids, onStatus) end)
+		end)
+	end
+end
 
 -- particle and beam colours (as pass 4) and a few more for pass 5
 local WHITE = Color3.fromRGB(248, 249, 255)
@@ -178,85 +255,17 @@ local SMOKE = Color3.fromRGB(14, 14, 19)
 local MIST = Color3.fromRGB(205, 209, 220)
 local ASH = Color3.fromRGB(16, 16, 20)
 local RIBBON_INK = Color3.fromRGB(12, 12, 16)
--- solid parts: colour, material, reflectance and the sub-model they live in (the Highlight covers only "Silver")
+-- solid parts: colour, material, reflectance and the sub-model they live in (the Highlight covers only "Silver").
+-- The silvers are neutral: the cyan day sky already tints Metal blue, so a cool token read as baby-blue plastic.
 local MAT = {
-	SILVER = { Color3.fromRGB(176, 180, 190), Enum.Material.Metal, 0.08, "Silver" },
-	BRIGHT = { Color3.fromRGB(214, 218, 226), Enum.Material.Metal, 0.12, "Silver" },
+	SILVER = { Color3.fromRGB(184, 184, 185), Enum.Material.Metal, 0.08, "Silver" },
+	BRIGHT = { Color3.fromRGB(224, 224, 225), Enum.Material.Metal, 0.12, "Silver" },
 	STEEL = { Color3.fromRGB(44, 46, 51), Enum.Material.SmoothPlastic, 0, "Dark" },
 	DEEP = { Color3.fromRGB(30, 31, 35), Enum.Material.SmoothPlastic, 0, "Dark" },
 	BASE = { Color3.fromRGB(12, 12, 16), Enum.Material.SmoothPlastic, 0, "Dark" },
 	VOID = { Color3.fromRGB(0, 0, 0), Enum.Material.Neon, 0, "Dark" },
-	LUME = { Color3.fromRGB(236, 240, 248), Enum.Material.Neon, 0, "Lume" },
-	ARC = { Color3.fromRGB(205, 208, 216), Enum.Material.Neon, 0, "Lume" },
-	VEIN = { Color3.fromRGB(220, 224, 232), Enum.Material.Neon, 0, "Lume" },
-	MOON = { Color3.fromRGB(234, 236, 240), Enum.Material.SmoothPlastic, 0, "Silver" },
-	CRATER = { Color3.fromRGB(168, 171, 178), Enum.Material.SmoothPlastic, 0, "Silver" },
-}
-
--- flags (any attribute on this ModuleScript with the same name and type overrides the default when it is required)
-local CONFIG = {
-	USE_FILM_MESHES = false, -- master switch for the FILM_* flags: the cutscene's own meshes (ReplicatedStorage.AuraCinema.Assets.TheEnd)
-	FILM_BEZEL = false, FILM_DIAL = false, FILM_RETE = false, FILM_HANDS = false, FILM_GEARS = false, FILM_MOON = false,
-	FILM_VOID = false, FILM_HAND_FLIP = false, FILM_KEEP_TEXTURES = false,
-	VIEWER_ANCHOR = true, -- the clock stands on the far side of the wearer from each viewer's camera (false: always behind, as pass 4)
-	CLOCK_DIST = 8, CLOCK_HEIGHT = 9.85, CLOCK_TILT = 8,
-	YAW_SPRING = 6.5, -- how fast the clock swings round when the camera moves (rad/s; 95 % in 0.73 s)
-	HIGHLIGHT = true, HIGHLIGHT_LOW = true, -- the silver-tone Highlight (keeps the metal neutral under the cyan sky)
-	SHADOWS = true, -- the moon and the void cast shadows (high quality only)
-	ASSEMBLY = true, ASSEMBLY_REMOTE = true, GRADE = true,
-	DAIS_FLOAT = true, -- the dais floats under the feet when the ground is far below
-	NEAR_HIDE = true, -- hide the rings and the bokeh when the camera is right inside them
-	NIGHT_INTERVAL = 1.0,
-	DEBUG = false,
-}
-do
-	local ok, attrs = pcall(function() return script:GetAttributes() end)
-	if ok and type(attrs) == "table" then
-		for k, v in pairs(attrs) do
-			local d = CONFIG[k]
-			if d ~= nil then
-				if typeof(v) == typeof(d) then
-					CONFIG[k] = v
-				else
-					warn(string.format("TheEnd: attribute %s is a %s, expected a %s (ignored)", k, typeof(v), typeof(d)))
-				end
-			end
-		end
-	end
-end
-
-local End = {}
-
-End.pose = {
-	hover = 2.4, bob = 0.28, bobSpeed = 1.4,
-	-- degrees in the parent part's axes (X right, Y up, Z back): +X on a hip/shoulder swings the limb forward,
-	-- -X on a knee bends it back, -Z on the left shoulder lifts that arm out (+Z the right one)
-	idle = {
-		Root = { 2, 0, 0 }, Waist = { 2, 0, 0 }, Neck = { -8, 0, 0 },
-		LeftShoulder = { 6, 0, -24 }, RightShoulder = { 6, 0, 24 }, LeftElbow = { 16, 0, 0 }, RightElbow = { 16, 0, 0 },
-		LeftHip = { 10, 0, -3 }, RightHip = { -5, 0, 3 }, LeftKnee = { -16, 0, 0 }, RightKnee = { -40, 0, 0 },
-		LeftAnkle = { -26, 0, 0 }, RightAnkle = { -32, 0, 0 },
-	},
-	glide = {
-		Root = { -18, 0, 0 }, Waist = { -5, 0, 0 }, Neck = { 14, 0, 0 },
-		LeftShoulder = { -30, 0, -26 }, RightShoulder = { -30, 0, 26 }, LeftElbow = { 10, 0, 0 }, RightElbow = { 10, 0, 0 },
-		LeftHip = { -14, 0, -2 }, RightHip = { -22, 0, 2 }, LeftKnee = { -26, 0, 0 }, RightKnee = { -48, 0, 0 },
-		LeftAnkle = { -34, 0, 0 }, RightAnkle = { -34, 0, 0 },
-	},
-	breathe = { LeftShoulder = { 0, 0, -5 }, RightShoulder = { 0, 0, 5 }, LeftElbow = { 4, 0, 0 }, RightElbow = { 4, 0, 0 }, Waist = { 1.5, 0, 0 } },
-	suppress = {
-		Root = 0.6, Waist = 0.6, Neck = 0.2, LeftShoulder = 0.7, RightShoulder = 0.7, LeftElbow = 0.6, RightElbow = 0.6,
-		LeftHip = 0.93, RightHip = 0.93, LeftKnee = 0.93, RightKnee = 0.93, LeftAnkle = 0.9, RightAnkle = 0.9,
-	},
-}
-
-local rad, sin, cos, exp, sqrt, abs, atan2 = math.rad, math.sin, math.cos, math.exp, math.sqrt, math.abs, math.atan2
-local min, max, clamp, pi = math.min, math.max, math.clamp, math.pi
-local TAU = 2 * pi
-local IDENT = CFrame.new()
-local DISC = CFrame.Angles(0, rad(90), 0) -- a cylinder lying with its axis along z (a disc facing the viewer)
-local VERT = CFrame.Angles(0, 0, rad(90)) -- a cylinder standing upright
-local FLIP = CFrame.Angles(0, pi, 0)
+	LUME = { Color3.fromRGB(240, 240, 242), Enum.Material.Neon, 0, "Lume" }, -- (neutral: Neon saturates any tint)
+	ARC = { Color3.fromRGB(210, 210, 212), Enum.Material.Neon, 0, "Lume" },
 ]=]
 
 local function main()
@@ -301,7 +310,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "09_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "12_apply.luau"))
 end
 
 local ok, res = pcall(main)

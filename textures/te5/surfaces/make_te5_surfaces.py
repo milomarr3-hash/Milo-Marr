@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # THE END (1 in 1,000,000,000) -- equipped aura, pass 5 "The Last Clock" -- texture group "surfaces".
 #
-# Spec: docs/the-end/pass5-spec.md, section 16.2 (group "surfaces"). 11 textures:
+# Spec: docs/the-end/pass5-spec.md, section 16.2 (group "surfaces"). 13 textures:
 #   te5_dial_inlay  te5_subdial  te5_accretion  te5_galaxy_floor  te5_galaxy_arms  te5_galaxy_core
 #   te5_engraving   te5_halo     te5_hairspring te5_stream        te5_ribbon
+#   te5_moon        te5_star_window  (added in review round 1: docs/the-end/pass5-build-notes.md)
 #
 # Only python3 + numpy + PIL (runs the same on Milo's Mac and in the cloud). Deterministic: every random source is
 # seeded, so a re-run gives byte-identical PNGs.
@@ -911,6 +912,200 @@ def make_halo():
 
 
 # --------------------------------------------------------------------------------------------------------------------
+# 12. te5_moon  (1024^2): a photographic full moon for the camera-facing face sprite (review round 1, art director AD4).
+#     North up, the Earth-facing side: maria where the real ones are (Imbrium, Serenitatis, Tranquillitatis, Crisium,
+#     Fecunditatis, Nectaris, Nubium, Humorum, Frigoris, Oceanus Procellarum) at grey 95-140, highlands 215-240, ~60
+#     craters with lit upper-left rims and shadowed floors (the light comes a little from the upper left, so relief shows
+#     on a nearly full moon), rayed Tycho / Copernicus / Kepler, faint limb darkening, a hard alpha edge at r 0.985 with a
+#     1.6 % antialias ramp. No ring, no glow (the old te4 moon read as a soap bubble on a billboard).
+# --------------------------------------------------------------------------------------------------------------------
+
+def _sph_dir(lat, lon):
+    la, lo = math.radians(lat), math.radians(lon)
+    return np.array([math.sin(lo) * math.cos(la), math.sin(la), math.cos(lo) * math.cos(la)], dtype=np.float64)
+
+
+MARIA = [  # (lat, lon, angular radius deg, darkness 0..1): the near side's maria, overlapping so they join up as they do
+    (33, -16, 17.0, 1.00), (40, -2, 8.0, 0.9), (28, 17, 10.5, 1.00), (13, 4, 5.0, 0.8), (2, 3, 4.0, 0.7),
+    (8.5, 31, 13.0, 0.95), (17, 59, 8.0, 1.00), (-8, 51, 12.0, 0.80), (-2, 40, 6.0, 0.8), (-15, 35, 5.5, 0.85),
+    (-21, -17, 11.0, 0.75), (-10, -23, 6.5, 0.7), (-24, -39, 6.5, 0.90), (7, -31, 8.0, 0.75),
+    (58, -30, 4.5, 0.55), (57, -5, 4.5, 0.6), (57, 15, 4.5, 0.6), (56, 35, 4.0, 0.5),          # Mare Frigoris
+    (20, -55, 15.0, 0.95), (5, -55, 13.0, 0.9), (-5, -45, 10.0, 0.75), (32, -45, 11.0, 0.85), (42, -38, 7.0, 0.8),
+    (-12, -58, 8.0, 0.75), (14, -40, 9.0, 0.85),                                                   # Oceanus Procellarum
+    (-5, -68, 3.0, 1.0),                                                                          # Grimaldi
+]
+RAYED = [  # (lat, lon, crater angular radius deg, rays, ray length deg, strength)
+    (-43.3, -11.2, 1.45, 26, 55.0, 1.0), (9.6, -20.1, 1.6, 22, 22.0, 0.8), (8.1, -38.0, 0.9, 16, 14.0, 0.55),
+    (23.7, -47.4, 0.7, 10, 8.0, 0.5),
+]
+
+
+def make_moon():
+    n = 1024
+    x, y, r, th = polar(n)
+    R = 0.985
+    u = np.broadcast_to(np.clip(x / R, -1.0, 1.0), r.shape).astype(np.float64)
+    v = np.broadcast_to(np.clip(y / R, -1.0, 1.0), r.shape).astype(np.float64)
+    inside = (u * u + v * v) < 1.0
+    w = np.sqrt(np.clip(1.0 - u * u - v * v, 0.0, 1.0))
+    P3 = np.stack([u, v, w], axis=-1).astype(np.float64)          # the sphere point (unit) seen at each pixel
+
+    def ang(c):
+        return np.arccos(np.clip(P3 @ c, -1.0, 1.0))               # angular distance to direction c (rad)
+    rng = np.random.default_rng(1201)
+    # albedo: highlands with large-scale variation, maria with lobed (not speckled) shores and internal tone
+    big = cart_noise(n, 1202, beta=1.8, fmin=2.0)
+    mid = cart_noise(n, 1203, beta=1.5, fmin=5.0)
+    fine = cart_noise(n, 1204, beta=0.6, fmin=40.0)
+    # (a metaball field: overlapping basins merge into the connected dark pattern of the real near side)
+    field = np.zeros(r.shape, np.float64)
+    for lat, lon, rad_, dark in MARIA:
+        c = _sph_dir(lat, lon)
+        a = ang(c)
+        field += dark * np.exp(-(a / (math.radians(rad_) * 1.12)) ** 2.4)
+    field = field + 0.16 * np.tanh(big / 1.0) + 0.06 * np.tanh(mid / 1.2)
+    mare = sstep(0.36, 0.62, field) * (0.85 + 0.15 * sstep(0.5, 1.2, field))
+    mare = np.clip(mare * (0.9 + 0.15 * unit01(big, 1.6)), 0.0, 1.0)
+    high = 0.885 + 0.035 * np.tanh(big / 1.5) + 0.015 * np.tanh(mid / 1.5)    # ~0.83 .. 0.94  (212 .. 240)
+    mareL = 0.47 + 0.07 * np.tanh(big / 1.2) + 0.025 * np.tanh(mid / 1.5)     # ~0.37 .. 0.57  (95 .. 145)
+    alb = high * (1.0 - mare) + mareL * mare
+    # craters: a power-law size spread, more of them in the bright highlands. On a full moon they read mostly as bright
+    # rims and slightly darker floors (albedo), with a little relief from light coming from the upper left.
+    hmap = np.zeros(r.shape, np.float64)
+    cr_list = []
+    tries = 0
+    while len(cr_list) < 62 and tries < 4000:
+        tries += 1
+        z = rng.uniform(-1, 1); phi = rng.uniform(-math.pi, math.pi)
+        c = np.array([math.sqrt(1 - z * z) * math.sin(phi), z, math.sqrt(1 - z * z) * math.cos(phi)])
+        if c[2] < 0.2:
+            continue                                                # (the limb and the far side)
+        px = int((c[0] * R * 0.5 + 0.5) * (n * SS - 1)); py = int((0.5 - c[1] * R * 0.5) * (n * SS - 1))
+        if mare[py, px] > 0.5 and rng.random() < 0.75:
+            continue
+        rad_ = math.radians(min(5.0, 0.45 * rng.pareto(1.7) + 0.45))
+        cr_list.append((c, rad_))
+    for c, rad_ in cr_list:
+        a = ang(c) / rad_
+        sel = a < 2.2
+        if not sel.any():
+            continue
+        d = a[sel]
+        bowl = -0.5 * (1.0 - sstep(0.55, 0.95, d))
+        rim = 0.30 * np.exp(-((d - 1.0) / 0.14) ** 2)
+        ejecta = 0.06 * np.exp(-np.maximum(d - 1.05, 0.0) * 3.0) * sstep(0.95, 1.1, d)
+        hmap[sel] += (bowl + rim + ejecta) * rad_ * 4.0
+        fresh = 1.0 + 0.6 * (rad_ < math.radians(1.2))              # small young craters are brighter
+        alb[sel] = alb[sel] * (1.0 - 0.07 * (1.0 - sstep(0.5, 0.95, d))) + (1.0 - alb[sel]) * 0.10 * fresh * np.exp(-((d - 1.0) / 0.12) ** 2)
+    # rays: bright streaks along great circles out of the young craters, plus a soft bright ejecta collar round each
+    for lat, lon, crad, nr, rlen, s_ in RAYED:
+        c = _sph_dir(lat, lon)
+        a = ang(c)
+        north = np.array([0.0, 1.0, 0.0])
+        e1 = np.cross(north, c); e1 /= np.linalg.norm(e1); e2 = np.cross(c, e1)
+        pt = P3 - (P3 @ c)[..., None] * c
+        phi = np.arctan2(pt @ e2, pt @ e1)
+        cr = math.radians(crad)
+        rays = np.zeros(r.shape, np.float64)
+        for k in range(nr):
+            az = rng.uniform(-math.pi, math.pi)
+            wid = math.radians(rng.uniform(0.35, 1.2))
+            ln = math.radians(rlen * rng.uniform(0.35, 1.0))
+            dphi = np.angle(np.exp(1j * (phi - az)))
+            across = np.abs(dphi) * np.sin(np.clip(a, 1e-4, None))
+            prof = np.exp(-(across / (wid * (1.0 + a / max(ln, 1e-3)))) ** 2) * sstep(ln, ln * 0.2, a) * sstep(cr * 1.1, cr * 2.2, a)
+            rays = np.maximum(rays, prof * rng.uniform(0.55, 1.0))
+        collar = np.exp(-((a - cr * 1.6) / (cr * 1.1)) ** 2)
+        boost = s_ * (0.55 * rays * (0.75 + 0.25 * unit01(fine, 1.0)) + 0.35 * collar)
+        alb = alb + (1.0 - alb) * np.clip(boost, 0, 1)
+        hmap += 0.35 * np.exp(-((a / cr - 1.0) / 0.15) ** 2) * cr * 4.0 - 0.35 * (1.0 - sstep(0.5, 0.95, a / cr)) * cr * 4.0
+    # relief: bump the sphere normal with the height map's gradient (fading out toward the limb, where foreshortening
+    # would exaggerate it); light from the upper left
+    gy, gx = np.gradient(hmap)
+    k = (n * SS) / 2.0 * 0.6
+    fade = sstep(0.05, 0.45, w)
+    nx = u - k * gx * fade; ny = v + k * gy * fade; nz = w
+    nl = np.sqrt(nx * nx + ny * ny + nz * nz) + 1e-9
+    nx, ny, nz = nx / nl, ny / nl, nz / nl
+    Ld = np.array([-0.42, 0.42, 0.80]); Ld /= np.linalg.norm(Ld)
+    base_l = u * Ld[0] + v * Ld[1] + w * Ld[2]
+    bump_l = nx * Ld[0] + ny * Ld[1] + nz * Ld[2]
+    relief = np.clip(1.0 + 0.85 * (bump_l - base_l), 0.8, 1.14)       # only the relief, not a crescent
+    limb = 0.80 + 0.20 * np.power(w, 0.6)                             # the full moon is nearly flat; a touch of limb
+    L = alb * relief * limb * (1.0 + 0.02 * np.tanh(fine))
+    L = np.clip(L, 0.0, 1.0)
+    A = np.clip((R + 0.008 - r) / 0.016, 0.0, 1.0)
+    L = np.where(inside, L, 0.6)
+    Lf = L.astype(F32)
+    rgb = np.dstack([Lf, Lf, np.minimum(1.0, Lf + 3.0 / 255.0)])
+    img = finish("te5_moon", (rgb * A[..., None]).astype(F32), A.astype(F32), dither=True)
+    g = img[..., 0].astype(np.float64); a8 = img[..., 3]
+    print(f"  moon: grey p5/p50/p95 inside = {np.percentile(g[a8 == 255], 5):.0f} / {np.percentile(g[a8 == 255], 50):.0f} / "
+          f"{np.percentile(g[a8 == 255], 95):.0f}  ({len(cr_list)} craters)")
+    return img
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# 13. te5_star_window  (1024^2): the deep-space window on the clock's movement plate (behind the skeleton dial). An
+#     opaque near-black field (alpha 1 to r 0.985), a faint grey Milky-Way band with dust lanes across it, ~2600
+#     single-pixel stars and ~70 brighter ones with a soft core, a few with tiny 4-point spikes. Night Brightness 2.0
+#     blooms only the brightest stars.
+# --------------------------------------------------------------------------------------------------------------------
+
+def make_star_window():
+    n = 1024
+    x, y, r, th = polar(n)
+    # the band: a soft diagonal Milky Way, its own fine structure and two dark dust lanes along it
+    ang_ = math.radians(32.0)
+    across = np.broadcast_to(x * math.sin(ang_) - y * math.cos(ang_), r.shape) + 0.06 * cart_noise(n, 1301, beta=1.5, fmin=2.0)
+    along = np.broadcast_to(x * math.cos(ang_) + y * math.sin(ang_), r.shape)
+    band = np.exp(-0.5 * (across / 0.20) ** 2) * (0.75 + 0.25 * np.cos(along * 2.2))
+    cloud = unit01(cart_noise(n, 1302, beta=1.25, fmin=3.0), 1.4)
+    fil = unit01(cart_noise(n, 1303, beta=0.9, fmin=10.0), 1.2)
+    lane = np.exp(-0.5 * ((across - 0.03 + 0.03 * cart_noise(n, 1304, beta=1.6, fmin=2.0)) / 0.025) ** 2)
+    lane2 = np.exp(-0.5 * ((across + 0.09) / 0.018) ** 2) * sstep(-0.2, 0.3, along)
+    neb = band * (0.10 + 0.14 * cloud * fil) * (1.0 - 0.85 * np.maximum(lane, 0.7 * lane2))
+    base = 0.018 + 0.010 * unit01(cart_noise(n, 1305, beta=0.8, fmin=6.0), 1.0)
+    # brighter stars: soft cores (2-4 px at SS) drawn at SS; more of them inside the band
+    rng = np.random.default_rng(1306)
+    pts = []
+    while len(pts) < 70:
+        rr_ = 0.97 * math.sqrt(rng.random()); tt = rng.random() * 2 * math.pi
+        px_, py_ = rr_ * math.cos(tt), rr_ * math.sin(tt)
+        acr = px_ * math.sin(ang_) - py_ * math.cos(ang_)
+        if rng.random() > 0.35 + 0.65 * math.exp(-0.5 * (acr / 0.22) ** 2):
+            continue
+        pts.append((px_, py_, rng.uniform(1.2, 3.2), rng.uniform(0.55, 1.0)))
+    bright = gauss_dots(r.shape, pts, n * SS / 2.0)
+    # spikes on the five brightest
+    spikes = np.zeros_like(r)
+    for px_, py_, rad_, val in sorted(pts, key=lambda p: -p[3] * p[2])[:5]:
+        dx = (x - px_) * (n * SS / 2.0); dy = (y - py_) * (n * SS / 2.0)
+        ln = 14.0 * rad_
+        spikes = np.maximum(spikes, val * 0.8 * (np.exp(-np.abs(dx) / ln) * np.exp(-(dy / 0.9) ** 2)
+                                                + np.exp(-np.abs(dy) / ln) * np.exp(-(dx / 0.9) ** 2)))
+    L = screen(base + neb, bright, spikes)
+    A = np.clip((0.985 + 0.008 - r) / 0.016, 0.0, 1.0)
+    rgb = np.dstack([L, L, np.minimum(1.0, L * 1.02 + 0.006)]).astype(F32)
+
+    def stars(C, A1):
+        rs = np.random.default_rng(1307)
+        m = n
+        for _ in range(2600):
+            rr_ = 0.975 * math.sqrt(rs.random()); tt = rs.random() * 2 * math.pi
+            i = int((m / 2) - rr_ * math.sin(tt) * (m / 2)); jx = int((m / 2) + rr_ * math.cos(tt) * (m / 2))
+            vv = 0.25 + 0.75 * rs.random() ** 2.4
+            if C[i, jx, 0] < vv:
+                C[i, jx] = (vv, vv, min(1.0, vv * 1.02 + 0.006))
+        return C, A1
+
+    img = finish("te5_star_window", (rgb * A[..., None]).astype(F32), A.astype(F32), dither=True, extra=stars)
+    g = img[..., 0]
+    print(f"  star window: mean L inside = {g[img[..., 3] == 255].mean() / 255:.3f}")
+    return img
+
+
+# --------------------------------------------------------------------------------------------------------------------
 # 10. te5_stream  (256x64, beam band tiled in U): ink edges, white core with waving filaments
 # 11. te5_ribbon  (256x128): ink ribbon, white hairlines, faint waving centre filament
 # Image x runs along the beam (U, seamless with period 256 px); y runs across it (v in [-0.5, 0.5]).
@@ -1108,11 +1303,11 @@ def label(im, text, xy, sz=15, fill=(235, 235, 240)):
 
 
 SHEET_ORDER = ["te5_dial_inlay", "te5_subdial", "te5_accretion", "te5_galaxy_floor", "te5_galaxy_arms", "te5_galaxy_core",
-               "te5_engraving", "te5_halo", "te5_hairspring", "te5_stream", "te5_ribbon"]
+               "te5_engraving", "te5_halo", "te5_hairspring", "te5_stream", "te5_ribbon", "te5_moon", "te5_star_window"]
 
 
 def sheet_overview():
-    """All 11 textures over the dark and the sky background (tiles 400 px; beams tiled 2x along U)."""
+    """All 13 textures over the dark and the sky background (tiles 400 px; beams tiled 2x along U)."""
     tile, pad, cols = 400, 14, 4
     rows = math.ceil(len(SHEET_ORDER) / cols)
     paths = []
@@ -1149,7 +1344,8 @@ def sheet_zoom():
              ("te5_hairspring", (256, 160, 512, 352), 2), ("te5_accretion", (600, 40, 1000, 300), 1),
              ("te5_galaxy_floor", (380, 380, 780, 640), 1), ("te5_galaxy_arms", (100, 300, 500, 560), 1),
              ("te5_galaxy_core", (160, 160, 352, 352), 2), ("te5_halo", (256, 0, 512, 256), 1),
-             ("te5_stream", (0, 0, 256, 64), 3), ("te5_ribbon", (0, 0, 256, 128), 2)]
+             ("te5_stream", (0, 0, 256, 64), 3), ("te5_ribbon", (0, 0, 256, 128), 2),
+             ("te5_moon", (300, 300, 700, 560), 1), ("te5_star_window", (380, 380, 636, 636), 1)]
     paths = []
     for bgname, bg in (("dark", BG_DARK), ("sky", BG_SKY)):
         tiles = []
@@ -1425,6 +1621,17 @@ MANIFEST = [
      "Beam texture (x along, seamless 256 px). Ink body (14,14,18 +-6), white hairlines at |v| 0.415, faint waving centre "
      "filament. The white hairlines need a LIGHT Beam Color: use WHITE with te5_ribbon. The spec's B5 Color (12,12,16) "
      "multiplies them to black (keep (12,12,16) only for the 'line' fallback)."),
+    ("te5_moon", "moon", "moon", "1024x1024",
+     "Photographic full-moon face for the moon's camera-facing sprite (review round 1, AD4; 9-stud BillboardGui)",
+     "North up, Earth-facing side: maria at grey 95-145 where the real ones are, highlands 212-240, ~60 craters with "
+     "lit upper-left rims and shadowed floors, rayed Tycho/Copernicus/Kepler/Aristarchus, faint limb darkening. Hard "
+     "alpha edge at r 0.985 (1.6 % ramp), no ring, no glow. With it uploaded the module swaps the white ball + craters "
+     "+ halo for a 6-stud grey core 4.4 studs behind this sprite; until then (fallback) it keeps the geometry moon."),
+    ("te5_star_window", "starWindow", "galaxy4", "1024x1024",
+     "Deep-space window on the clock's solid movement plate behind the skeleton dial (review round 1, AD1)",
+     "Opaque near-black field (alpha 1 to r 0.985), faint grey Milky-Way band at 32 deg with dust lanes, ~2600 "
+     "single-pixel stars and ~70 soft brighter ones (5 with tiny spikes). Turns with the centre wheel (+6 deg/s). "
+     "Until uploaded it falls back to the pass-4 galaxy (galaxy4), drawn dimmer."),
 ]
 
 
@@ -1456,7 +1663,7 @@ def check():
     sizes = {"te5_dial_inlay": (1024, 1024), "te5_subdial": (512, 512), "te5_accretion": (1024, 1024),
              "te5_galaxy_floor": (1024, 1024), "te5_galaxy_arms": (1024, 1024), "te5_galaxy_core": (512, 512),
              "te5_engraving": (1024, 1024), "te5_halo": (512, 512), "te5_hairspring": (512, 512),
-             "te5_stream": (256, 64), "te5_ribbon": (256, 128)}
+             "te5_stream": (256, 64), "te5_ribbon": (256, 128), "te5_moon": (1024, 1024), "te5_star_window": (1024, 1024)}
     for nm, (w, h) in sizes.items():
         im = Image.open(os.path.join(OUT, nm + ".png"))
         a = np.asarray(im.convert("RGBA")).astype(np.int32)
@@ -1534,6 +1741,8 @@ job("te5_halo", make_halo)
 job("te5_hairspring", make_hairspring)
 job("te5_stream", make_stream)
 job("te5_ribbon", make_ribbon)
+job("te5_moon", make_moon)
+job("te5_star_window", make_star_window)
 
 
 def main():

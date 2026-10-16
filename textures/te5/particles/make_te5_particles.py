@@ -7,8 +7,8 @@
 #   te5_mote    (128^2)                    P1 void swirl, P2 moon dust, P6a air dust, P8a galaxy motes, P11 foot drips
 #   te5_glint   (256^2)                    P5a/P5b glints riding the metal, P6b air glints
 #   te5_bokeh   (256^2)                    P6c big slow bokeh between the camera and the wearer
-#   te5_streak  (64x256)                   P9 funnel, P10a/b palm intake (VelocityParallel; the TOP of the image leads)
-#   te5_ash     (256^2, Grid2x2 Random)    P8b black ash flakes rising off the galaxy
+#   te5_streak  (256^2)                    P9 funnel, P10a/b palm intake, P12 speed trail (VelocityParallel; the TOP leads)
+#   te5_ash     (1024^2, Grid2x2 Random)   P8b black ash flakes rising off the galaxy (Roblox animates flipbooks on 1024^2 only)
 #
 # Only python3 + numpy + PIL (runs the same on Milo's Mac and in the cloud). Deterministic: every random source is
 # seeded, so a re-run gives byte-identical PNGs.
@@ -441,24 +441,25 @@ def make_bokeh():
 
 
 # ====================================================================================================================
-# te5_streak  (64 x 256): a vertical capsule of matter, white core + ink edges, bright leading (top) end, fading tail
+# te5_streak  (256 x 256): a thin vertical capsule of matter (1:10), white core + ink edges, bright leading (top) end,
+# fading tail. Square: Roblox draws particles square, so a 64x256 image was stretched into a fat pill (review round 1, F18).
 # ====================================================================================================================
 
 
 def make_streak():
-    W, H = 64, 256
+    W, H = 256, 256
     # work in output pixels: x from the centre line, y down from the top edge
     Ms, Ns = W * SS, H * SS
     xs = ((np.arange(Ms, dtype=F32) + 0.5) / SS - W / 2.0)[None, :]
     ys = ((np.arange(Ns, dtype=F32) + 0.5) / SS)[:, None]
-    R = 6.0                                  # 12 px wide
-    y0, y1 = 0.06 * H, 0.94 * H              # capsule extent including the round caps
+    R = 11.0                                 # 22 px wide (1:10 of its length)
+    y0, y1 = 0.04 * H, 0.96 * H              # capsule extent including the round caps
     a = (0.0, y0 + R)
     b = (0.0, y1 - R)
     dist, t = sd_segment(xs, ys, a, b)
     sd = dist - R                            # px
     body = coverage(sd, 1.0)                  # outer edge with 1 px AA
-    corew = sstep(4.0, 3.0, dist)             # white core |x| < ~3.5 px (6-7 px), 1 px blend into the ink
+    corew = sstep(7.5, 6.0, dist)             # white core |x| < ~6.75 px (13-14 px), 1.5 px blend into the ink
     # along the streak: f = 0 at the leading tip, 1 at the tail tip
     f = np.clip((ys - y0) / (y1 - y0), 0.0, 1.0)
     fade = 1.0 - sstep(0.60, 1.0, f) ** 0.85            # the tail fades over the lower 40 %
@@ -717,7 +718,8 @@ def make_smoke():
 
 
 # ====================================================================================================================
-# te5_ash  (256^2, Grid2x2, Random): 4 charred flakes, jagged 7-9-gons, silver highlight on the upper-left edges
+# te5_ash  (1024^2, Grid2x2, Random): 4 charred flakes in 512-px cells, jagged 7-9-gons, silver highlight on the upper-left
+# edges (Roblox only animates flipbooks on 1024^2 textures: "Particle texture must be 1024 by 1024 to use flipbooks")
 # ====================================================================================================================
 
 ASH_FLAKES = [  # (seed, main vertices, target extent of the cell)
@@ -761,7 +763,7 @@ def flake_polygon(seed, nv, extent):
     return P
 
 
-def render_flake(seed, nv, extent, cell=128):
+def render_flake(seed, nv, extent, cell=512):
     X, Y = cell_xy(cell)
     px = 1.0 / cell
     aa = px
@@ -845,14 +847,16 @@ MANIFEST = [
      "P6c big slow bokeh between camera and wearer (L7)",
      "Rounded hexagon (circumradius 0.46, corners 15 %), interior alpha 0.55 (L 0.9 -> 1.0 outward), rim band (outer "
      "8 %) alpha 0.85, 2 px AA, onion rings +-0.03 alpha. White."),
-    ("te5_streak", "streak5", "spark", "64x256", "None", None,
+    ("te5_streak", "streak5", "spark", "256x256", "None", None,
      "Matter streaks with VelocityParallel: P9 funnel and P10a/b palm intake",
-     "Vertical capsule y 0.06-0.94, 12 px wide: white core ~7 px (alpha 1), 2 px ink edges (RGB 15, alpha 0.9). The "
+     "Square 256 px (Roblox draws particles square). Vertical capsule y 0.04-0.96, 22 px wide (1:10): white core ~13 px "
+     "(alpha 1), ~4 px ink edges (RGB 15, alpha 0.9); the module draws it 2.2x the spark fallback's size. The "
      "TOP end leads (brightest); the tail fades over the lower 40 %. If streaks fly tail-first in Studio, flip the "
      "image vertically before upload (VelocityParallel orientation check)."),
-    ("te5_ash", "ash5", "ash", "256x256", "Grid2x2", "Random",
+    ("te5_ash", "ash5", "ash", "1024x1024", "Grid2x2", "Random",
      "P8b black ash flakes rising off the galaxy",
-     "Flipbook 2x2 Random: 4 charred flakes (7, 9, 8, 8 main corners with torn edges), extent 0.64-0.74 of the cell, "
+     "1024x1024 (Roblox only animates flipbooks on 1024^2 textures). Flipbook 2x2 Random: 4 charred flakes in 512 px "
+     "cells (7, 9, 8, 8 main corners with torn edges), extent 0.64-0.74 of the cell, "
      ">= 12 % padding. Body RGB 14-22 alpha 1 with fibre grain and a soft fold; 1 px silver (190) highlight on the "
      "upper-left edges."),
 ]
@@ -1051,13 +1055,13 @@ def sheet_frames():
             cp.put_plain(resize_premult(cell_of(sm, 4, k), 128, 128), x, yy)
             texts.append((f"{k}  a{SMOKE_PEAK[k]:.2f}", (x + 3, yy + 2)))
         y += 2 * 136
-        texts.append(("te5_ash: 4 flakes (Random), 2:1", (8, y + 6)))
+        texts.append(("te5_ash: 4 flakes (Random), each 512 px cell shown at 256 px", (8, y + 6)))
         y += 30
         for k in range(4):
             x = 8 + k * 268
             cp.rgb[y:y + 256, x:x + 256] = np.asarray(bg, F32) / 255.0
             c = cell_of(ah, 2, k)
-            cp.put_plain(np.repeat(np.repeat(c, 2, 0), 2, 1), x, y)
+            cp.put_plain(resize_premult(c, 256, 256), x, y)
         out = cp.image()
         for t, xy in texts:
             label(out, t, xy, 13)
@@ -1070,9 +1074,9 @@ def sheet_frames():
 def sheet_zoom():
     """The pixels themselves (nearest-neighbour zoom): edges, AA, ink outlines, no fringes."""
     crops = [("te5_mote", (0, 0, 128, 128), 4), ("te5_glint", (88, 88, 168, 168), 4),
-             ("te5_streak", (16, 0, 48, 64), 4), ("te5_streak", (16, 140, 48, 256), 3),
+             ("te5_streak", (96, 0, 160, 64), 4), ("te5_streak", (96, 140, 160, 256), 3),
              ("te5_shards", (256 + 60, 256 + 50, 256 + 160, 256 + 150), 4), ("te5_shards", (512 + 70, 768 + 60, 512 + 170, 768 + 160), 4),
-             ("te5_ash", (128 + 20, 0 + 20, 128 + 100, 0 + 90), 5), ("te5_bokeh", (0, 60, 110, 170), 4),
+             ("te5_ash", (512 + 80, 0 + 80, 512 + 400, 0 + 360), 1), ("te5_bokeh", (0, 60, 110, 170), 4),
              ("te5_smoke", (256, 0, 512, 256), 2)]
     paths = []
     for bgname, bg in (("dark", BG_DARK), ("sky", BG_SKY)):
@@ -1304,7 +1308,7 @@ def check():
             fails.append(msg)
 
     sizes = {"te5_shards": (1024, 1024), "te5_smoke": (1024, 1024), "te5_mote": (128, 128), "te5_glint": (256, 256),
-             "te5_bokeh": (256, 256), "te5_streak": (64, 256), "te5_ash": (256, 256)}
+             "te5_bokeh": (256, 256), "te5_streak": (256, 256), "te5_ash": (1024, 1024)}
     imgs = {}
     for nm, (w, h) in sizes.items():
         im = Image.open(os.path.join(OUT, nm + ".png"))
@@ -1429,17 +1433,17 @@ def check():
     a = imgs["te5_streak"].astype(F32) / 255
     rowy = int(0.3 * 256)
     rA = a[rowy, :, 3]
-    ok(int((rA > 0.97).sum()) in (6, 7, 8), f"te5_streak: white core {int((rA > 0.97).sum())} px wide (spec 6)")
+    ok(12 <= int((rA > 0.97).sum()) <= 15, f"te5_streak: white core {int((rA > 0.97).sum())} px wide (13)")
     vis = (a[rowy, :, 3] > 0.5)
-    ok(10 <= int(vis.sum()) <= 13, f"te5_streak: total width {int(vis.sum())} px (spec 12)")
+    ok(20 <= int(vis.sum()) <= 24, f"te5_streak: total width {int(vis.sum())} px (22: 1:10 of its length)")
     inkpx = (a[rowy, :, 3] > 0.8) & (a[rowy, :, 0] < 0.1)
     ok(int(inkpx.sum()) >= 2, f"te5_streak: ink edges present ({int(inkpx.sum())} px RGB<=25, alpha>=.8)")
-    ok(a[:int(0.06 * 256) - 1, :, 3].max() == 0 and a[int(0.94 * 256) + 1:, :, 3].max() == 0,
-       "te5_streak: capsule within y 0.06-0.94")
-    top_L = a[int(0.12 * 256), 32, 0]
-    mid_L = a[int(0.55 * 256), 32, 0]
+    ok(a[:int(0.04 * 256) - 1, :, 3].max() == 0 and a[int(0.96 * 256) + 1:, :, 3].max() == 0,
+       "te5_streak: capsule within y 0.04-0.96")
+    top_L = a[int(0.12 * 256), 128, 0]
+    mid_L = a[int(0.55 * 256), 128, 0]
     ok(top_L > mid_L, f"te5_streak: the leading (top) end is brightest (L {top_L:.2f} vs {mid_L:.2f})")
-    colA = a[:, 31:33, 3].mean(axis=1)
+    colA = a[:, 127:129, 3].mean(axis=1)
     ok(colA[int(0.55 * 256)] > 0.97 and colA[int(0.80 * 256)] < 0.6 and colA[int(0.92 * 256)] < 0.1,
        f"te5_streak: tail fades over the lower 40 % ({colA[int(0.55 * 256)]:.2f} / {colA[int(0.8 * 256)]:.2f} / "
        f"{colA[int(0.92 * 256)]:.2f})")
@@ -1450,18 +1454,19 @@ def check():
     for k in range(4):
         c = cell_of(a, 2, k)
         A = c[..., 3]
-        lim = int(round(0.12 * 128))
+        cs = A.shape[0]
+        lim = int(round(0.12 * cs))
         ring = np.ones_like(A, bool)
         ring[lim:-lim, lim:-lim] = False
         pad_ok &= int(A[ring].max()) == 0
         ys_, xs_ = np.nonzero(A > 127)
-        ext = max(xs_.max() - xs_.min() + 1, ys_.max() - ys_.min() + 1) / 128
+        ext = max(xs_.max() - xs_.min() + 1, ys_.max() - ys_.min() + 1) / cs
         exts.append(ext)
         ext_ok &= 0.6 <= ext <= 0.8
         solid = A == 255
         inner = solid & np.roll(solid, 2, 0) & np.roll(solid, -2, 0) & np.roll(solid, 2, 1) & np.roll(solid, -2, 1)
         body_ok &= bool(c[..., 0][inner].min() >= 14 and c[..., 0][inner].max() <= 22)
-        hl_ok &= int((c[..., 0] >= 150).sum()) > 20
+        hl_ok &= int((c[..., 0] >= 150).sum()) > 20 * cs // 128
     ok(pad_ok, "te5_ash: >= 12 % padding in all 4 cells")
     ok(ext_ok, "te5_ash: flakes span 0.6-0.8 of the cell -> " + " ".join(f"{e:.2f}" for e in exts))
     ok(body_ok, "te5_ash: body RGB 14-22 at alpha 1")
