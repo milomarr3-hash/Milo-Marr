@@ -351,6 +351,13 @@ do
 				if rec.fx and (rec.visible or H.UPDATE_WHILE_HIDDEN) then
 					local s = { cf = hrpCF, hover = rec.hover, glide = rec.g, t = t, now = H.epochNow(), legLen = legLen(rec),
 						ground = rec.ground, alpha = rec.alpha }
+					-- (the nan_frame scenario: hand this one update a NaN HumanoidRootPart CFrame, as a physics fling can, while
+					-- the framework's own culling still sees the real one)
+					if rec.nanOnce then
+						rec.nanOnce = nil
+						local nan = 0 / 0
+						s.cf = CFrame.new(nan, nan, nan)
+					end
 					rec.lastS = s
 					local prevWT, prevR = H.WT, H.WT_REDUNDANT
 					H.WT, H.WT_REDUNDANT = H.FW.update, H.FWR

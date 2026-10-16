@@ -1064,7 +1064,7 @@ TEX5_FIXTURE = """-- stand-in module with the pass-5 spec's TEX5 block (spec sec
 local TEX = { glow = "rbxassetid://88172507927269" }
 local TEX5 = { -- te5 uploads (textures/te5/); "" until uploaded from the Mac
 	dialInlay = "", subdial = "", accretion = "", galaxyFloor = "", galaxyArms = "", galaxyCore = "", engraving = "",
-	halo = "", stream = "", ribbon = "", moon = "", starWindow = "",
+	halo = "", stream = "", moon = "", starWindow = "",
 	shards5 = "", smoke5 = "", mote = "", glint5 = "", bokeh = "", streak5 = "", ash5 = "",
 }
 local TEX5_LAYOUT = { shards5 = { "Grid4x4", "Loop" }, smoke5 = { "Grid4x4", "OneShot" } }

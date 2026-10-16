@@ -114,6 +114,15 @@ What was changed to get there (all in this folder unless noted):
 - **Scenery.** The plaza, paths, palms and clouds are procedural: placement, HUD, the fountain area and Milo's avatar (blocky
   stand-in, no accessories) differ from the place. The sun's direction depends on GeographicLatitude, which is not recorded.
 - **Meshes.** Film meshes are procedural stand-ins; other MeshParts are boxes; MeshPart textures and SurfaceAppearance are not drawn.
+- **How Roblox sorts a particle emitter against other transparent objects.** The preview sorts each emitter at its
+  particles' centre, the most favourable choice; Roblox may key it at its host part. `render.mjs --sort host` draws the
+  other rule: check that the intended layering holds both ways (review round 3 moved THE END's floor particles and the
+  void's swirl onto their own carriers above the GUI planes for this reason).
+- **Anti-aliasing.** The preview draws with 4x MSAA; Roblox at lower graphics levels and on phones draws without it, where
+  a moving hairline under a pixel wide breaks into a crawling stair-step. `render.mjs --aa off` shows that case (pass 5
+  thickens its hairlines with distance; the flicker lint cannot see aliasing).
+- **Sloped ground** (the `slope` scenario): the plaza part is tilted and the renderer tilts its ground, paths and props with
+  it; real terrain (hills, beaches, stairs) is not modelled.
 - **Conventions pass 4 doesn't use** (WedgePart / CornerWedge orientation, Top-face text, beams without FaceCamera, Beam
   Stretch repeats, ShapePartial and Squash maths): from memory of Roblox, visible in the fixtures, unverified.
 - **Performance, LOD, graphics-quality levels** and anything time-varying in Studio (flipbook timing, random particle placement).

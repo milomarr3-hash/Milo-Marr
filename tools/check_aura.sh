@@ -3,7 +3,7 @@
 #
 #   tools/check_aura.sh MODULE.lua OUTDIR [options]
 #
-#   1. the harness runs the module in all 32 scenarios           -> OUTDIR/harness/report.md (+ report.json, snapshots/)
+#   1. the harness runs the module in all 35 scenarios           -> OUTDIR/harness/report.md (+ report.json, snapshots/)
 #   2. the harness runs day_idle and night_idle once per view, with the camera of that view, and snapshots t = 8 s
 #      (so anything the module places from the camera, like pass 5's viewer-anchored clock, is placed for that view)
 #                                                                -> OUTDIR/views/snapshots/<scenario>@<view>/

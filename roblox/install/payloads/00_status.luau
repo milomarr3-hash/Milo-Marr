@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 00_status.luau | read-only status (run any time)
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "00_status.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-141659-402664341-11-730820328"
-local NEW_LEN, NEW_SUM = 141659, 402664341
+local RUN = "TheEnd-143408-678854451-11-550560669"
+local NEW_LEN, NEW_SUM = 143408, 678854451
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 11
-local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
-local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
+local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
+local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)

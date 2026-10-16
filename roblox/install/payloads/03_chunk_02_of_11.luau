@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 03_chunk_02_of_11.luau | step 3: piece 2 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "03_chunk_02_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-141659-402664341-11-730820328"
-local NEW_LEN, NEW_SUM = 141659, 402664341
+local RUN = "TheEnd-143408-678854451-11-550560669"
+local NEW_LEN, NEW_SUM = 143408, 678854451
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 11
-local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
-local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
+local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
+local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,26 @@ local function chunkOk(h, i)
 end
 
 local K = 2
--- piece 2 of 11 of the new source (13273 bytes, checksum 792637773, long bracket level 0)
+-- piece 2 of 11 of the new source (13240 bytes, checksum 921320026, long bracket level 0)
 local DATA = [[
+			end)
+			return
+		end
+		dead[id] = status
+		for _, k in ipairs(ks) do failKey(k, id, status) end
+	end
+	function preloadUsed()
+		local ids = {}
+		for k in pairs(usedKeys) do
+			local id = idOf(TEX5[k], k)
+			if id and not string.match(id, "^pending:") then
+				local ks = keysOf[id]
+				if not ks then
+					ks = {}
+					keysOf[id] = ks
+				end
+				if not table.find(ks, k) then table.insert(ks, k) end
+				if dead[id] then
 					failKey(k, id, dead[id]) -- (another key with this id already failed to load)
 				elseif not asked[id] then
 					asked[id] = true
@@ -266,13 +284,6 @@ local ownGone, ownGoneChar = nil, setmetatable({}, { __mode = "v" }) -- (weak: a
 local ownerHub = nil
 local GRADE_ON = { Saturation = -0.75, Brightness = -0.1, Contrast = 0.15, TintColor = Color3.fromRGB(232, 238, 255) }
 local GRADE_OFF = { Saturation = 0, Brightness = 0, Contrast = 0, TintColor = Color3.new(1, 1, 1) }
--- where the time shards leave the bezel on equip (K angles), and the bezel point at eleven the metal shards break off from
-local SHARD_A = {}
-for i = 0, 7 do SHARD_A[i] = math.rad(300 + 20 * i) end
-local FEED_PT = Vector3.new(-10.72, 9.00, 0)
--- the camera closeness (in 0.05 steps) at which the floor's twinkles step down a size (each step under 20 %)
-local MOTE_T = { 0.3, 0.45, 0.6, 0.75 }
-local DOWN9 = Vector3.new(0, -9, 0) -- (the dais's slope rays)
 ]]
 
 local function main()

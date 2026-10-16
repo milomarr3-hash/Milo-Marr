@@ -69,9 +69,10 @@ floats inside a silver armillary of 3 gimballed rings. The middle ring is a dark
 hang on an invisible balance beam beside him and rock slowly like scales. On the viewer's left is a solid cratered white moon,
 tidally locked to him. On the viewer's right is a pure-black void with a white photon ring, a lensed arc, a white 4-point heart and
 an opaque swirling accretion disc whose near half crosses in front of the core. A silver stream arcs from the moon into one palm and
-an ink stream from the void into the other. An ink ribbon falls from the void into a galaxy dais below: a dark pool, Ø 30, with
-white arms, a raised silver rim and floating arm layers. A balance wheel swings under the feet. Particles do work: matter, shards,
-smoke, glints, drips and dust. The palette is black, white and silver. It moves like a mechanism: constant rotations, smooth
+an ink stream from the void into the other. Below is a galaxy dais: a dark pool, Ø 30, with white arms, a raised silver rim and
+floating arm layers, inside an engraved clock-ring stage Ø 56 (review round 3; the ink ribbon of the first build became the void's
+lensed disc). A balance wheel swings under the feet. Particles do work: matter, shards,
+smoke, glints, sparks and dust. The palette is black, white and silver. It moves like a mechanism: constant rotations, smooth
 oscillations, and overshoot-locks only on assembly. No brightness ever pulses.
 
 ```
@@ -86,10 +87,10 @@ FRONT VIEW (viewer in front of the wearer; heights relative to O = body centre; 
           .-.         | VIII GI    rete  GH IV  |         (void)
  moon -> (   ) ===>    \  VII   [wearer]   V   /    <=== @====    orbs at x -/+12.5, y +6.0 (rocking +/-10 deg)
           '-'           '. GC   (armillary) GB.'          \       void accretion disc nearly edge-on
-                          '-..___  VI ___..-'              \      ink ribbon to the dais
+                          '-..___  VI ___..-'              \      void accretion disc
              ________________[balance wheel]________________\     wheel  -3.35 below O (under the feet)
            (====== dark galaxy pool, white arms, raised silver rim Ø31 ======)   ground
-       ( - - - - - - - - - engraved clock ring Ø40 on the ground - - - - - - - - - )
+       ( - - - - - - - - engraved clock-ring stage Ø56 on the ground - - - - - - - - )
 
 TOP VIEW (camera at the bottom)
 
@@ -118,16 +119,16 @@ All per-frame. `s` is the framework state (§17.1). `g = s.glide` (0..1).
 | **V** | `CFrame.new(O) * CFrame.Angles(0, ψ, 0)` | LookVector = horizontal direction **camera → wearer** (away from the viewer). +X = **viewer's right**, +Y up, **+Z toward the viewer**. |
 | **cz, fp** (camera closeness) | `zoomD` = the horizontal camera distance from O, smoothed `1 - exp(-3*dt)`; `cz = smooth((ZOOM_FAR 30 - zoomD) / (ZOOM_FAR - ZOOM_NEAR 14))` (0 at 30+ studs: the showcase layout; 1 at Roblox's 12.5 default zoom); `fp = smooth((4 - zoomD) / 2.5)` for the owner only (first person) | |
 | **Vk** (height ride, review round 2) | `V + (0, kY − O.Y, 0)`: `kY` is a critically damped spring on O.Y (k 4 grounded, 12 flying or seated; set to O.Y after a long hide), so a jump does not throw the clock and the orbs (§8.6) | as V |
-| **K** (clock) | `Vk * CFrame.new(0, Hc, -Dc) * CFrame.Angles(0, rad(ya), 0) * CFrame.Angles(rad(-tilt), 0, 0)` with `Hc = 9.85 - 0.5*g - 3*cz + 16*fp - 3*sit`, `Dc = 8 + 2*g + D*cz + 6*fp - 2*sit` (**D = 32 for the owner, 16 for other players' auras**: review round 2, `CLOSE.dist` / `CLOSE.distRemote`), `tilt = clamp(8 + 14*g + 4*speed + 24*cz - 32*fp, -10, 50)`, `ya = 9 + 5*sin(2π*s.t/16)`; then `Hc >= daisY + layer + 1.2 - kY + 14.2*cos(tilt) + 1.44*sin(tilt)` (the bezel's lowest edge clears the dais rim by 0.24) | x = viewer's right, y = toward XII, **z = toward the viewer** (+z is in front of the dial). The top leans away from the viewer. `sit`, `speed`: §8.6 / P12 state, smoothed 0..1. |
+| **K** (clock) | `Vk * CFrame.new(0, Hc, -Dc) * CFrame.Angles(0, rad(ya), 0) * CFrame.Angles(rad(-tilt), 0, 0)` with `Hc = 9.85 - 0.5*g - 3*cz + 16*fp - 3*sit`, `Dc = 8 + 2*g + D*cz + 6*fp - 2*sit` (**D = 32 for the owner, 16 for other players' auras**: review round 2, `CLOSE.dist` / `CLOSE.distRemote`), `tilt = clamp(8 + 14*g + 4*speed + 24*cz - 32*fp, -10, 50)`, `ya = 9 + 5*sin(2π*s.t/16)`; then `Hc >= daisY + layer + 1.2 - kY + 14.2*cos(tilt) + (tilt >= 0 and 1.44 or 1.12)*|sin(tilt)|` (the bezel's lowest edge, its back face leaning back or its front face leaning forward, clears the dais rim by 0.24; review round 3); for the owner `Dc += fitD` (the frame fit, §5); on a slope rising behind the wearer `Hc >= minHc + min(4, rise*Dc)` (§8.6); another wearer's clock `Dc += yieldD` (§5) | x = viewer's right, y = toward XII, **z = toward the viewer** (+z is in front of the dial). The top leans away from the viewer. `sit`, `speed`: §8.6 / P12 state, smoothed 0..1. |
 | **clock angle θ** | Measured **clockwise from XII as the viewer sees it**. Point at radius r: `(r*sin θ, r*cos θ, z)`. A part laid along the radius at θ: `CFrame.Angles(0, 0, -θ) * CFrame.new(0, r, z)`. | |
-| **A0** (armillary) | `CFrame.new(O + (0, 1.3 - 1.0*sit + lift, 0)) * W.Rotation`; `lift` (smoothed, rate 6, never more than 0.3 behind) = how far the lowest ring edge (meridian reach 6.30, equator 5.52, ecliptic 4.90, from each ring's normal) would dip below `daisY + layer + 0.96` | **Upright** (review round 2): leaning it with the glide (−18°·g) laid the dark equator across the head line from the follow camera, hiding the head and shoulders in 31 % of walking samples (now 4 %). The body's glide pose and the clock's +14°·g tilt carry the forward motion. |
-| **Pv** (balance pivot) | `Vk * CFrame.new(0, 6.0 - 5*cz, 1.5 - 10.5*cz + 12*fp) * CFrame.Angles(0, 0, β)`, `β = rad(10) * sin(2π*s.t/10) * swayAmp` (review round 2: lower and nearer the camera when it is close, so the 9-stud moon face stays inside the top edge at the default zoom; in first person 12 studs back, about 97° off the line of sight, outside the field of view) | Moon centre `moonC = (Pv * CFrame.new(-arm, 0, 0)).Position`, void centre `voidC = (Pv * CFrame.new(arm, 0, 0)).Position`, `arm = 12.5 - 1.0*cz` (the void stays ≥ 13.4 studs out, so its disc clears the rings). |
+| **A0** (armillary) | `CFrame.new(O + (0, 1.3 - 1.0*sit + lift, 0)) * W.Rotation`; `lift` (smoothed, rate 6, never more than 0.3 behind) = how far the lowest ring edge (meridian reach 6.23, equator 5.54, ecliptic 4.79, from each ring's normal; review round 3's finer rings) would dip below `daisY + layer + 0.96 + 6.3*tan(slope)` | **Upright** (review round 2): leaning it with the glide (−18°·g) laid the dark equator across the head line from the follow camera, hiding the head and shoulders in 31 % of walking samples (now 4 %). The body's glide pose and the clock's +14°·g tilt carry the forward motion. |
+| **Pv** (balance pivot) | `Vk * CFrame.new(0, 6.0 - 5*cz, 1.5 - 18*cz*(1 - fp) + 1.5*fp - yieldD) * CFrame.Angles(0, 0, β)`, `β = rad(10) * sin(2π*s.t/10) * swayAmp` (review round 3: lower and **well behind the wearer** when the camera is close, so at the default zoom the moon sits beside the dial at about its size (226 px, was 337) and clear of the HUD's stats panel; in first person 3 studs behind the camera, about 100° off the line of sight, outside the field of view) | Moon centre `moonC = (Pv * CFrame.new(-arm, 0, 0)).Position`, void centre `voidC = (Pv * CFrame.new(arm, 0, 0)).Position`, `arm = 12.5 + 2*cz` (a little wider close up; the void stays ≥ 13.4 studs out, so its disc clears the rings). |
 | **n, dc** | `n = unit(camPos - voidC)`, `dc = max(|camPos - voidC|, 5)` | `up = (|n.Y| > 0.98) and Vector3.zAxis or Vector3.yAxis` (passed as the 3rd argument of every lookAt below). |
 | **Hf** (heart) | `CFrame.lookAt(voidC + n*4.1, voidC, up)` | x = viewer's right, y up, z toward the viewer. Same for Pf. |
 | **Pf** (photon) | `CFrame.lookAt(voidC + n*zt, voidC, up)`, `zt = 16/dc` (R²/dc with R = 4) | Ring radius `rt = 4*sqrt(1 - 16/dc^2)` = the silhouette circle of the core seen from the camera. |
 | **Dk** (accretion) | `CFrame.new(voidC) * V.Rotation * CFrame.Angles(rad(24), 0, 0)` | The disc normal tilts 24° toward the viewer (reads as a disc, not a line), so the viewer sees its top face. The near half dips in front of the core's lower half. |
-| **Gd** (dais) | `CFrame.new(O.X, daisY + layer, O.Z)` (world-aligned) | daisY and the per-wearer `layer` lift in §8.6. |
-| **Bw** (wheel) | `CFrame.new(O.X, y, O.Z) * CFrame.Angles(0, wheelAngle, 0)`, `y = max(lerp(O.Y - s.legLen - 0.9, dY + 1.2, sit), dY + 1.2)`, `dY = daisY + layer` | 0.9 under the soles (the wearer floats free of it); on the dais when seated |
+| **Gd** (dais) | `CFrame.new(O.X, daisY + layer, O.Z) * tiltTo(gn)` (review round 3: tilted to the fitted ground plane `gn`, §8.6; level when no clean plane fits, flying or seated) | daisY and the per-wearer `layer` lift in §8.6. |
+| **Bw** (wheel) | `CFrame.new(O.X, y, O.Z) * CFrame.Angles(0, wheelAngle, 0)`, `y = max(lerp(O.Y - s.legLen - 0.9, dY + 1.2, sit), dY + 1.2 + 2.5*tan(slope))`, `dY = daisY + layer` | 0.9 under the soles (the wearer floats free of it); on the dais when seated; always level (it carries the far beacon) |
 
 Every `rate × time` angle is wrapped with `% (2π)` before use (as in pass 4), so precision holds over long sessions.
 
@@ -189,6 +190,24 @@ psi = yawTarget + x
   the zoom factor, the dais, the height ride and the ring lift to where they belong instead of springing in from where they were.
 - **Camera directly above** (`dh ≤ 0.2·|v.Y|`, steeper than about 79°): yaw is held, so the clock does not spin. From above you see its
   top edge, the crown and the bow.
+- **Frame fit (owner only; review round 3, R3W-1).** The close-camera form only worked round 12.5-20 studs: between ~22 and
+  ~40 studs (`cz` ramps out) the 36-stud watch towered over the frame and XII was cut at the usual downward pitch. Now the
+  clock steps back along the view until the point `FRAME_TOP` studs above its hub (default 9.6 = the XII numeral, the hands at
+  midnight) is inside the top of the frame:
+  `lim = min(1.45, asin(look.Y) + rad(FieldOfView) * 0.455)` (the frame's top edge less ~3°),
+  `push = clamp((kY + Hc + FT*cos(tilt) - camPos.Y) / max(tan(lim), 0.05) - dh - FT*sin(tilt) - Dc, 0, CLOSE.dist + 1.1*max(0, FT - 9.6)) * (1 - fp)`,
+  smoothed `1 - exp(-3*dt)` (snapped after a long hide), `Dc += fitD`. Looking more than ~32° down the push reaches its cap
+  continuously (nothing can fit then). Measured on the critic's prototype: XII in frame at every zoom from 12.5 to 60 at 15-27°
+  of pitch; the studio 40-stud view unchanged. `FRAME_TOP = 22.4` fits the whole watch with its bow (smaller at the default
+  zoom), `0` turns it off: an A/B for Milo.
+- **Another wearer's clock in front of yours (review round 3, R3W-4).** The owner's build publishes its hub (`ownerHub`, a
+  module-level value cleared when hidden or destroyed). A remote build tests the segment camera → ownerHub against where its
+  own clock disc (R 14.5) and orbs (5.5 / 7.0) would stand without stepping back; while it hits (held 1.5 s) its clock and
+  orbs step back along the view (`yieldD`, spring rate 3, at most 48) until they stand 12 studs behind your hub: smaller,
+  still solid (no pale ghost). Measured: `pair_behind` and `pair_side` hide your hub or XII in 0 of 11 samples (11/11 before).
+- **Teleports and bad frames (review round 3, CR3-01, R3S-9).** A move of 30+ studs, or more than 8 vertically, in one frame
+  snaps the springs like a long hide (a teleport is not a fall). A NaN position or hover skips the frame; a spring state that
+  went NaN anyway snaps everything next frame. A NaN camera position keeps the last good one.
 - **dt** is clamped to 0.1 before use. ψ, ψVel and yawTarget must never become NaN (assert in the harness).
 - **Fallback flag** `CONFIG.VIEWER_ANCHOR = false`: `V` is replaced by `W * CFrame.Angles(0, π, 0)` (clock behind the wearer facing
   forward, like pass 4). For the owner only (`ctx.isLocal`), while the camera→head segment crosses the clock disc (R 14), every clock
@@ -211,7 +230,7 @@ beyond ≈ `Dc - z` (ignoring the 8° tilt).
 | **L5** | −4.6 … +4.6 | The wearer, time shards riding the ecliptic (r 4.0 from A0), palm intake |
 | **L6** | −1.5 ± 6.5 | Moon (Ø 9) and void (Ø 8) at 1.5 toward the viewer. The accretion disc's near edge reaches −7.8. Palm streams, near armillary bands crossing the torso. |
 | **L7** | −2.5 … −10 | Bokeh volume (centre 7.5 toward the viewer), fine dust |
-| **Ground** | — | Dark dais pool Ø 29.6, silver rim Ø 31.1, floating arm layers at +0.42 and +0.66, engraved ring Ø 40, balance wheel 2.05 above the ground under the feet, ink ribbon landing on the dais rim |
+| **Ground** | — | Dark dais pool Ø 29.6, silver rim Ø 31.1, floating arm layers at +0.42 and +0.66, engraved stage Ø 56 (review round 3; was Ø 40), balance wheel 2.05 above the ground under the feet; on a gentle slope the dais lies along the ground (§8.6) |
 
 **Clearances** (the harness asserts each, §18.2). Void disc far edge vs clock front: ≥ 0.7. Armillary sweep (max reach 6.28 from
 A0) vs moon/void surfaces: ≥ 0.8. Armillary vs the void's accretion disc: ≥ 0.2. Armillary vs head, hands and feet sample points:
@@ -287,7 +306,7 @@ solid (a Highlight paints a part that is still fading in at full strength, which
   outer 12–15 % and the inner hole edge.
 - **Soft elements allowed (the only ones):** the moon halo (rim-only, 0.65 day / 0.45 night, fading out as the camera comes
   close), the night-only bezel corona (rim-only), the event-horizon glow (rim-only particles, §8.3 V4b), bokeh (peak 0.72), smoke
-  (peak 0.16 dark / 0.32 silver), one ground mist (peak 0.80), translucent particles ≤ 0.6 studs, and **particles with an opaque
+  (peak 0.08 dark / 0.32 silver; review round 3: the void's ink smoke is a dense billow, so it reads as ink, not a teal veil), one ground mist (peak 0.80), translucent particles ≤ 0.6 studs, and **particles with an opaque
   core** (peak transparency ≤ 0.15: motes, glints, streaks, shards, ash) **up to 2 studs** (review round 2: at Milo's 36-40-stud
   framings a 0.6-stud mote's opaque core was about 3 px, so the particles added almost nothing; pass 4's sparkles, which do show in
   the real captures, were 0.6-1.4 studs at Brightness 2.4).
@@ -412,18 +431,25 @@ Flat-band ring recipe (ring in its frame's XY plane): segment i at θi = (i + 0.
 
 | Ring | Frame | R | w (radial) | t (axial) | N | Segment L | Colour | Motion |
 |---|---|---|---|---|---|---|---|---|
-| **A1 Meridian** | `F1 = A0 * CFrame.Angles(0, φ1, 0) * CFrame.Angles(rad(33), 0, 0)`, `φ1 = rad(8)·s.t` | 6.0 | 0.40 | 0.24 | 18 / 14 | 2.206 / 2.851 | SILVER | Precesses 8°/s with a fixed 24° lean; lowest point A0 −5.76 = O −4.46 |
-| **A2 Equator** (bracelet band) | `F2 = F1 * CFrame.Angles(rad(57) + rad(18)*sin(2π*s.t/19), 0, 0)` | 5.3 | 0.20 | 0.40 | 18 / 14 | 1.924 / 2.486 | SATIN (Silver) | Near-horizontal, rocks ±18° about the meridian's pin axis |
-| A2 ticks (high) | in F2 | — | — | — | 12 | — | LUME | Block (0.14, 0.10, 0.32) at `CFrame.Angles(0,0,-k·30°) * CFrame.new(0, 5.45, 0)`: lume hours on the band's outer face |
-| **A3 Ecliptic** (high only) | `F3 = F2 * CFrame.Angles(0, rad(23.4) + rad(14)*sin(2π*s.t/27 + 1.1), 0)` | 4.6 | 0.45 | 0.20 | 16 | 1.940 | SILVER | Rocks about the equator's pin axis around the 23.4° obliquity |
-| **A4 Pins** (high only) | — | — | — | — | 4 | — | BRIGHT | Cylinders (0.55 \| 0.45, 0.30, 0.30): two at `F1 * CFrame.new(±5.58, 0, 0)` (axis X) joining equator to meridian; two at `F2 * CFrame.new(0, ±5.01, 0) * CFrame.Angles(0,0,rad(90))` joining ecliptic to equator |
+| **A1 Meridian** | `F1 = A0 * CFrame.Angles(0, φ1, 0) * CFrame.Angles(rad(33), 0, 0)`, `φ1 = rad(8)·s.t` | 6.0 | **0.26** | **0.15** | **28 / 18** | 1.371 / 2.181 | SILVER | Precesses 8°/s with a fixed 24° lean; lowest point A0 −5.76 = O −4.46 |
+| **A2 Equator** (bracelet band) | `F2 = F1 * CFrame.Angles(rad(57) + rad(18)*sin(2π*s.t/19), 0, 0)` | 5.3 | 0.20 | **0.32** | **22 / 14** | 1.566 / 2.486 | SATIN (Silver) | Near-horizontal, rocks ±18° about the meridian's pin axis |
+| A2 ticks (high) | in F2 | — | — | — | 12 | — | LUME | Block (0.14, 0.10, **0.28**) at `CFrame.Angles(0,0,-k·30°) * CFrame.new(0, 5.45, 0)`: lume hours on the band's outer face |
+| **A3 Ecliptic** (high only) | `F3 = F2 * CFrame.Angles(0, rad(23.4) + rad(14)*sin(2π*s.t/27 + 1.1), 0)` | 4.6 | **0.28** | **0.14** | **24** | 1.268 | SILVER | Rocks about the equator's pin axis around the 23.4° obliquity |
+| **A4 Pins** (high only) | — | — | — | — | 4 | — | BRIGHT | Cylinders (0.62 \| 0.52, 0.26, 0.26): two at `F1 * CFrame.new(±5.6, 0, 0)` (axis X) joining equator to meridian; two at `F2 * CFrame.new(0, ±4.97, 0) * CFrame.Angles(0,0,rad(90))` joining ecliptic to equator |
+
+Review round 3 (AD3-02, R3W-8): fine silver wire with many short segments. At Roblox's default zoom the rings are 7-12 studs from
+the lens, the biggest thing in the most-played view; the round-2 bands (0.40 × 0.24 meridian, 0.45 × 0.20 ecliptic, 16-18
+segments of 20-22.5°) showed their kinks and joints there and read as plastic pipes. The parts were paid back elsewhere (the
+lensed arc's 9 blocks, the ribbon's end carrier, 2 bow segments, 4 dais-rim blocks, 6 chapter-ring blocks), so high quality
+stays at 360. On low the meridian gets 18 segments (the biggest silver shape on a phone's screen read as a 14-gon) and the
+equator keeps 14, paid for by the heart's spikes (low builds no spikes now).
 
 Max reach of any band from A0 is 6.28. Tilt limits keep every band ≥ 0.6 from the body sample points (head, hands, feet) in the idle
 and glide poses. The harness checks this (§18.2).
 
 ### 8.3 The orbs: balance, moon, void
 
-**Balance.** The orbs hang at ±12.5 (±12.0 when the camera is close, 6 studs back: §4) on the viewer's left/right of pivot Pv (§4) and rock ±10° over a 10 s period. One rises as the other
+**Balance.** The orbs hang at ±12.5 (±14.5 when the camera is close, 16.5 studs behind the wearer: §4) on the viewer's left/right of pivot Pv (§4) and rock ±10° over a 10 s period. One rises as the other
 falls, like scales. `swayAmp` ramps 0 → 1 during assembly (1.8–3.0 s). Height range of the orb centres: +3.83 … +8.17.
 
 **M1 Moon core** (review round 2): Dark, MOONCORE (184, 186, 192), Ball Ø 6. `CF = CFrame.lookAt(moonC, O + Vector3.new(0, 1, 0))`
@@ -432,7 +458,7 @@ film-mesh moon (`FILM_MOON`) the mesh replaces core and face (Silver, MOON (234,
 
 - Attachment `KeyLight`: at (0, 4.5, −5.5). It holds PointLight L1 (§11). It lights the moon's wearer-facing top and rim-lights the
   wearer at night.
-- BillboardGui `Halo`: Size UDim2.new(15, 0, 15, 0) (the face is 4.4 studs nearer the camera, so it looks bigger than the core),
+- BillboardGui `Halo`: Size UDim2.new(15, 0, 15, 0) × `hs` (the face is 4.4 studs nearer the camera, so it looks bigger than the core; `hs` = 1 with te5_halo, `0.73 / RIM_R` while the pass-2 `rim` texture stands in: review round 3, CR3-02),
   StudsOffset (0, 0, −2.0) (decision 3), LightInfluence 0, Brightness 1.0 → 1.6, MaxDistance 400, AlwaysOnTop false. ImageLabel:
   Image T("halo"), ImageColor3 (240,240,244), ImageTransparency 0.65 → 0.45 (rim-only). It fades out as the camera comes close
   (cz 0.3 → 0.7, event writes while zooming), where the close-camera clock's leaning dial plane would cut it.
@@ -443,8 +469,8 @@ group 44 placed every frame at `fpos = moonC + unit(camPos − moonC)·4.4` and 
 on the Left face, canvas 1024² / 512², LightInfluence 0, Image T("moon") with a `UICorner` (CornerRadius 0.5: a round image; a
 SurfaceGui on a cylinder's end is drawn on the square face). te5_moon (a photographic full moon) is drawn whole at Brightness
 1.25 → 2.6; the fallback te4_moon is a moon disc inside a glow ring, so it is cropped to the disc (`ImageRectOffset` (104, 104),
-`ImageRectSize` (304, 304), set by `applyTex` from the `CROP` table whenever the fallback is used) and drawn at 1.0 → 1.7 (a paler,
-softer image: brighter, it read as a white plate). Why a part and not a billboard (round 1's face): a transparent BillboardGui writes
+`ImageRectSize` (304, 304), set by `applyTex` from the `CROP` table whenever the fallback is used) and drawn at **0.75 → 1.25**
+(review round 3, AD3-06: a paler, softer image; at 1.0 → 1.7 its maria washed out on the tone curve's shoulder into a white plate). Why a part and not a billboard (round 1's face): a transparent BillboardGui writes
 no depth, so the Silver Highlight composited afterwards painted the bezel behind it over the moon's right third (AD2-01); an opaque
 part writes depth, so neither the Highlight nor the moon's own smoke born behind it can veil it. The 9-stud face covers the Ø 6 core
 from any angle.
@@ -456,8 +482,7 @@ from any angle.
 **V1 Void core**: Dark, VOID (Neon black), Ball Ø 8. `CF = CFrame.lookAt(voidC, O + Vector3.new(0, 1, 0))`.
 
 - `StreamOut` attachment: `CFrame.new(0, 0, -4.05) * CFrame.Angles(0, 0, rad(90))`.
-- `RibbonOut` attachment: `CFrame.new(0, -4.05, 0) * CFrame.Angles(0, rad(-90), 0)`. Its X axis points away from the wearer, so the
-  ribbon bulges outward first.
+- (The `RibbonOut` attachment went with the ribbon in review round 3.)
 
 **V2 Accretion plane**: Fx, invisible, Size (13, 0.05, 13), CF = `Dk * CFrame.Angles(0, rad(40)*s.now*dir, 0)` (`dir` = attribute
 `ACC_DIR`). SurfaceGui on the **Top** face only (review round 2: the disc always tilts toward the viewer, so its underside is never
@@ -465,36 +490,47 @@ seen; the Bottom GUI went to the moon's face), CanvasSize 1024² / 512², LightI
 ImageTransparency 0. `dir` (±1) is chosen so the texture's streaks trail the spin; verify in the preview. The opaque core hides the
 far half behind it, and the near half crosses in front of the core's lower half: correct occlusion, because the core writes depth.
 
-**V3 VoidSwirl host**: Fx, invisible, Size (13, 0.3, 13), CF = `Dk * CFrame.Angles(0, rad(85)*s.now*dir, 0)`. Host of P1.
+**V3 VoidSwirl host**: Fx, invisible, Size (13, 0.3, 13), CF = `Dk * CFrame.new(0, 0.3, 0) * CFrame.Angles(0, rad(85)*s.now*dir, 0)`
+(review round 3, R3S-5: 0.3 above the disc plane toward the viewer, so its particles sort over the disc and the void whether Roblox
+keys an emitter at its part or at its particles). Host of P1.
 
 **V4 Photon ring**: Lume, LUME, **24 / 12** Blocks in Pf (review round 2: 18 still kinked at the default zoom, and low's 8 read as a
-white octagon). Segment i at θi = (i + 0.5)·360°/N: `CFrame.Angles(0,0,-θi) * CFrame.new(0, rt + 0.18, 0)`, Size (1.14 | 2.25,
-**0.13**, 0.12): a hairline that hugs the black silhouette exactly, from any distance, and blooms softly at night without alpha.
+white octagon). Segment i at θi = (i + 0.5)·360°/N: `CFrame.Angles(0,0,-θi) * CFrame.new(0, rt + 0.115 + y/2, 0)`, Size (1.14 | 2.25,
+**y**, 0.12): a hairline that hugs the black silhouette exactly, from any distance, and blooms softly at night without alpha.
+**Hairline bands** (review round 3, R3S-6): `y` = 0.13 / 0.22 / 0.36 with the camera-to-void distance under 50 / 50-95 / beyond 95
+studs (5 studs of hysteresis each way; low quality starts at the middle band), and the seconds needle's width 0.12 / 0.2 / 0.3 by
+the camera-to-clock distance: without anti-aliasing (phones, low graphics levels) a line under a pixel wide crawls in stair-steps.
+24 Size writes per band change, event only.
 
 **V4b Event-horizon glow** (high, review round 2): an invisible 0.2-stud carrier `Horizon` in Pf (camera-facing, on the silhouette
-plane) emits one te5_halo particle a second (Size 11.2, Lifetime 3, LockedToPart, Transparency [0,1] [0.2,0.12] [0.8,0.12] [1,1],
+plane) emits one te5_halo particle a second (Size 11.2 × `hs`, Lifetime 3, LockedToPart, Transparency [0,1] [0.2,0.12] [0.8,0.12] [1,1],
 random rotation, RotSpeed ±8, ZOffset 0.4, LightEmission 0.4 → 1, Brightness 1.6 → 3.0): three soft rings alive at once overlap into
 a steady glow whose peak (r 0.72 of the image) lands on the black edge. No pulse; never a billboard (the accretion plane would cut it).
 
-**V5 Lensed arc** (high only): Lume, ARC, **9** Blocks in Pf over θ from −75° to +75° (through the top). θi = −75° + (i + 0.5)·150°/9:
-`CFrame.Angles(0,0,-θi) * CFrame.new(0, rt + 0.6, 0)`, Size (1.40, **0.16**, 0.10) (review round 2: 6 thick blocks read as a faceted
-white bracket up close). This is Gargantua's lensed far-side arc over the shadow.
+**V5 Lensed disc** (high only; review round 3, AD3-03): two beams on attachments of the `Horizon` carrier (camera-facing, so they
+hug the silhouette from every side). `LensTop`: A0 at (−4.45, 0, 0) with its X axis up, A1 at (+4.45, 0, 0) with its X axis down,
+CurveSize 6 / 6 (a Bezier arch peaking 4.5 above the centre), T("stream") Wrap 6 at +0.4 × `FLOW_SIGN`, Width **1.5**, WHITE,
+LightEmission 0.2 → 0.8, Brightness 2.0 → 3.0, Transparency [0, 1] [0.15, 0.05] [0.85, 0.05] [1, 1]. `LensBottom`: mirrored under
+the shadow, Width **0.8**, Brightness 1.8 → 2.8. Both widths × `(1 − 0.45·czq)` on the zoom steps (event writes): at the default
+zoom a full-width band read as a broad crescent. They fade in with the heart (0.9 s). This is Gargantua's read: the far side of the
+accretion disc lensed into a bright band over and under the shadow. The round-2 lensed arc (9 blocks of 0.16, a hairline that did
+not register) and the ink ribbon (a black stick from the ball to the dais from the studio and back cameras) are gone.
 
-**V6 Heart**: Lume, LUME. A small brilliant 4-point star in Hf (a pinpoint of light, not a sticker).
+**V6 Heart**: Lume, LUME. A small brilliant 4-point star in Hf (a pinpoint of light inside the lensed band, not a sticker).
 
 - Centre Ball Ø 0.70 at Hf origin.
-- **Spikes** (up/down h = 1.6; right/left h = 1.1; review round 2, were 2.8 / 2.2), each from 2 Wedges, Size (0.08, h, 0.32) (attribute `WEDGE_SWAP` swaps the halves' ±90°). Spike k with direction αk (0 up, 90
+- **Spikes** (up/down h = 1.3; right/left h = 0.9; review round 3, were 1.6 / 1.1, and 2.8 / 2.2 before review round 2), each from 2 Wedges, Size (0.08, h, 0.32) (attribute `WEDGE_SWAP` swaps the halves' ±90°). Spike k with direction αk (0 up, 90
   right, 180 down, 270 left, as the viewer sees it), `S = Hf * CFrame.Angles(0, 0, -αk)`:
   - half A: `S * CFrame.new(-0.16, h/2, 0) * CFrame.Angles(0, rad(90), 0)`
   - half B: `S * CFrame.new(0.16, h/2, 0) * CFrame.Angles(0, rad(-90), 0)`
 
   (Roblox wedge: the triangle lies in local YZ with the right angle at (−Y, +Z). The +Z back edge becomes the spike's centre line, the
   base sits at the star centre and the apex at h.) Verify the wedge convention in the mock and renderer (§19).
-- Low quality: the centre ball plus the up and down spikes only (5 parts).
+- Low quality: the centre ball only (review round 3, AD3-08: the up and down spike pair alone read as a cat's eye, a slit pupil).
 
 **V7 Crackle veins**: removed in review round 2 (eight straight white lines read as "spider" veins on a sticker).
 
-### 8.4 Beams: streams and ribbon
+### 8.4 Beams: streams and the lensed disc
 
 Beams live in `Fx`. All have FaceCamera true, LightInfluence 0, Segments 20, ZOffset 0. Writes happen only during assembly and on
 night ticks.
@@ -505,19 +541,20 @@ night ticks.
 | B2 MoonFlow (high) | same | TEX.streak Wrap 7, +1.6 | 0.5 → 0.15 | 4.3 / 0 | WHITE | 0.3 → 0.9 | 2.0 → 2.6 | [0, 0.4] [0.15, 0.2] [0.85, 0.2] [1, 0.6] |
 | **B3 VoidCore** | void `StreamOut` → void palm | T("stream") Wrap 5, +0.7 | 1.6 → 0.35 | 3.0 / 0 | (18, 18, 24) | 0 | 1.0 | same as B1 |
 | B4 VoidCrackle (high) | same | T("line") Stretch 1, 0 | 0.14 → 0.10 | 2.6 / 0 | WHITE | 0.2 → 0.8 | 1.8 → 2.4 | [0, 0.3] [0.1, 0.1] [0.9, 0.1] [1, 0.5] |
-| B5 Ribbon (high) | void `RibbonOut` → `RibbonEnd` | T("ribbon") Wrap 8, **+0.5** | **0.45 → 1.3** | **7.0 / −8.0** | (12, 12, 16); WHITE with te5_ribbon (back to ink if it fails to load) | 0 | 1.0 | [0, 0.55] [0.15, 0.15] [0.85, 0.05] [1, 0.35] (solid body, soft at the void end) |
-| B6 RibbonEdge (high) | same | T("line") Stretch 1, 0 | 0.10 → 0.10 | 7.3 / −8.3 | WHITE | 0.2 → 0.8 | 1.8 → 2.4 | [0, 0.3] [0.1, 0.1] [0.9, 0.1] [1, 0.4] |
+| B5 LensTop (high) | `Horizon` LensTop0 → LensTop1 | T("stream") Wrap 6, +0.4 | 1.5 (× (1 − 0.45·czq)) | 6.0 / 6.0 | WHITE | 0.2 → 0.8 | 2.0 → 3.0 | [0, 1] [0.15, 0.05] [0.85, 0.05] [1, 1] |
+| B6 LensBottom (high) | `Horizon` LensBottom0 → LensBottom1 | T("stream") Wrap 6, +0.4 | 0.8 (× (1 − 0.45·czq)) | 6.0 / 6.0 | WHITE | 0.2 → 0.8 | 1.8 → 2.8 | same |
 
-Review round 2: with te5 the opaque 2.2-stud ribbon read as a black stalk planting the void in the dais (a lollipop on a stand);
-it is now a whip-thin strand that curls out of the void and down into the pool. The four palm streams switch off in first person
-(their ends sit just under the lens).
+Review round 3 (AD3-03): the ink ribbon (B5/B6 until then) read as a stick from the ball to the dais from the studio and back
+cameras (a lollipop); its two beams became the lensed disc (§8.3 V5), and te5_ribbon was dropped from the upload list. The four
+palm streams switch off in first person (their ends sit just under the lens). Each beam fades in on equip from its own time (the
+lens with the heart at 0.9 s, the streams at 4.6 s).
 
-**Flow direction:** the stream textures must visibly flow from the orb **into** the palm, and the ribbon flows down. All four are
-built source → destination, so one sign serves them all (the ribbon's −0.5 was certainly wrong against the streams' +): every
-TextureSpeed is multiplied by the attribute `FLOW_SIGN` (1); if they run backwards in Studio, set it to −1 (no reinstall).
+**Flow direction:** the stream textures must visibly flow from the orb **into** the palm. All four are built source →
+destination, so one sign serves them all: every TextureSpeed is multiplied by the attribute `FLOW_SIGN` (1); if they run backwards
+in Studio, set it to −1 (no reinstall). The lensed bands share the sign (they drift slowly over the shadow; either way reads).
 Fade steps: 21 precomputed Transparency sequences per beam (≤ 5 % per step).
 
-**B7 Spire** (attribute `FAR_BEACON`, default **off**, needs Milo's OK): a FaceCamera beam from 38 studs above the dais base (above
+**B7 Spire** (attribute `FAR_BEACON`, default **off**, needs Milo's OK: MILO_PROMPT asks him with two screenshots): a FaceCamera beam from 38 studs above the balance wheel's level hub (above
 the bow, so it never crosses the dial) to 280 studs, Width 8 → 3, **no texture** (a solid band reads at 300 studs; round 1's textured
 line thinned to a 1-px hairline), Transparency [0, 0.1] [0.6, 0.15] [1, 1], Color INK by day → WHITE at night (LightEmission 0 → 1,
 Brightness 1 → 2, on the night tick). It fades in past ~110 studs (`setDetail(false)`, through the far-detail fade), so the owner
@@ -554,18 +591,35 @@ to the equator ≥ 0.3. They are built, hidden and shown together with the armil
 | D2 G0 floor plane | Fx part (29.6, 0.05, 29.6) | SurfaceGui **Top**, T("galaxyFloor"), 1024²/512², Brightness 1.3 → 2.4, fades in 4.0–4.6 with the base | (0, 0.15, 0) | invisible | `CFrame.Angles(0, rad(-6)*s.now*GALAXY_DIR, 0)` (clockwise from above; arms must trail) | 1 / 1 |
 | D3 G1 arms plane | (21, 0.05, 21) | Top, T("galaxyArms"), 1024², 1.4 → 2.4 | (0, 0.42, 0) | invisible | `rad(+9)*s.now` | 1 / — |
 | D4 G2 core plane | (12, 0.05, 12) | Top, T("galaxyCore"), 512²/256², 1.5 → 2.6, fades in 4.0–4.6 | (0, 0.66, 0) | invisible | `rad(-16)*s.now*GALAXY_DIR` | 1 / 1 |
-| D5 Engraving plane | (40, 0.05, 40) | Top, T("engraving"), 1024², 1.2 → 2.0 | (0, 0.04, 0) | invisible | `rad(+2.5)*s.now` | 1 / — |
-| D6 Rim | **28 / 16** Blocks, Size (3.53 \| 6.21, h, 0.80); h = 0.90 even / 0.96 odd (fluted top) | radial 14.75 → 15.55 | `CFrame.Angles(0, θi, 0) * CFrame.new(0, h/2, -15.15)` | SILVER even / SATIN odd, Silver | static | 28 / 16 |
+| D5 Engraving plane (**the stage**) | **(56, 0.05, 56)**, group **Core** (review round 3, AD3-04: was 40 in Detail) | Top, T("engraving"), 1024², **1.0** → 2.0 | (0, 0.04, 0) | invisible | `rad(+2.5)*s.now` | 1 / — |
+| D5b FloorFx (review round 3, R3S-5) | (29.6, 0.05, 29.6) Disc host for P7, P8a and P8b | — | **(0, 0.95, 0)** (group G0: L (0, 0.8, 0)) | invisible | turns with D2 | 1 / 1 |
+| D6 Rim | **24 / 16** Blocks, Size (4.11 \| 6.21, h, 0.80); h = 0.90 even / 0.96 odd (fluted top) | radial 14.75 → 15.55 | `CFrame.Angles(0, θi, 0) * CFrame.new(0, h/2, -15.15)` | SILVER even / SATIN odd, Silver | static | 24 / 16 |
 | D7 Balance wheel | in **Bw**: rim 12 / 8 Blocks (1.338 \| 2.058, 0.30, 0.32) at `CFrame.Angles(0, θi, 0) * CFrame.new(0, 0, -2.30)` · 2 spoke Blocks (4.3, 0.16, 0.22) at yaw 0° and 90° (high) · hub Cylinder (0.5, 0.7, 0.7) vertical axis | | | SILVER rim/spokes, BRIGHT hub, Silver | `wheelAngle = rad(160)·sin(2π·s.t/3.2)·wheelAmp` (smooth swing, the watch's heartbeat; wheelAmp ramps in assembly) | 15 / 9 |
 | D9 Funnel host | (11, 0.4, 11) | | (0, 0.8, 0) · `rad(-70)*s.t*FUNNEL_DIR` (decision 9) | invisible | spins | 1 / — |
-| D10 RibbonEnd | (0.4, 0.4, 0.4) | Attachment at its centre (X axis = tangent) | `CFrame.new(13.2*sin(az), 0.3, 13.2*cos(az)) * CFrame.Angles(0, az, 0)`, `az = atan2(voidC.X - O.X, voidC.Z - O.Z)` | invisible | follows the void's azimuth | 1 / — |
 
-D1 sits on the ground, so it can z-fight with flat ground on its bottom face only, which is unseen. On slopes and steps the dais
-stays level and may clip; this is accepted. (D8, the hairspring plane, was removed in review round 2: invisible at every framing.)
+D1 sits on the ground, so it can z-fight with flat ground on its bottom face only, which is unseen. (D8, the hairspring plane, was
+removed in review round 2: invisible at every framing. D10, the ribbon's end carrier, went with the ribbon in review round 3.)
+
+**The stage** (review round 3, AD3-04): at Milo's studio camera pass 5 covered less of the screen than the pass 4 that is live
+(12.5 % of the frame against 16.6 %), because pass 4's 58-stud ground ring was cut and the 40-stud engraving barely cleared the
+31-stud rim. The engraving is now a 56-stud stage in Core (it is the aura's footprint from far away too): te5_engraving runs from
+just outside the rim to the edge, with Roman numerals 3 studs tall and an inked minute track (a solid dark band with white ticks)
+that reads on bright sand by day. Measured: the aura covers 18.8 % of the studio frame (bounding box 827 × 467 px; pass 4 16.6 %,
+781 × 392).
+
+**On a slope** (review round 3, R3S-2): the dais used to stay level, an opaque base with a raised rim half buried in a hillside.
+Now, every 0.2 s while standing on the ground (not seated), three rays (`workspace:Raycast`, excluding every aura and the
+wearer, `RespectCanCollide`) go down 9 studs from 4 above the dais at radius 9 round the wearer (yaw 0°, 120°, 240°). Their
+plane is accepted only if all three hit, it passes within 0.6 studs of the framework's ground point under the wearer, and it
+tilts at most 20°; otherwise the target is level (stairs, cliff edges, another player's body). The normal `gn` eases toward
+the target (rate 4) and Gd tilts to it (below 0.5° it stays level). The clearances follow: the ring lift adds `6.3·tan`, the
+wheel clamp `2.5·tan`, and on ground rising behind the wearer the clock stands up to 4 studs higher (more would lift it out of
+the view). The `slope` scenario (a 10° plaza) checks the base's tilt and that no rim block sinks into the ground.
 
 **Layer lift** (review round 2): two wearers' pools side by side would put their layers in exactly the same planes, and Roblox
-z-fights coplanar faces as a crawling shimmer. Every layer of the dais (Gd) is lifted by `st.layer`: 0 for the owner, 0.0183 or
-0.0366 for other players (by UserId parity). The layer surfaces (engraving 0.065, base 0.12, floor 0.175) repeat every 0.055 studs,
+z-fights coplanar faces as a crawling shimmer. Every layer of the dais (Gd) is lifted by `st.layer`: **0.0366 for the owner, 0 or
+0.0183 for other players** (by UserId parity; review round 3, R3S-4: your own pool on top, so where two pools overlap yours is the
+one you see, if Roblox lets the nearer SurfaceGui win). The layer surfaces (engraving 0.065, base 0.12, floor 0.175) repeat every 0.055 studs,
 so lifts a third of that apart keep every pair of surfaces ≥ 0.018 apart. Two other players with the same parity still share
 planes (STUDIO-VERIFY). The clearance clamps use the lifted height.
 
@@ -576,7 +630,7 @@ the moon rises 0.6 (was +6.5); the armillary stays on the body.
 
 ### 8.7 Body carriers (Fx, invisible)
 
-- `AirVolume` (36, 20, 36) at `CFrame.new(O + Vector3.new(0, 4, 0))`, turned to face the way the wearer travels
+- `AirVolume` **(44, 22, 44)** (review round 3: the sparkle field fills the space round the whole aura) at `CFrame.new(O + Vector3.new(0, 4, 0))`, turned to face the way the wearer travels
   (`CFrame.lookAt(O, O + travelDir) * CFrame.new(0, 4, 0)` once there is a travel direction). Hosts P6a and P6b, and an
   Attachment `Trail` at local (0, −4, 0) (= O) hosting P12.
 - `BokehHost` (high only) (18, 10, 5) at `V * CFrame.new(0, 3.0, min(7.5, camDist - 4))`. Hosts P6c (shown only when the camera is
@@ -596,35 +650,36 @@ high / low; "—" = not built on low.
 | Id | Purpose / path | Host · Shape (Style, InOut, Partial) · EmissionDirection | Texture | Rate | Lifetime | Speed · Spread | Accel · Drag | Size | Transparency | Color | LE · Br | Locked · ZOffset · Rotation / RotSpeed · Orientation |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | **P1 VoidSwirl** | matter spirals inward along the disc and vanishes into the black core | V3 · Cylinder (Surface, **Inward**) · Top (`SWIRL_POINTS`: one rim Attachment at (6.3, 0, 0) aimed at the axis, EmissionDirection Front, Spread (0, 10)) | T("mote") | 28 / 12 | 1.1–1.3 | 2.2–2.6 · 0 | 0 · 0 | [0, 1.5] [1, .35] | [0, 1] [.15, .05] [.8, .05] [1, .4] | WHITE → (170,174,184) | .3→.9 · 2.4→3.0 | **true** (the spin turns inward motion into a spiral) · .3 · 0 / 0 · FacingCamera |
-| **P2 MoonDust** | dust snows off the moon and falls away below it | M1 ball · Sphere (Surface, Outward) | T("mote") | 16 / 5 | 3.0–4.5 | .25–.6 · 0 | (0, −1.1, 0) · .4 | [0, .18] [.2, .6, .15] [1, .18] | [0, 1] [.12, .08] [.75, .15] [1, 1] | (238,240,246) | .2→.7 · 1.4→2.2 | false · 0 · 0–360 / ±30 · FacingCamera |
+| **P2 MoonDust** | dust snows off the moon and falls away below it | M1 ball · Sphere (Surface, Outward) | T("mote") | **10 / 5** (halved while travelling; review round 3) | 3.0–4.5 | .25–.6 · 0 | (0, −1.1, 0) · .4 | [0, .18] [.2, .6, .15] [1, .18] | [0, 1] [.12, .08] [.75, .15] [1, 1] | (238,240,246) | .2→.7 · 1.4→2.2 | false · 0 · 0–360 / ±30 · FacingCamera |
 | **P3 ShardFeed** | metal shards break off the bezel at 10–11 o'clock and fly across the face into the void | ShardFeed · Box (Volume) · Front (toward the void) | T("shards5") Loop 10–14 fps, StartRandom | 7 / — | 2.9–3.2 | 8.5–9.5 · (6, 6) | 0 · 0 | [0, .6] [.85, .9, .12] [1, .35] (×1.3 with te5) | [0, 1] [.06, 0] [.9, 0] [1, 1] | (214,218,226) | 0→.3 · 1→1.6 | false · 0 · 0–360 / ±120 · FacingCamera |
-| **P4a SmokeVoid** | ink smoke boils off the void and curls out and up round it (a dark corona that reads on the day sky) | V1 ball · Sphere (Surface, Outward) | T("smoke5") OneShot | 10 / 4 (2.5 / 1.5 while travelling) | 3.5–4.5 (2–2.5) | 1.4–2.4 · 0 | (0, .4, 0) · .35 | [0, 5] [1, 14] (×1.3 with te5_smoke, whose curls are wispier than the pass-4 puff) | [0, 1] [.2, .16] [.7, .45] [1, 1] | SMOKE | 0 · 1 | false · **−3** (the core's silhouette stays crisp) · 0–360 / ±25 · FacingCamera |
-| **P4b SmokeMoon** (high) | silver smoke boils off the moon (the void's opposite energy) | M1 ball · Sphere (Surface, Outward) | T("smoke5") | 5 / — (1.5 while travelling) | 3.5–4.5 | .9–1.5 · 0 | (0, .3, 0) · .35 | [0, 3.5] [1, 9] (×1.3 with te5_smoke) | [0, 1] [.2, .32] [.7, .55] [1, 1] | (176,176,178) (grey-silver: shades against the sky instead of vanishing) | .1→.4 · 1 | false · −3 · 0–360 / ±20 |
-| **P5a RimGlints** | slow 4-point glints appear on the bezel metal and fade (grow, hold, shrink: no flash) | RimGlint · **Disc** (Volume, Partial **0.86**, the annulus R 12.2–14.2) · Back (toward the viewer) | T("glint5") | 9 / 3 | 1.6–2.2 | 0 | 0 | [0, 0] [.35, 1.9, .5] [.65, 1.9, .5] [1, 0] | [0, .1] [1, .1] | WHITE | .5→1 · **2.4→3.0** | **true** · 1.0 · 0–90 / 0 |
-| **P13 TimeDust** (high, review round 2; replaces P5b, the meridian glints at 0.4/s) | the hero system: glints born just round the bezel's rim ride a ring that turns clockwise with the hands, so the clock wears a slow halo of moving light (round the rim, not on it: a white glint on the silver bezel hardly reads by day; against the sky and the dark gears it does) | TimeDust carrier (31.6, 31.6, 0.2), group 45 = `K * CFrame.new(0, 0, 1.3) * CFrame.Angles(0, 0, -(rad(20)·now % 2π))` · **Disc** (Volume, Partial **0.9**: R 14.2–15.8) · Back | T("glint5") | 16 / — | 4–5 | 0 | 0 | [0, 0] [.3, 1.7, .35] [.7, 1.7, .35] [1, 0] | [0, .1] [1, .1] | WHITE | .5→1 · 2.4→3.0 | **true** · 1.0 · 0–90 / ±15 |
-| **P6a AirDust** | silver dust drifting through everything (scale 1; fewer and bigger: 1–4 px specks never read) | AirVolume · Box (Volume) | T("mote") | 8 / 4 | 6–9 | .1–.3 · (180, 180) | 0 · 0 | NumberRange .22–.40 (steady) | [0, 1] [.2, .1] [.8, .15] [1, 1] | (226,230,240) | .2→.8 · 1.4→2.2 | false · 0 · 0 / 0 |
-| P6b AirGlints (high and low) | mid-size glints (scale 2) | AirVolume · Box | T("glint5") | 5 / 1.5 | 4–6 | .2–.5 · (180, 180) | 0 · 0 | [0, 0] [.3, .7, .2] [.7, .7, .2] [1, 0] | [0, 1] [.3, .1] [.7, .1] [1, 1] | WHITE | .4→1 · 2.4→3.0 | false · 0 · 0–90 / ±20 |
+| **P4a SmokeVoid** | ink smoke boils off the void and curls out and up round it (a dark corona that reads on the day sky) | V1 ball · Sphere (Surface, Outward) | T("smoke5") OneShot | 10 / 4 (**1.5 / 1** while travelling) | 3.5–4.5 (**1.0–1.4** while travelling) | 1.4–2.4 · 0 | (0, .4, 0) · .35 | [0, 5] [1, 14] (review round 3: te5_smoke is a dense billow now, drawn at the fallback's size, no 1.3x) | [0, 1] **[.18, .08] [.7, .32]** [1, 1] (round 3: ink, not teal) | SMOKE | 0 · 1 | false · **−3** (the core's silhouette stays crisp) · 0–360 / ±25 · FacingCamera |
+| **P4b SmokeMoon** (high) | silver smoke boils off the moon (the void's opposite energy) | M1 ball · Sphere (Surface, Outward) | T("smoke5") | 5 / — (**0** while travelling) | 3.5–4.5 | .9–1.5 · 0 | (0, .3, 0) · .35 | [0, 3.5] [1, 9] | [0, 1] [.2, .32] [.7, .55] [1, 1] | (176,176,178) (grey-silver: shades against the sky instead of vanishing) | .1→.4 · 1 | false · −3 · 0–360 / ±20 |
+| ~~P5a RimGlints~~ | removed in review round 3 (CR3-04): its glints sat on the bezel, inside the silver Highlight, which composites over them; its 9/s went to P13 and the air's sparkles | | | | | | | | | | | |
+| **P13 TimeDust** (high, review round 2; replaces P5b, the meridian glints at 0.4/s) | the hero system: glints born just round the bezel's rim ride a ring that turns clockwise with the hands, so the clock wears a slow halo of moving light (round the rim, not on it: under the silver tone a white glint on the bezel hardly reads by day; against the sky and the dark gears it does) | TimeDust carrier (31.6, 31.6, 0.2), group 45 = `K * CFrame.new(0, 0, 1.3) * CFrame.Angles(0, 0, -(rad(20)·now % 2π))` · **Disc** (Volume, Partial **0.9**: R 14.2–15.8) · Back | T("glint5") | **20** / — | 4–5 | 0 | 0 | [0, 0] [.3, 1.7, .35] [.7, 1.7, .35] [1, 0] | [0, .1] [1, .1] | WHITE | .5→1 · 2.4→3.0 | **true** · 1.0 · 0–90 / ±15 |
+| **P6a AirSparkles** (review round 3: was AirDust, 0.22–0.40 motes that never read) | a field of slow four-point sparkles round the whole aura (scale 1; pass 4's sparkles are what reads in the real captures) | AirVolume (44, 22, 44) · Box (Volume) | T("glint5") | **14 / 4** | **3–4.5** | .1–.3 · (180, 180) | 0 · 0 | [0, 0] [.3, 1.1, .3] [.7, 1.1, .3] [1, 0] | [0, .1] [1, .1] | WHITE | .3→.9 · 2.4→3.0 | false · 0 · 0–90 / ±15; **off in first person** |
+| P6b AirGlints (high and low) | small glints (scale 2) | AirVolume · Box | T("glint5") | 5 / 1.5 | 4–6 | .2–.5 · (180, 180) | 0 · 0 | [0, 0] [.3, .7, .2] [.7, .7, .2] [1, 0] | [0, 1] [.3, .1] [.7, .1] [1, 1] | WHITE | .4→1 · 2.4→3.0 | false · 0 · 0–90 / ±20; off in first person |
 | P6c Bokeh (high) | big slow out-of-focus discs between the camera and the wearer (scale 3, L7) | BokehHost · Box (Volume) | T("bokeh") | **0.5 → 1.2** (night) / — | 5–7 | .1–.25 · (180, 180) | 0 · 0 | NumberRange 1.2–2.4 | [0, 1] [.25, .6] [.75, .6] [1, 1] | (232,236,246) | .3→.8 · 1.2→1.8 | false · 0 · 0–360 / ±4 |
-| P7 GroundMist (high) | one low mist bank at ankle height, only when grounded | D2 plane · Disc (Volume) · Top | T("smoke5") | 2.5 / — | 6–8 | .1–.25 · 0 | 0 · 0 | [0, 8] [1, 14] | [0, 1] [.3, .80] [.7, .82] [1, 1] | MIST | 0 · 1 | true · 0 · 0–360 / ±6 |
-| **P8a GalaxyMotes** | motes rise off the turning arms and swirl with them | D2 plane · Disc (Volume, Partial .15) · Top | T("mote") | 18 / 8 | 2.6–3.6 | .5–1.2 · 0 | (0, .35, 0) · .2 | [0, 0] [.2, 1.2, .3] [1, 0]; **[.2, .6, .15] while the camera is close** (cz ≥ 0.5: at the default zoom the floor is a few studs from the lens and 1.2-stud motes passed it as white bubbles; two sequences made at build, swapped on a zoom change only) | [0, 1] [.15, .05] [.8, .15] [1, 1] | WHITE | .3→.9 · 2.4→3.0 | **true** · .2 · 0 / 0 |
-| P8b GalaxyAsh (high) | black ash flakes rise against them | D2 plane · Disc (Volume, Partial .15) · Top | T("ash5") (review round 2: te5_ash is one 256² flake, no flipbook; the random rotation and tumble vary it) | 8 / — | 3–4.5 | .8–2.0 · 0 | (0, .3, 0) · .4 | NumberRange .40–.60 | [0, 1] [.15, .05] [.75, .2] [1, 1] | ASH | 0 · 1 | false · 0 · 0–360 / ±90 |
-| P9 Funnel (high) | a vortex funnel: streaks spiral inward and climb into the balance wheel | D9 host · **Cylinder** (Surface, **Inward**) · Top (`SWIRL_POINTS`: one rim Attachment at (5.3, 0, 0)) | T("streak5") | 16 / — | 1.7–2.0 | 2.8–3.2 · 0 | (0, 1.0, 0) · 0 | [0, .42] [1, .1] (×2.2 with te5_streak) | [0, 1] [.12, .05] [.85, .1] [1, 1] | WHITE | .3→.9 · 2.4→3.0 | **true** · 0 · 0 (180 with `STREAK_FLIP`) / 0 · **VelocityParallel** |
-| **P10a PalmMoon** | silver streaks converge into the moon palm (the palm drinks the stream) | PalmMoon · Sphere (Surface, **Inward**) | T("streak5") | 14 / 6 | .85–.95 | 1.35–1.45 · 0 | 0 · 0 | [0, .3] [1, .05] (×2.2 with te5_streak) | [0, 1] [.25, .05] [1, .2] | WHITE | .3→.9 · 2.4→3.0 | **true** (still converging on a moving palm) · .2 · 0 (180 with `STREAK_FLIP`) / 0 · VelocityParallel |
+| P7 RimMist (high) | a low mist bank round the pool's rim, only when grounded | **FloorFx** (review round 3) · Disc (Volume, **Partial 0.8**: the outer fifth, so the galaxy inside stays clear) · Top | T("smoke5") | 2.5 / — | 6–8 | .1–.25 · 0 | 0 · 0 | [0, 8] [1, 14] | [0, 1] [.3, .80] [.7, .82] [1, 1] | MIST | 0 · 1 | true · 0 · 0–360 / ±6 |
+| **P8a GalaxyTwinkles** (review round 3, AD3-07: were white pearls with a grey rim on the black pool) | starlight rises off the turning arms in slow four-point twinkles and swirls with them | **FloorFx** · Disc (Volume, Partial .15) · Top | T("**glint5**") | 18 / 8 | 2.6–3.6 | .5–1.2 · 0 | (0, .35, 0) · .2 | [0, 0] [.25, pk, .3·pk/1.3] [.75, pk, …] [1, 0], **pk = 1.3 / 1.14 / 0.98 / 0.81 / 0.65** stepping down as the camera comes close (R3S-8 / CR3-03: each step under 20 %, changed only a 0.05 band past cz 0.30 / 0.45 / 0.60 / 0.75, so a resting camera never flips it; the round-2 single swap jumped every live mote 2x) | [0, .1] [1, .1] | WHITE | .3→.9 · 2.4→3.0 | **true** · .2 · 0–90 / ±20 |
+| P8b GalaxyAsh (high) | black ash flakes rise against them | **FloorFx** · Disc (Volume, Partial .15) · Top | T("ash5") (one 256² flake, no flipbook) | 8 / — (**3 in first person**) | 3–4.5 | .8–2.0 · 0 | (0, .3, 0) · .4 | NumberRange .40–.60 | [0, 1] [.15, .05] [.75, .2] [1, 1] | ASH | 0 · 1 | false · 0 · 0–360 / ±90 |
+| P9 Funnel (high) | a vortex funnel: streaks spiral inward and climb into the balance wheel | D9 host · **Cylinder** (Surface, **Inward**) · Top (`SWIRL_POINTS`: one rim Attachment at (5.3, 0, 0)) | T("streak5") | 16 / — | 1.7–2.0 | 2.8–3.2 · 0 | (0, 1.0, 0) · 0 | [0, .42] [1, .1] (×2.2 with te5_streak) | [0, 1] [.12, .05] [.85, .1] [1, 1] | WHITE | .3→.9 · 2.4→3.0 | **true** · 0 · 0 (180 with `STREAK_FLIP`) / 0 · **VelocityParallel**; off in first person (review round 3: the camera sits right inside it) |
+| **P10a PalmMoon** | silver streaks converge into the moon palm (the palm drinks the stream) | PalmMoon · Sphere (Surface, **Inward**) | T("streak5") | 14 / 6 | .85–.95 | 1.35–1.45 · 0 | 0 · 0 | [0, .3] [1, .05] (×2.2 with te5_streak) | [0, 1] [.25, .05] [1, .2] | WHITE | .3→.9 · 2.4→3.0 | **true** (still converging on a moving palm) · .2 · 0 (180 with `STREAK_FLIP`) / 0 · VelocityParallel; off in first person (review round 3: the palms sit just under the lens) |
 | **P10b PalmVoid** | ink motes converge into the void palm | PalmVoid · same | T("streak5") | 14 / 6 | same | same | 0 · 0 | same | same | INK | 0 · 1 | same |
-| **P11a/b FootDrip** | time drips off each sole onto the balance wheel (off while seated; back 1.1 s after the aura is shown again) | foot attachments (§10), 1 emitter each · EmissionDirection Bottom | T("mote") | 4 / 2 each | .6–.8 | .1–.3 · (8, 8) | (0, −5, 0) · 0 | [0, .18] [1, .08] | [0, .1] [.8, .2] [1, 1] | WHITE | .3→.9 · 2.4→3.0 | false · 0 · 0 / 0 |
+| **P11a/b BodyWrap** (review round 3, AD3-01: replaces the sole drips, 0.18-stud specks invisible at every framing) | the wearer burns with the aura: **a** silver wisps rise off the shoulders and back (Rate 0 while travelling: no smog trail); **b** sparks stream up the body (they keep going while travelling: a comet's tail). Silver, not ink: from every camera the wearer stands against the black dial | the character's UpperTorso / Torso (in `charStuff`: destroy() removes them) · **a** Box (Surface) Top, Spread (20, 20) · **b** Box (Volume) Top, Spread (25, 25) | **a** T("smoke5") · **b** T("glint5") | **a 7 / 3 · b 14 / 6** | **a** 1.6–2.2 · **b** 1.4–2.0 | **a** 1.5–2.5 · **b** 1.5–3.0 | **a** (0, 1, 0) · **b** (0, 1.5, 0) | **a** [0, 1.2] [1, 3.4] · **b** [0, 0] [.25, 1.3, .3] [.75, 1.3, .3] [1, 0] | **a** [0, 1] [.2, .32] [.6, .55] [1, 1] · **b** [0, .1] [1, .1] | **a** (200, 202, 208) · **b** WHITE | **a** .2→.6 · 1.2→2.0 · **b** .5→1 · 2.4→3.0 | false · **a** −1.5 · **b** 0.5; off while hidden (back 1.1 s after showing) and in first person |
 | **P12 SpeedTrail** | while the wearer travels fast (speed > 12 studs/s on, < 8 off; horizontal only while grounded, so a jump is not a flight) silver streaks stream out behind the body | AirVolume `Trail` attachment · EmissionDirection Back (the volume faces the travel direction) | T("streak5") | 14 / 6 (only while fast) | .45–.6 | 4–6 · (10, 10) | 0 · 0 | [0, .5] [1, .1] (×2.2 with te5_streak) | [0, .2] [.6, .3] [1, 1] | (226,230,240) | .3→.9 · 2.4→3.0 | false · 0 · 0 (180 with `STREAK_FLIP`) / 0 · VelocityParallel |
 
 Plus **P14 Horizon** (high, review round 2): the event-horizon glow, 1/s te5_halo rings on the void's silhouette (§8.3 V4b).
 
-Totals (review round 2): **20 emitter instances** high (P11 is two) and **12** on low. Total Rate ≈ **186/s** high by day (+14
-while travelling fast: 200 at most; +0.7 bokeh at night) and **54/s** on low (+6 while fast). Particles alive ≈ 516 high and 131
-low. Review round 2 rebalanced inside these limits (the art director's measurements, AD2-02): every white particle glows just
-above the Bloom threshold by day (Brightness 2.4, was 1.6: small steady glints read as light, not grey specks; they grow, hold and
-shrink, never flash), the swirl, rim glints and floor motes became fewer but bigger, the void's ink smoke denser (the one particle
-that reads on the bright sky), the moon's smoke grey-silver, and the meridian glints became the time-dust ring. Measured (share of
-pixels changed by more than 24 / 60 levels when the particles are drawn; te5 textures, day): studio 2.4 / 0.8 % → 3.0 / 1.3 %,
-back (owner) 1.7 / 0.4 % → 2.5 / 1.0 %, night back 2.3 / 0.7 % → 3.2 / 1.4 %; with the fallback textures that ship until the
-upload, studio 3.6 / 1.4 % → 4.8 / 2.1 % and back 3.5 / 1.4 % → 5.0 / 2.1 %.
+Totals (review round 3): **19 emitter instances** high (P11 is two; P5 removed) and **11** on low. Total Rate ≈ **194/s** high by
+day (+0.7 bokeh at night) and **56/s** on low. While travelling the smoke, moon dust and body wisps thin out and the speed trail
+(+14 / +6) comes on: ≈ 182/s high, ≈ 54/s low, so the idle number is the maximum. Particles alive ≈ 518 high and 123 low (harness
+census). Review round 3 (AD3-01) put the particles where the round-2 measurements said they still did not read: a dense te5 smoke
+billow (the void's ink was a thin teal veil by day), the body wrap (P11), a field of four-point sparkles in the air (P6a), four-point
+twinkles off the floor instead of pearls (P8a), and P5's slot spent on those. Measured the same way as round 2 (share of pixels
+changed by more than 24 levels when the particles are drawn, day unless named; this round's renderer): te5 studio 3.5 → 6.4 %,
+back (owner) 3.2 → 7.3 %, night back 3.5 → 6.3 %, default zoom 12.0 → 14.1 % (more than 60 levels: 4.8 → 10.4 %); fallback studio
+5.5 → 6.1 %, back 6.2 → 7.7 %, night back 5.6 → 7.0 %; on the wearer's body (te5, back) 0.8 → 16.2 %. Round 2's numbers, for the
+record: studio 2.4 / 0.8 % → 3.0 / 1.3 % (te5), fallback 3.6 / 1.4 % → 4.8 / 2.1 % (24 / 60 levels).
 
 Notes:
 
@@ -658,13 +713,15 @@ Notes:
   - In between: keep the previous assignment (hysteresis). Initial assignment by the sign of f.
   - On a flip, write only `Attachment1` of B1–B4 (4 writes). `PalmMoon` / `PalmVoid` follow their assigned palm's `WorldPosition`
     every frame through the BulkMoveTo list.
-- **Feet.** Create attachments `TheEndSoleL` / `TheEndSoleR` on `LeftFoot`/`RightFoot` (R15, at `(0, -Size.Y/2, 0)`) or
-  `Left Leg`/`Right Leg` (R6, at `(0, -1, 0)`). They host P11a/b: time drips onto the balance wheel 0.35 below the soles.
+- **The body wrap** (review round 3, AD3-01; replaces the sole attachments and their drips, which were invisible at every
+  framing): two emitters on the character's `UpperTorso` (R15) or `Torso` (R6), P11a silver wisps off the shoulders and back
+  and P11b sparks streaming up the body (§9). Body-region particle share in the te5 back view: 0.8 % → 16 % of pixels.
   - At night the wheel's PointLight L2 (§11) lights the feet from below. This is the "foot glow", with no billboard.
 - **Body clearance:** nothing solid passes within 0.6 of the head, torso, hands or feet (§18.2). The armillary and the shards on it
   cross in front of the body without touching it (shards keep ≥ 0.2 from the hands).
 - **Cleanup:** every attachment and emitter created on the character is listed and destroyed in `fx.destroy()`.
-  `fx.setVisible(false)` disables the foot emitters, because they live outside our model.
+  `fx.setVisible(false)` disables the body-wrap emitters, because they live outside our model (they come back 1.1 s after it is
+  shown again), and they are off in first person.
 - **Sitting / walking / flying:** everything follows O and W. The dais stays on the ground for walks and normal jumps and floats under
   the flyer when the ground is more than 7 studs away. The clock drops 0.5, steps back 2 and leans 14° further back in a glide.
 
@@ -732,18 +789,18 @@ time. Spin-ups (accretion, gears) add an integrated extra angle (`extra += (rate
 | 0.3–1.1 | Accretion disc | spin rate 400°/s decays to 40°/s by `40 + 360*exp(-3*(age-0.3))` | ImageTransparency 0.3–1.1 |
 | 0.6–1.8 | **Moon rises** (the Ø 6 core and its opaque face disc) | from V y −9 (out of the dais) up to Pv | 0.6–0.9 |
 | 0.6–1.6 | Key light L1 (night only) | Brightness 0 → night value | — |
-| 0.7–1.4 | Lensed arc | from rt + 3 → rt + 0.6 | 0.7–0.9 |
+| 0.9–1.7 | Lensed disc (beams B5, B6; review round 3) | | Beam Transparency 0.9–1.7 |
 | 0.9–1.5 | Heart spikes extend | from the star centre (local y 0) outward | 0.9–1.1 |
 | 1.2 | P1 VoidSwirl on | | |
-| 1.0–2.4 | **Meridian** and pins | from lying flat on the dais (frame `Gd * CFrame.new(0, 0.95, 0) * CFrame.Angles(rad(90), 0, 0)`) up to F1 | 1.0–1.3 |
-| 1.3–2.7 | **Equator** and ticks | same start, up to F2 | 1.3–1.6 |
+| 1.0–2.4 (+r0) | **Meridian** and pins | from lying flat on the dais (frame `Gd * CFrame.new(0, 0.95, 0) * CFrame.Angles(rad(90), 0, 0)`) up to F1. **r0** (review round 3, R3W-2) = 3.5 for the owner's close camera (cz > 0.5 at the first visible frame, decided once), else 0: at the default zoom the rings wait flat on the dais until the hands have locked at XII and rise as the finale (4.5–5.9, 4.8–6.2, 5.1–6.5); risen earlier, the meridian stood across the dial during the lock | 1.0–1.3 |
+| 1.3–2.7 (+r0) | **Equator** and ticks | same start, up to F2 | 1.3–1.6 |
 | 1.4–2.2 | Moon halo | | ImageTransparency |
 | 1.6 | P2 MoonDust and P4b moon smoke on | | |
-| 1.6–3.0 | **Ecliptic** | same start, up to F3 | 1.6–1.9 |
+| 1.6–3.0 (+r0) | **Ecliptic** | same start, up to F3 (ends at 6.5 = ASM_END with r0: nothing snaps) | 1.6–1.9 |
 | 1.8–3.0 | Balance sway | swayAmp 0 → 1 (smooth) | — |
 | 2.0–3.6 | **Bezel sweep** | segment i flies in from (R + 7, z − 4, θ + 40°), start 2.0 + 0.9·i/N (clockwise from XII), 0.7 s | first 0.25 s |
 | 2.3–3.8 | **Chapter ring** | segment i from z −3, start 2.3 + 0.9·i/N, 0.6 s | first 0.25 s |
-| 2.5 | P6a, P6b dust on | | |
+| 2.5 | P6a, P6b air sparkles on | | |
 | 2.6–3.6 | **Gears GA–GD** slide out from behind the dial | from (0.3·cx, 0.3·cy, −4) to rest; spin rate 300°/s → running rate (exp) | 2.6–2.9 |
 | 3.0–3.6 | GE (from z −3), GH and GI (from z +3); the **backplate** rides GE's frame and slides in with it | | 3.0–3.2 (backplate 3.0–3.3, its star-window GUI 3.0–3.4) |
 | 3.0–3.95 | Rete bars | bar k from radius ×2.2, start 3.0 + 0.04·k, 0.5 s | first 0.15 s |
@@ -752,31 +809,33 @@ time. Spin-ups (accretion, gears) add an integrated extra angle (`extra += (rate
 | 3.4–4.15 | Hour plots set in | plot h from z +3, start 3.4 + 0.04·h, 0.3 s | first 0.1 s |
 | 3.4–4.2 | Inlay GUI | | ImageTransparency |
 | 3.6–4.8 | **Hands spin in and lock** | hour from θ −330°, minute from −1050°, seconds from θs(now) − 720°, by easeOutBack; the seconds hand then runs | 3.6–3.8 |
-| 3.8 | P5a, P5b glints on | | |
 | 4.0–4.4 | Dais base disc | | 4.0–4.4 (G0 floor and G2 core GUIs 4.0–4.6, with it) |
 | 4.0–5.25 | **Dais rim wave** | segment i rises from y −1.2, start 4.0 + 0.8·i/N, 0.45 s | first 0.15 s |
 | 4.2–4.8 | **Crown, stem, cap, bow** drop in | from y + 6 | 4.2–4.4 |
 | 4.2–5.2 | Galaxy G1 arms, engraving GUIs | | ImageTransparency |
 | 4.6–5.8 | **Balance wheel** starts swinging | wheelAmp 0 → 1 | 4.6–4.9 |
 | 4.6–5.6 | Wheel light L2 (night only) | Brightness 0 → night value | — |
-| 4.6–5.4 | Streams and ribbon | Beam Transparency sequences scaled from fully transparent to rest (≤ 20 writes) | — |
+| 4.6–5.4 | Streams | Beam Transparency sequences scaled from fully transparent to rest (≤ 20 writes; each beam fades from its own time) | — |
 | 4.8 | P3 ShardFeed, P7 mist, P8a/b, P9 funnel on | | |
-| 5.0–6.25 | **Time shards** fly from the bezel rim (K point at R 14, angle 300° + 20°·i) onto their ecliptic slots | start 5.0 + 0.06·i, 0.8 s | first 0.2 s |
+| 5.0–6.25 | **Time shards** fly from the bezel rim (K point at R 14, angle 300° + 20°·i) onto their slots on the ecliptic **where it is** (review round 3: rising or still flat on the dais) | start 5.0 + 0.06·i, 0.8 s | first 0.2 s |
 | 5.0–6.0 | Corona (if night) | | ImageTransparency to its night value |
-| 5.2 | P10a/b palm intake, P11 drips, P12 speed trail (only while fast) on | | |
+| 5.2 | P10a/b palm intake, P11 body wrap, P12 speed trail (only while fast) on | | |
 | 5.65–6.35 | **Highlight** | Fill and Outline transparency 1 → target, only once every silver part is solid (a Highlight paints a part that is still fading in at full strength, which made the rising dais rim pop) | — |
 | 5.8–8.0 | Grade eases back (wearer only) | | |
 
 - **Who sees it:** the assembly plays on every build (`CONFIG.ASSEMBLY_REMOTE = true` also for other players' auras). The grade plays
-  only for `ctx.isLocal` and only if `os.clock() - spawnedAt[ctx.char] > 4`, with pass 4's `spawnedAt` logic copied exactly (not on
-  spawn or join).
+  only for `ctx.isLocal`, and not on spawn or join (pass 4's `spawnedAt`). Review round 3 (R3S-10, CR3-05): decided at the **first
+  visible update**, not at build (by then every `CharacterAdded` handler has run, whichever order the framework's and ours ran in),
+  with a **12 s** window after the character spawned (the framework may build only once the avatar has loaded), and never when
+  this client's own THE END was taken away from a different character less than 15 s before the build (a respawn; a weak
+  reference, so no old character is kept alive).
 - **Framework alpha** (`s.alpha`, 0 → 1 over 0.9 s at build; it may fall on unequip): the effective fade for each part is
   `assemblyFade × s.alpha`. After the assembly, while `s.alpha < 1` (unequip), every visible part, GUI and beam writes
   `rest + (1 - rest)*(1 - alpha)` on changes ≥ 0.04, and emitters switch off below alpha 0.6. `fx.destroy()` may arrive at any moment
   and must still clean everything.
 - **Reveal after a hide:** when `setVisible(true)` follows more than 0.5 s hidden, the root is re-parented by the next update (with
   that frame's positions) and every fade is multiplied by a reveal factor that rises 0 → 1 over 0.4 s, so the aura fades back in
-  instead of popping. The emitters follow the framework alpha only (the sky they start from is empty anyway); the foot drips wait
+  instead of popping. The emitters follow the framework alpha only (the sky they start from is empty anyway); the body wrap waits
   until the wearer has been visible for 1.1 s. `setDetail(true)` likewise re-shows the Detail groups on the next update.
 - `CONFIG.ASSEMBLY = false` jumps straight to rest at build.
 
@@ -793,26 +852,26 @@ time shards).
 
 - All emitters off (framework rule).
 - The **Detail** and **ArmillaryDetail** groups are hidden: their sub-models are parented to nil and dropped from the move list.
-  Detail = hour plots (12), GH and GI (24), lensed arc (9), G1 arms plane, engraving plane, bokeh host and ShardFeed host:
-  **37 parts**. ArmillaryDetail = equator ticks (12), pins (4) and time shards (8). High moves **299** parts when far, low moves
-  150 (low builds no Detail parts). The rete, the bow and the corona stay (they are the clock's silhouette and its night glow from
-  across the plaza).
-- **No pop at the switch** (review round 2): the lights, the near-only beams B2, B4, B6 (and the far beacon the other way) and
+  Detail = hour plots (12), GH and GI (12), G1 arms plane, bokeh host and ShardFeed host: **27 parts** (review round 3: the lensed
+  arc is gone and the engraving, now the 56-stud stage, is Core). ArmillaryDetail = equator ticks (12), pins (4) and time shards
+  (8). High moves **309** parts when far, low moves 150 (low builds no Detail parts). The rete, the bow, the corona and the stage
+  stay (they are the clock's silhouette, its night glow and the aura's footprint from across the plaza).
+- **No pop at the switch** (review round 2): the lights, the near-only beams B2, B4 (and the far beacon the other way) and
   another player's Highlight follow a far-detail fade `st.lod` (0.5 s, 0.05 steps, through the beams' precomputed fade steps);
   `Enabled` flips only at zero. At night a lit 52-stud patch of plaza no longer appears or vanishes in one frame at 110 studs.
 - **Half rate** (review round 2): another player's aura past the detail range updates every other frame with both frames' time
   (springs and spins stay exact): half the cost for something about 40 px tall.
 - `setDetail(true)` flags the groups to come back, and the **next update** re-parents them together with that frame's positions
   (one parent write per sub-model), so nothing flashes in at a stale pose.
-- Past ~320 studs the framework calls `setVisible(false)`: the root is parented to nil and the foot emitters are disabled.
+- Past ~320 studs the framework calls `setVisible(false)`: the root is parented to nil and the body-wrap emitters are disabled.
 
 ### 13.2 Low quality (`ctx.quality == "low"`)
 
-Built with the low counts in every table (150 parts, 12 emitters, 8 GUIs, 2 beams, 0 lights).
+Built with the low counts in every table (150 parts, 11 emitters, 8 GUIs, 2 beams, 0 lights).
 
-- Dropped entirely: hour plots, rete, bow and cap, corona, the ecliptic and pins, equator ticks, GB/GC/GD/GH/GI, lensed arc,
-  the horizon glow, time dust, time shards, G1, engraving, funnel, ribbon, bokeh, mist, ash, moon-side smoke, ShardFeed,
-  B2/B4/B5/B6, L1 and L2
+- Dropped entirely: hour plots, rete, bow and cap, corona, the ecliptic and pins, equator ticks, GB/GC/GD/GH/GI, the heart's
+  spikes (review round 3: alone, the vertical pair read as a slit pupil), the horizon glow, time dust, time shards, G1,
+  engraving, funnel, bokeh, mist, ash, moon-side smoke, ShardFeed, B2/B4 and the lensed disc B5/B6, L1 and L2
   (a moving light steps in 4-stud blocks on phones' voxel lighting).
 - CanvasSizes are halved and shadows are off.
 - The Highlight is kept for the owner's own aura (`CONFIG.HIGHLIGHT_LOW = true`) because it carries the monochrome look by day;
@@ -823,50 +882,56 @@ Built with the low counts in every table (150 parts, 12 emitters, 8 GUIs, 2 beam
 
 | Rule | Hide when | Show when | Action |
 |---|---|---|---|
-| Armillary (inc. ticks, pins and the time shards) | `|camPos − A0| < NEAR_ARM_HIDE` (10) | `> NEAR_ARM_SHOW` (11.5) | **fade first** (review round 2): `LocalTransparencyModifier` on the ring parts in 3 steps over 0.25 s, then parent its sub-models to nil and drop them from the move list; on show, back in the world fully see-through at that frame's positions and faded in the same way (scrolling between 9 and 12 studs never snaps the biggest thing near the lens) |
+| Armillary (inc. ticks, pins and the time shards) | `|camPos − A0| < NEAR_ARM_HIDE` (10) | `> NEAR_ARM_SHOW` (11.5) | **fade first** (review round 2): `LocalTransparencyModifier` on the ring parts in 3 steps over 0.25 s, then parent its sub-models to nil and drop them from the move list; on show, back in the world fully see-through at that frame's positions and faded in the same way (scrolling between 9 and 12 studs never snaps the biggest thing near the lens). **While the rings fade or ghost they leave the silver Highlight** (review round 3, R3S-1): their Silver holders are re-parented to a `SilverRings` model outside it (2 parent writes each way; `setGroups` follows), because a Highlight paints a see-through part at full strength and would leave a grey, ink-outlined ring silhouette |
 | Bokeh P6c | `|camPos − O| < NEAR_BOKEH_HIDE` (18) | `> NEAR_BOKEH_SHOW` (20) | `Enabled` (the big discs only drift by in showcase framings) |
-| **Remote ghost** (`GHOST_REMOTE`, other players' auras only) | the segment camera → `Camera.Focus` crosses their clock disc (R 14.5), passes within 5.5 of the moon or 7.0 of the void | clear for **1.2 s** | ramps at 5/s in 3 steps: clock and orb parts (and the moon face) take `LocalTransparencyModifier` 0.25 / 0.5 / 0.75 (one burst of writes per step), **and so do their beams and the emitters on the orbs, the swirl, the rim, the time dust, the shard feed, the horizon and the palms** (review round 2: Beam and ParticleEmitter have the same hidden property; if a build cannot write it, those beams and emitters switch off instead); from the second step the clock's GUIs (inlay, sub-dial, star window), the halo and moon face, the accretion GUI, the corona and the Highlight switch `Enabled` off (GUIs and Highlights ignore LTM) |
+| **Remote ghost** (`GHOST_REMOTE`, other players' auras only) | the segment camera → `Camera.Focus` crosses their clock disc (R 14.5), passes within 5.5 of the moon or 7.0 of the void | clear for **1.2 s** | ramps at 5/s in 3 steps: clock and orb parts (and the moon face) take `LocalTransparencyModifier` 0.25 / 0.5 / 0.75 (one burst of writes per step), **and so do their beams and the emitters on the orbs, the swirl, the rim, the time dust, the shard feed, the horizon and the palms** (review round 2: Beam and ParticleEmitter have the same hidden property; if a build cannot write it, those beams and emitters switch off instead); from the second step the clock's GUIs (inlay, sub-dial, star window), the halo and moon face, the accretion GUI and the corona switch `Enabled` off (GUIs ignore LTM), and **the Highlight from the first step** (review round 3: it would paint the first ghost step solid) |
 | **Remote ring ghost** (review round 2) | the same segment passes within 6.5 of their rings' centre | clear for 0.6 s | only the 76 ring parts take the LTM steps (a friend standing beside a wearer looks through the rings, never through the clock; round 1 ghosted the whole aura and switched its GUIs off whenever someone stood beside it). Ring LTM = the larger of this and the near-camera fade |
 
 First person and close zoom never put rings or blobs across the lens: the layout eases into its close form (§5, factors `cz`, `fp`),
 the moon halo fades with `cz`, and in first person the owner's clock rises into the sky (`FIRST_PERSON_LIFT`). The clock, orbs,
-streams and dais stay.
+streams and dais stay. In first person (review round 3, AD3-09, R3W-6) the funnel (P9) and palm (P10) streaks, the air's
+sparkles (P6a/b) and the body wrap (P11) switch off and the floor ash drops to 3/s (one event write each way): they sat round
+the lens as white needles and black flakes.
+
+The rules read `NEAR_HIDE` and `GHOST_REMOTE` as this build read them (review round 3, CR3-06): turning a flag off while a state
+is held no longer leaves rings unparented or an aura ghosted until the next equip.
 
 ---------------------------------------------------------------------------------------------------------------------------------
 
 ## 14. Budget (asserted by the harness)
 
-Counts as built after review round 2 (fallback and te5 textures alike: the moon is a core and an opaque face disc either way). No
-limit was raised.
+Counts as built after review round 3 (fallback and te5 textures alike). **No limit was raised**: the finer armillary (+22
+parts) was paid for by the lensed arc (9 blocks), the ribbon's end carrier, 2 bow segments, 4 dais-rim blocks and 6
+chapter-ring blocks, and the new FloorFx carrier by P5's rim-glint carrier.
 
 | Item | High | Low | Limit |
 |---|---|---|---|
 | **Parts moved per frame** (one `BulkMoveTo`) | **360** | **150** | ≤ 360 / ≤ 150 |
-| — clock C1–C12 (incl. the backplate and the rim / time-dust / shard-feed carriers) | 182 | 69 | |
-| — armillary A1–A4 | 68 | 28 | |
+| — clock C1–C12 (bezel 32, chapter **18**, rete, gears, hands, hub, plots, crown with an **8**-segment bow, backplate, the time-dust and shard-feed carriers, corona) | 173 | 68 | |
+| — armillary A1–A4 (meridian **28 / 18**, equator **22 / 14**, ecliptic **24**, 12 hours, 4 pins) | 90 | 32 | |
 | — moon M1, M3 (core + opaque face) | 2 | 2 | |
-| — void V1–V6 (core, accretion, swirl and horizon carriers, photon ring 24 / 12, lensed arc 9, heart) | 46 | 20 | |
+| — void V1–V6 (core, accretion, swirl and horizon carriers, photon ring 24 / 12, heart: ball + 8 spikes / ball only) | 37 | 16 | |
 | — time shards | 8 | 0 | |
-| — dais D1–D10 | 50 | 28 | |
+| — dais D1–D9 (base, floor, arms, core, **56-stud stage**, **FloorFx**, rim **24 / 16**, wheel, funnel) | 46 | 29 | |
 | — body carriers | 4 | 3 | |
-| Parts moved when far (Detail and ArmillaryDetail hidden) | 299 | 150 | |
-| ParticleEmitters | 20 instances (P1–P14; P11 has 2) | 12 | ≤ 20 / ≤ 12 |
-| Total Rate (particles/s) | ≈ 186, + 14 while P12 runs | ≈ 54, + 6 while P12 runs | ≤ 200 / ≤ 80 |
-| Beams | 6 (+ 1 with `FAR_BEACON`, far only) | 2 | ≤ 6 / ≤ 3 (the beacon replaces the detail beams, which are off when far) |
+| Parts moved when far (Detail and ArmillaryDetail hidden) | **309** | 150 | |
+| ParticleEmitters | **19** instances (P1–P14 without P5; P11 is two, on the torso) — one slot spare | 12 | ≤ 20 / ≤ 12 |
+| Total Rate (particles/s) | ≈ **194** idle by day (+0.7 bokeh at night); travelling ≈ 182 with the speed trail (the smoke, moon dust and wisps cut back) | ≈ 56 (+6 while P12 runs) | ≤ 200 / ≤ 80 |
+| Beams | 6 (+ 1 with `FAR_BEACON`, far only) | 2 | ≤ 6 / ≤ 3 (the beacon replaces the 2 detail beams, which are off when far) |
 | SurfaceGuis + BillboardGuis | 10 + 1 = 11 | 7 + 1 = 8 | ≤ 12 / ≤ 8 |
 | PointLights | 2 | 0 | ≤ 2 |
 | Highlights | 1 | 1 (the owner's aura only) | ≤ 1 |
-| Character-parented instances | 4 attachments + 2 emitters | same | all cleaned in destroy |
-| Luau registers in `End.build` | 64 spare at -O1 / -O2, **29 at -O0** (a debugging compile keeps constant locals in registers) | | ≥ 16 spare at every level (`tools/harness/register_headroom.py --opt 0,1,2`, run by `run_tests.py`) |
-| Per-frame property writes after `age > 6.5` and alpha = 1 | 0 GUI or Transparency writes. Event writes only: night tick ≤ 1/s, palm flip, near-camera fade steps, grounded flip, speed-trail flip, ghost steps, seat flip, far-detail fade steps, Highlight outline steps on zoom, the floor motes' size on zoom, Size writes during assembly | | |
+| Character-parented instances | 2 attachments (palms) + 2 emitters (the body wrap) | same | all cleaned in destroy |
+| Luau registers in `End.build` | **67** spare at -O1 / -O2, **33 at -O0** (a debugging compile keeps constant locals in registers) | | ≥ 16 spare at every level (`tools/harness/register_headroom.py --opt 0,1,2`, run by `run_tests.py`) |
+| Per-frame property writes after `age > 6.5` and alpha = 1 | 0 GUI or Transparency writes. Event writes only: night tick ≤ 1/s, palm flip, near-camera fade steps (and the rings' 2 parent writes in and out of the Highlight), grounded flip, speed-trail flip, ghost steps, seat flip, far-detail fade steps, Highlight fill and outline steps on zoom, the floor twinkles' size steps and the lensed bands' widths on zoom, the hairline bands (24 photon-ring Size writes, 1 needle), first-person flips (emitters, ash rate), the travelling flip (smoke, moon dust, wisps), Size writes during assembly. Every 0.2 s while grounded: 3 raycasts (no writes) | | |
 
 ---------------------------------------------------------------------------------------------------------------------------------
 
 ## 15. CONFIG flags and the film-mesh upgrade
 
 `local CONFIG = {...}` sits at the top of the module. Any **attribute on the ModuleScript with the same name and type overrides the
-default** at require time, so Milo can flip flags in Studio without editing code. Read once and type-checked; a wrong type is ignored
-with a warn.
+default**, so Milo can flip flags in Studio without editing code. They are **read again at every build** (since review round 1: set
+the attribute, then unequip and equip) and type-checked; a wrong type is ignored with a warn.
 
 | Flag | Default | Purpose |
 |---|---|---|
@@ -897,7 +962,9 @@ with a warn.
 | `NEAR_ARM_HIDE` / `NEAR_ARM_SHOW` | 10 / 11.5 | Armillary near rule (§13.3) |
 | `NEAR_BOKEH_HIDE` / `NEAR_BOKEH_SHOW` | 18 / 20 | Bokeh near rule (§13.3) |
 | `GHOST_REMOTE` | true | Another wearer's aura turns see-through while it stands between you and your camera (§13.3) |
-| `FAR_BEACON` | false | (Needs Milo's OK) a thin steady spire over the wearer seen only from far away; ink by day, white at night, no pulse |
+| `FAR_BEACON` | false | (Needs Milo's OK) a thin steady spire over the wearer seen only from far away; ink by day, white at night, no pulse. MILO_PROMPT asks him with two screenshots (review round 3, R3W-7) |
+| `FRAME_TOP` | 9.6 | (Review round 3, R3W-1) how far above the hub the owner's camera always keeps the watch in frame: 9.6 = up to XII (the hands at midnight), 22.4 = the whole watch with its bow (smaller at the default zoom), 0 = off (§5). Range 0–24 |
+| `RIM_R` | 0.86 | (Review round 3, CR3-02) where the pass-2 `rim` texture's ring peaks, as a fraction of its half-width; the corona, the void's horizon glow and the moon halo are scaled by `0.73 / RIM_R` until te5_halo is uploaded. Measured on the Mac (studio_checks check 14). Range 0.5–0.98 |
 | `FLOW_SIGN` / `ACC_DIR` / `FUNNEL_DIR` / `GALAXY_DIR` | 1 | Studio direction checks, one flip each: −1 reverses the stream flow, the accretion / swirl spin, the floor vortex, the galaxy arms |
 | `WEDGE_SWAP` | false | true if the heart's spikes come out hollow (Roblox wedge orientation) |
 | `STREAK_FLIP` | false | true if the streak particles fly tail-first |
@@ -956,13 +1023,14 @@ Reject the mesh if it is nil, has an empty `MeshId`, or any `Size` component < 0
 
 ### 16.1 Tables in the module
 
-Keep pass 4's `TEX` table **verbatim** (all ids already uploaded). Add `TEX5` (19 keys; review round 2 dropped `hairspring`), which
+Keep pass 4's `TEX` table **verbatim** (all ids already uploaded). Add `TEX5` (18 keys; review round 2 dropped `hairspring`, review
+round 3 `ribbon`), which
 Milo's Mac fills after upload (ids stay `""` until then), and a resolver:
 
 ```lua
 local TEX5 = { -- te5 uploads (textures/te5/); "" until uploaded from the Mac
 	dialInlay = "", subdial = "", accretion = "", galaxyFloor = "", galaxyArms = "", galaxyCore = "", engraving = "",
-	halo = "", stream = "", ribbon = "", moon = "", starWindow = "",
+	halo = "", stream = "", moon = "", starWindow = "",
 	shards5 = "", smoke5 = "", mote = "", glint5 = "", bokeh = "", streak5 = "", ash5 = "",
 }
 local TEX5_LAYOUT = { shards5 = { "Grid4x4", "Loop" }, smoke5 = { "Grid4x4", "OneShot" } }
@@ -971,7 +1039,7 @@ local CROP = { moon = { Vector2.new(104, 104), Vector2.new(304, 304) } }
 local FALLBACK = { -- key -> { pass-4 TEX key, layout, mode }
 	dialInlay = { "dialOuter" }, subdial = { "dialInner" }, accretion = { "galaxy4" }, galaxyFloor = { "galaxy4" },
 	galaxyArms = { "galaxy4" }, galaxyCore = { "ornate" }, engraving = { "gring" }, halo = { "rim" },
-	stream = { "line" }, ribbon = { "line" }, moon = { "moon" }, starWindow = { "galaxy4" },
+	stream = { "line" }, moon = { "moon" }, starWindow = { "galaxy4" },
 	shards5 = { "ash", "None", "Loop" }, smoke5 = { "puff", "Grid4x4", "OneShot" }, mote = { "glow" }, glint5 = { "glint" },
 	bokeh = { "glow" }, streak5 = { "spark" }, ash5 = { "ash", "None", "Loop" },
 }
@@ -984,15 +1052,20 @@ Emitters must apply the **layout and mode returned by `T`**, because a fallback 
   `rbxthumb://`; surrounding spaces are trimmed. Anything else (a typo, a URL, a decal page link) warns once and uses the fallback.
   `"pending:<key>"` is the preview renderer's placeholder for a PNG not uploaded yet (tools/); `make_payloads.py` refuses a module
   that still holds one, so it is never shipped.
-- **Load check:** at require, every filled-in id goes to one background `ContentProvider:PreloadAsync` (never blocks require or
-  build). A texture that does not load is reported once and **swapped for its fallback everywhere** it is used (images, beams,
+- **Load check:** at the end of each build, the filled-in ids **that build draws** and that were not asked for yet go to one
+  background `ContentProvider:PreloadAsync` (never blocks require or build; review round 3, R3S-7 / CR3-07: a low-quality build
+  never asks for galaxyArms, engraving, shards5, ash5 and bokeh, so a phone does not hold ~17 MB of textures it never draws;
+  several keys may share one id, and a failure swaps every one of them). A texture that does not load is reported once and **swapped for its fallback everywhere** it is used (images, beams,
   emitters including their flipbook layout), and later builds use the fallback straight away. Review round 2: only
   `AssetFetchStatus.Failure` counts at once; a `TimedOut` (or any other status: common on a phone or a cold cache) is asked for once
   more 20 s later before anything is swapped.
-- **Choices made because te5 was there** (review round 2): the face brightness of `moon`, the star window's brightness, the ribbon's
-  WHITE colour, and the ×1.3 / ×2.2 particle sizes of `smoke5`, `shards5` and `streak5`. Each such object registers a fix-up hook
-  (`fixUps[o](o)`, weak-keyed, the object passed in so the entry never holds its own key) that the failure path runs after the
-  texture swap: the ribbon goes back to ink, the brightnesses and sizes to the fallback's. Nothing runs per frame.
+- **Choices made because te5 was there** (review round 2): the face brightness of `moon`, the star window's brightness, the ×1.3 /
+  ×2.2 particle sizes of `shards5` and `streak5`, and (review round 3, CR3-02) the sizes of the night corona, the void's horizon
+  glow and the moon halo, which are made for te5_halo's ring (r 0.73) and scaled by `0.73 / RIM_R` while the pass-2 `rim` texture
+  stands in (`RIM_R` attribute, default 0.86 until measured on the Mac). Each such object registers a fix-up hook (`fixUps[o](o)`,
+  weak-keyed, the object passed in so the entry never holds its own key) that the failure path runs after the texture swap: the
+  brightnesses and sizes go to the fallback's. Nothing runs per frame. (te5_smoke is a dense billow since review round 3 and is
+  drawn at the fallback's size: no ×1.3, no hook.)
 - **Geometry:** the moon is the same core and opaque face disc with either texture (§8.3); te5_moon is drawn whole, te4_moon
   cropped (`CROP`). `starWindow` is drawn brighter than its galaxy4 fallback (§11).
 
@@ -1015,10 +1088,10 @@ General rules:
 | `te5_galaxy_floor.png` | 1024² | galaxyFloor → galaxy4 | Dais pool (Ø 29.6). Alpha 1 to r 0.86, smoothstep to 0 at 1.0. **Opaque near-black base** (RGB 8–14 plus fine noise). A barred 2-arm spiral: bar along θ = 0 to r 0.18 (L 0.85). Log-spiral arms (pitch 16°) from the bar ends, winding **counter-clockwise outward** with image +y up. Arm cores L 0.95 near the bar falling to 0.25 by r 0.85; angular width grows 0.18 → 0.35 rad. A thin black lane (L 0.02, 0.05 rad) on each arm's inner edge. 60 bright knots (2–5 px) along the arms; 1500 single-pixel stars (L 0.4–1.0). Core Gaussian σ 0.06 at L 1.0 plus bulge σ 0.15 at L 0.5. Mean L inside r < 0.86 ≈ 0.22: a dark pool with white arms. |
 | `te5_galaxy_arms.png` | 1024² | galaxyArms → galaxy4 | Floating arm layer (Ø 21). Transparent background. The same 2-arm spiral rotated 90°, pitch 13°, **arms only**: alpha = arm profile (1 at the arm core, Gaussian falloff, cut below 0.05). RGB white (L 0.9–1.0) with filament noise. A **black lane** (RGB 10, alpha 1, 0.04 rad) on each arm's leading edge. Knots. The outer 15 % fades. |
 | `te5_galaxy_core.png` | 512² | galaxyCore → ornate | Inner layer (Ø 12). Transparent background. White core alpha 1 to r 0.08, soft to 0.25. 4 tightly wound thin arms (pitch 10°) from r 0.1 to 0.8, cores at alpha 0.9, each with a thin black lane. Alpha 0 beyond r 0.85. |
-| `te5_engraving.png` | 1024² | engraving → gring | Ground ring for the 40-stud plane (r 1 = 20 studs). Alpha 0 except strokes; white (240) with a 2 px ink edge (20). Circles at r 0.78 (3 px), 0.80 (2 px), 0.965 (2 px), 0.985 (4 px). 120 ticks r 0.94–0.965 (1.5 px; every 10th from 0.92, 4 px). Radial Roman numerals I–XII at r 0.83–0.91 (same glyph builder, height 0.08). 12 small diamonds at the half-hours, r 0.87. |
+| `te5_engraving.png` | 1024² | engraving → gring | **The stage** (review round 3): a ground ring for the **56-stud** plane (r 1 = 28 studs), from just outside the dais rim to the edge. White (240) strokes with a 2 px ink edge (20, alpha 0.95), nothing semi-transparent: a frame of rings at r 0.585 (3 px), 0.605, 0.632 and 0.688 (1.6 px); a guilloche band of 120 ticks r 0.638–0.682 (every 10th 2.6 px); Roman numerals I–XII **3 studs tall** (height 0.107) at r 0.80 with half-hour four-point stars; rings at r 0.725 and 0.875; and an **inked minute track**, a solid ink band (16, 16, 20, alpha 1) r 0.925–0.975 framed by white rings at 0.918 and 0.982, with 60 white ticks inside it and lume batons (6 px) every five minutes. |
 | `te5_halo.png` | 512² | halo → rim | Rim-only halo: alpha 0 for r < 0.66, smooth rise to 0.95 at r 0.74, then a soft tail: 0.35 at 0.82, 0.10 at 0.90, 0 at 1.0. RGB white. Used by the moon halo (15 studs), the night corona (44 studs) and the event-horizon glow particles (11.2 studs). |
 | `te5_stream.png` | 256×64 | stream → line | Beam band, tiled in U (seamless). v ∈ [−0.5, 0.5] across. Alpha 1 for \|v\| < 0.40 with a 1.5 px AA edge. **Ink edges** (RGB 12) for \|v\| 0.32–0.40. A white core (base L 0.8) for \|v\| < 0.30 with 5–7 brighter longitudinal filaments (L 1.0) that wave with a period of 256 px. 2 px transitions. |
-| `te5_ribbon.png` | 256×128 | ribbon → line | Ink ribbon, tiled in U (seamless). Body alpha 1 for \|v\| < 0.46. RGB ink (14, 14, 18) with ±6-level longitudinal streaks. White hairlines (245, 2 px) at \|v\| 0.40–0.43 on both sides. A faint white centre filament (1 px, L 0.6) waving with a period of 256 px. |
+| ~~`te5_ribbon.png`~~ | — | — | Dropped in review round 3: the ink ribbon became the void's lensed disc, which uses te5_stream (generator in the git history). |
 | `te5_moon.png` | 1024² | moon → moon | (Review round 1, AD4.) Photographic full-moon face for the moon's camera-facing opaque face disc (§8.3). North up, Earth-facing side: maria (metaball shorelines, grey 95–145) where the real ones are, highlands 212–240, ~60 craters with lit upper-left rims and shadowed floors, rayed Tycho / Copernicus / Kepler / Aristarchus, faint limb darkening and low relief. Hard alpha edge at r 0.985 (1.6 % ramp): no ring, no glow. |
 | `te5_star_window.png` | 1024² | starWindow → galaxy4 | (Review round 1, AD1.) Deep space for the clock's solid movement plate. Opaque near-black field (alpha 1 to r 0.985), a faint grey Milky-Way band at 32° with dust lanes, ~2600 single-pixel stars and ~70 soft brighter ones (5 with tiny spikes). Turns with the centre wheel. |
 
@@ -1027,7 +1100,7 @@ General rules:
 | File | Size | Flipbook | texKey → fallback | Spec |
 |---|---|---|---|---|
 | `te5_shards.png` | 1024² | **Grid4x4**, Loop | shards5 → ash | A tumbling metal sliver: an irregular thin quad prism with vertices (−0.30, −0.42), (0.22, −0.35), (0.34, 0.40), (−0.12, 0.46) × 0.8 of the cell and thickness 0.06. 16 frames rotate 22.5° each about the axis normalize(0.35, 1, 0.2), for a seamless loop. Flat shading: front face L 0.86, back face L 0.25, sides L 0.55, a 1 px specular line on the lit edge, and a 2 px ink outline (10) round the silhouette. Alpha 1 inside, 1 px AA, ≥ 20 % padding. |
-| `te5_smoke.png` | 1024² | **Grid4x4**, OneShot | smoke5 → puff | A curling smoke tendril evolving over 16 frames: domain-warped fbm (4 octaves) density inside a soft blob whose radius grows 0.22 → 0.42 of the cell while a spiral (curl) warp grows. Early frames are dense and crisp; late ones thin and wispy. Alpha peaks at 0.85 (frames 2–4) and is ≤ 0.35 by frame 15. It is multiplied by a radial window that reaches 0 at 0.46 of the cell (no square edges). RGB 0.75–1.0 internal shading, so a dark particle Color keeps its structure. Dither the alpha (no banding). |
+| `te5_smoke.png` | 1024² | **Grid4x4**, OneShot | smoke5 → puff | Review round 3 (AD3-01): **a dense ink-tight billow** (the old curl covered ~30 % of its cell, mostly translucent, so in game the void's "ink" read half see-through and teal). The billow fills ~80 % of its cell: a body of radius 0.37 → 0.405 with round cauliflower lobes reaching ~0.44, alpha ~0.93 over its inner half, per-cell mean alpha ≥ 0.30 in frames 0–11, torn ridged wisps only at the edge; a slow curl; it dissolves from the edge inward into ragged wisps only in frames 12–15 (mean alpha 0.36 → 0.08). Radial window reaching 0 at 0.46 of the cell. RGB 0.75–1.0 internal shading (the lobes' relief, lit from the upper left), so a dark particle Color keeps its structure. Dithered alpha. Drawn at the fallback's size (no ×1.3). |
 | `te5_mote.png` | 128² | — | mote → glow | Core disc r < 0.22 (alpha 1, RGB 255). Ink rim r 0.22–0.30 (RGB 18, alpha 0.85) so it reads on a bright sky. Glow r 0.30–0.5 (RGB 255, alpha 0.25 → 0, smooth). |
 | `te5_glint.png` | 256² | — | glint5 → glint | 4-point glint. Horizontal and vertical spikes span the full width; thickness 6 px at the centre tapering to 0.5 px at the tips; alpha 1 → 0 toward the tips. 45° spikes at half length 0.45 with alpha 0.5. Core disc r 0.05 at alpha 1. A thin ink halo r 0.07–0.09 (RGB 15, alpha 0.6). |
 | `te5_bokeh.png` | 256² | — | bokeh → glow | A hexagonal aperture disc (circumradius 0.46, corners rounded 15 %). Interior alpha 0.55 with radial brightening L 0.9 → 1.0. Rim band (outer 8 %) alpha 0.85. 2 px AA, faint onion-ring noise ±0.03 alpha. White. |
@@ -1156,7 +1229,7 @@ FOLLOW use the Studio-default follow camera in `run_aura.py`):
 | `pair_behind` (FOLLOW) | a remote wearer stands 7 studs behind-right, between you and your camera | their aura ghosts (§13.3) |
 | `pair_walkby` (FOLLOW) | a remote wearer walks across behind you (z = 8) from x −30 to +30 | ghost enters and leaves in steps, no flicker |
 | `jump` (FOLLOW) | a full Roblox jump (JumpHeight 7.2, gravity 196.2) every 2 s from t = 7 | the dais holds; no speed trail; no flicker |
-| `seated` (FOLLOW) | the wearer sits on a 1-stud Seat (Humanoid.Sit, SeatPart): the ground ray hits the seat top | the dais sits at the lower of ground and feet; the foot drips stop |
+| `seated` (FOLLOW) | the wearer sits on a 1-stud Seat (Humanoid.Sit, SeatPart): the ground ray hits the seat top | the dais sits at the lower of ground and feet |
 | `small_avatar` (FOLLOW) | HipHeight 1.4 (HRP 2.4 above the ground), idle then walking | the wheel and clock clear the dais; the layout scales with the legs |
 | `downhill` (FOLLOW) | walks at 16 studs/s while the ground drops 6 studs/s (t = 8..11) | the dais follows down fast (spring 30/s down, 8/s up), never lags behind |
 
@@ -1169,6 +1242,17 @@ FOLLOW use the Studio-default follow camera in `run_aura.py`):
 | `pair_side` (FOLLOW) | another wearer stands 5 studs to your side | only their rings ghost, never their clock, orbs or GUIs |
 | `visit_close` | a player without the aura stands in front of a wearer, then walks round to their side | as above; no flicker |
 
+**Review round 3 additions** (35 scenarios in all):
+
+| Scenario | What it does | Checks |
+|---|---|---|
+| `teleport` (FOLLOW) | the wearer is teleported 60 studs up onto a platform at t = 8 and back down at t = 10 (no hide); the camera follows at once | lint `teleport-lag` (the clock's inlay, the moon and the void within 0.5 studs of where they rode, relative to the HumanoidRootPart, in the 3 frames after each jump) and `teleport-trail` (the speed trail stays off) |
+| `nan_frame` (FOLLOW) | one update gets a NaN hover (t = 8), another a NaN HumanoidRootPart CFrame (t = 9; the framework's culling still sees the real one) | lint `nan-state`: no aura part keeps a NaN position, and the clock rides within 1 stud of where it did |
+| `slope` (FOLLOW) | the plaza is a 10° slope rising ahead; idle, then walking uphill (t = 8..10) | lint `slope-dais`: the dais base within 1.5° of the slope, no rim block more than 0.1 into the ground; snapshots record the tilted plaza (`world.groundUp`) and the renderer tilts its ground |
+| `pair_side`, `pair_behind` | (above) | also lint `own-clock-hidden`: from your camera nothing solid of the other wearer's aura hides your own clock's hub or XII (sampled every 0.5 s from t = 7 to 12; round 2's module: 11 of 11 hidden) |
+
+The flicker lint also watches a ParticleEmitter's `Size` sequence (a swapped size resizes the live particles at once).
+
 The register headroom of `End.build` (≥ 16 spare of Luau's 200, at -O0, -O1 and -O2) is a test in
 `tools/harness/tests/run_tests.py`.
 
@@ -1180,7 +1264,9 @@ The register headroom of `End.build` (≥ 16 spare of Luau's 200, at -O0, -O1 an
 3. **Write discipline:** after t > 7 with alpha = 1, there are 0 writes to any GUI property or BasePart.Transparency, apart from
    night-tick writes (≤ 1 per simulated second, and only when nq changed). There are 0 `Instance.new` calls inside update. There is
    exactly 1 BulkMoveTo per update.
-4. **Monochrome:** every colour has spread ≤ 20 and B ≥ R.
+4. **Monochrome:** what the harness lint enforces: no colour's HSV saturation above 0.15 (at value above 0.12). The silvers have
+   been neutral, a hair warm (B a little below R), since review round 2: the cyan day sky already tints Metal blue, so cool
+   tokens read baby-blue (CR3-08: the earlier "B ≥ R" rule no longer matches the module or the lint).
 5. **Opacity:** no part, GUI, or beam (measured by its width) > 6 studs across has a uniform transparency in [0.3, 0.8]. Only the §7.3 soft list is exempt.
    Structural parts are at rest Transparency 0 after the assembly.
 6. **No flash:** between consecutive frames no Brightness or LightEmission changes by more than 0.1, no Transparency (outside
@@ -1192,15 +1278,16 @@ The register headroom of `End.build` (≥ 16 spare of Luau's 200, at -O0, -O1 an
    vs body sample points (head sphere r 0.7 at O+2; torso box; hands r 0.4; feet r 0.5) ≥ 0.6 in idle and glide; armillary vs the void
    accretion disc ≥ 0.2; time shards vs hands ≥ 0.2; the clock bottom ≥ 0.2 above the dais layers; no part below `daisY − 0.05` except the dais base underside; the moon halo billboard ≥ 0.4 from
    every SurfaceGui plane.
-9. **Character:** palm and sole attachments are created on the right parts (R15 and R6). The palm flip happens only across f = ±0.2.
+9. **Character:** the palm attachments and the body-wrap emitters are created on the right parts (R15 and R6). The palm flip
+   happens only across f = ±0.2.
    After `destroy()` nothing is left on the character, camera or container (S14), and `update()` after destroy is a no-op.
 10. **Film flags:** (a) falls back silently with no yields; (b) normalised sizes are within 2 % of target, the thin axis maps to K z,
     and the non-round Dial is rejected.
 11. **Assembly:** at t = 6.5 every part sits at rest (CFrame error < 0.001) at rest transparency. No part's transparency goes 0 → >0
     → 0 during the assembly (no blink). The grade exists only for `isLocal` with a real equip.
 12. **Dais:** S08 → the dais Y never changes and there are no transparency writes. S07 → the dais floats 2.4 below the visible feet.
-13. **LOD:** S10 → 70 parts parented out (high: 46 Detail + 24 ArmillaryDetail), the move list = 290, emitters off; everything
-    restored by the first update after t = 11.
+13. **LOD:** S10 → 51 parts parented out (high: 27 Detail + 24 ArmillaryDetail; review round 3), the move list = 309, emitters
+    off; everything restored by the first update after t = 11.
 
 ### 18.3 Preview renderer views (and what to look for)
 
@@ -1210,7 +1297,7 @@ The register headroom of `End.build` (≥ 16 spare of Luau's 200, at -O0, -O1 an
 | P2 front night | S03 | Inlays, lume, photon ring and galaxy arms glow. The moon shows a lit limb. The corona rings the bezel. Particles are visible. |
 | P3 owner | S01 at t = 10 | The dial face is seen over the wearer's shoulders, hands at XII above the head, and the world visible through the skeleton gaps. The orbs sit near the screen edges. Nothing blocks the character. |
 | P4 side | camera O + 30·W.Right + (0, 6, 0) | The clock faces the camera beyond the wearer. The armillary rings cross in front of the torso. The disc does not touch the clock. Depth layering is obvious. |
-| P5 high 3/4 | O + 25·f + (0, 25, 0) | The dais bowl, the floating arm layers' parallax, the balance wheel under the feet, the ribbon landing on the rim. |
+| P5 high 3/4 | O + 25·f + (0, 25, 0) | The dais bowl, the floating arm layers' parallax, the balance wheel under the feet, the 56-stud engraved stage round it. |
 | P6 clock close-up | O + 22·f + 10·r + (0, 12, 0) → clock centre | The bezel band thickness, flutes, chapter ring step, gears at 3 depths, hands above the dial. |
 | P7 void close-up | 14 studs from voidC | The photon ring hugs the silhouette with a gap, then the lensed arc over the top, the heart, the horizon glow and spiral matter. |
 | P8 low quality | S09 at t = 10 | The same composition reads with fewer details. Polygon facets stay acceptable. |
@@ -1231,9 +1318,9 @@ The register headroom of `End.build` (≥ 16 spare of Luau's 200, at -O0, -O1 an
 5. Phone / low quality (Studio device emulator plus graphics level 1–3): budgets, readability.
 6. Other players: Test → 2 players. The remote wearer's clock faces *your* camera, there is no grade on the other client, and the
    assembly plays.
-7. Flow directions: streams flow into the palms, the ribbon flows down, accretion streaks and galaxy arms trail their spin. Fix signs
+7. Flow directions: streams flow into the palms, the void's lensed bands flow round it, accretion streaks and galaxy arms trail their spin. Fix signs
    via `dir` / TextureSpeed if not.
-8. Particle shape semantics (§19): VoidSwirl and Funnel spiral **inward**, the palm intake converges, rim glints sit on the bezel.
+8. Particle shape semantics (§19): VoidSwirl and Funnel spiral **inward**, the palm intake converges, the time dust rides just outside the bezel.
 9. Film-mesh flags: set the module attributes `USE_FILM_MESHES` plus each `FILM_*` one at a time, and screenshot each. Keep only the
    ones that look better. Try `FILM_HAND_FLIP` if the hand points inward.
 10. Performance: MicroProfiler / Stats with 1 and 3 wearers on screen. Frame time increase < 1.5 ms for 1 wearer on the Mac.
@@ -1252,12 +1339,12 @@ The register headroom of `End.build` (≥ 16 spare of Luau's 200, at -O0, -O1 an
 | Transparent sorting between stacked galaxy GUI planes | They are concentric, so the per-object sort is right for any camera above +0.33 studs. The opaque base disc writes depth under them. |
 | The billboard-cut lesson | Only one BillboardGui (the moon halo), checked ≥ 0.4 from every GUI plane (the halo fades out with `cz` as the camera closes in). The moon face is an opaque disc; all void details are geometry or particles. |
 | The moon face's SurfaceGui (Left face of a cylinder) is mirrored, or the UICorner does not round an image on a SurfaceGui | Studio check (studio_checks item 14): the te5 maria must read as the real moon (not mirrored); the cropped te4 fallback must show no square corners. The disc itself turns to the camera ray, so it always covers the Ø 6 core. |
-| Two other players' pools share planes (same UserId parity) | The owner's pool never shares a plane with anyone's (lift 0 vs 0.018 / 0.037); Studio check with 3 wearers. |
+| Two other players' pools share planes (same UserId parity) | The owner's pool never shares a plane with anyone's (lift 0.037 vs 0 / 0.018; review round 3 put the owner's on top); Studio check with 3 wearers. If Roblox sorts the SurfaceGuis per object and the overlap swaps as the camera orbits, the next pass hides the overlapping part of another player's floor images instead. |
 | Every Studio-only unknown needs a code edit | Review round 1 turned each into one attribute flip (`FLOW_SIGN`, `ACC_DIR`, `FUNNEL_DIR`, `GALAXY_DIR`, `WEDGE_SWAP`, `STREAK_FLIP`, `FRONT_FACES`, `SWIRL_POINTS`), see `roblox/install/studio_checks.md`. |
 | Viewer anchoring means each client sees a different layout | Intended. Screenshots differ per viewer. `VIEWER_ANCHOR = false` restores body anchoring. |
-| 360 parts × several wearers on low-end PCs | Low quality has 149 parts, and far LOD moves 290 / 145. THE END is 1 in a billion (rarely more than 1–2 per server). Measure in Studio. |
+| 360 parts × several wearers on low-end PCs | Low quality has 150 parts, and far LOD moves 309 / 150. THE END is 1 in a billion (rarely more than 1–2 per server). Measure in Studio. |
 | Film meshes: unknown pivots and orientations | Normalisation by bounding box plus `FILM_HAND_FLIP`, all default OFF, with a per-element procedural fallback. |
-| Uneven ground: the flat dais clips steps and slopes | Accepted (pass 4 did too). The dais stays level and its rim hides small offsets. |
+| Uneven ground: the flat dais clips steps and slopes | Review round 3 (R3S-2): the dais tilts to a clean slope (three rays, a plane through the ground under the wearer, ≤ 20°); stairs, cliff edges and bumpy terrain keep it level and may still clip a little. The 56-stud stage follows the same plane, so on a curved hill its edge can still dip into the ground. Studio check on a hill, a beach and stairs. |
 | Unknown framework unequip behaviour | Both alpha fade-out and immediate destroy are handled. |
 | Fallback textures differ from te5 (e.g. the galaxy4 accretion has a bright centre) | The core sphere hides the centre. Geometry carries the look. Test once with fallbacks before uploading. |
 
@@ -1277,3 +1364,9 @@ The register headroom of `End.build` (≥ 16 spare of Luau's 200, at -O0, -O1 an
   ghost (LocalTransparencyModifier on another player's anchored parts, GUIs off); the speed trail on runs and flights only; the
   Neon colours of the lume under Bloom; the reveal after the Auto roll's hide; MicroProfiler cost of 360 parts; a seated wearer's
   hover (the framework's pose on a Seat); te5 texture preload and the fallback swap.
+- (Review round 3) A Highlight on parts with `LocalTransparencyModifier` (the fading rings now leave it, which should be enough
+  whatever Roblox does); the owner's frame fit (smooth, never a jump); the rings waiting for the hands at the default zoom; the
+  dais on a slope; the void's lensed bands (not cut by the accretion plane); particle sorting against the floor and disc GUIs
+  (the emitters' carriers now sit above those planes); hairlines without anti-aliasing; texture memory per build on a phone; the
+  silver tint at the default zoom; the ink smoke by day; the pass-2 rim radius (`RIM_R`); a reset with THE END on (no grade);
+  two real wearers (the other's clock steps back behind yours); the owner's pool on top where two pools overlap.

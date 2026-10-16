@@ -5,6 +5,11 @@
 //        [--env auto|day|night] [--clock HOURS] [--out DIR] [--size 1280x720|game] [--ss 1|2] [--props on|off]
 //        [--labels on|off] [--sheet on|off] [--bloom on|off] [--max-particles N] [--tex5 DIR | --no-tex5]
 //        [--texmap FILE] [--hide parts,guis,beams,trails,particles,lights,characters,env] [--tone filmic|neutral] [--verbose]
+//        [--aa on|off] [--sort centroid|host]
+//
+// --aa off: no multisampling (as Roblox draws at low graphics levels and on phones; thin lines then crawl in stair-steps).
+// --sort host: sort each particle emitter for transparency at its host part instead of its particles' centre (how Roblox
+// sorts is unverified: FIDELITY.md); check that the intended layering holds either way.
 //
 // A directory renders every *.json under it (e.g. a harness run's snapshots/ folder). Output: OUT/<scenario>_f<frame>_<view>.png
 // plus OUT/<scenario>_f<frame>_sheet.png (all views on one page). See tools/preview/README.md.
@@ -17,7 +22,8 @@ const DEFAULT_VIEWS = 'cam,front34,back,side,top,far';
 
 function parseArgs(argv) {
 	const a = { snapshots: [], views: DEFAULT_VIEWS, env: 'auto', clock: null, out: path.join(PREVIEW_DIR, 'out'), size: '1280x720', ss: 1,
-		props: true, labels: true, sheet: true, bloom: true, maxParticles: 6000, hide: '', tex5: path.join(REPO_DIR, 'textures', 'te5'), texmap: null, verbose: false };
+		props: true, labels: true, sheet: true, bloom: true, maxParticles: 6000, hide: '', tex5: path.join(REPO_DIR, 'textures', 'te5'), texmap: null, verbose: false,
+		aa: true, sort: 'centroid' };
 	const onoff = (v) => !/^(off|false|0|no)$/i.test(v);
 	for (let i = 0; i < argv.length; i++) {
 		const k = argv[i], v = () => { if (i + 1 >= argv.length) throw new Error(`${k} needs a value`); return argv[++i]; };
@@ -40,6 +46,8 @@ function parseArgs(argv) {
 			case '--no-tex5': a.tex5 = null; break;
 			case '--texmap': a.texmap = v(); break;
 			case '--verbose': case '-v': a.verbose = true; break;
+			case '--aa': a.aa = onoff(v()); break;
+			case '--sort': a.sort = v(); break;
 			case '--help': case '-h': a.help = true; break;
 			default:
 				if (k.endsWith('.json') && !k.startsWith('-')) a.snapshots.push(k);
@@ -47,6 +55,7 @@ function parseArgs(argv) {
 		}
 	}
 	if (!['auto', 'day', 'night'].includes(a.env)) throw new Error('--env must be auto, day or night');
+	if (!['centroid', 'host'].includes(a.sort)) throw new Error('--sort must be centroid or host');
 	if (a.size !== 'game') {
 		const m = /^(\d+)x(\d+)$/.exec(a.size);
 		if (!m) throw new Error('--size must look like 1280x720 (or "game": 1280 wide at the snapshot viewport\'s aspect)');
@@ -105,7 +114,7 @@ async function main() {
 				res = await page.evaluate((a) => window.PREVIEW.render(a), {
 					snapshot: snap, textures, views, env: args.env, clock: args.clock, size: args.wh || gameSize(snap), ss: args.ss, props: args.props,
 					labels: args.labels, sheet: args.sheet, maxPerEmitter: args.maxParticles, bloom: args.bloom,
-					hide: args.hide.split(',').map((x) => x.trim()).filter(Boolean), tone: args.tone,
+					hide: args.hide.split(',').map((x) => x.trim()).filter(Boolean), tone: args.tone, aa: args.aa, sort: args.sort,
 				});
 			} catch (e) {
 				failures++;

@@ -7,9 +7,9 @@ confirm is marked `-- STUDIO-VERIFY:` in the code and listed at the end of this 
 
 Renders for Milo: `docs/the-end/pass5-renders/` (see the list at the end).
 
-**Review round 1** and **review round 2** (the last two sections of this page) changed many of the numbers in the sections
-above (budgets, decisions 5, 6, 14, 15, the particle tuning, the known weaknesses). Those sections are kept as the record of the
-first build; where they disagree, the review sections (round 2 last) and the spec (`pass5-spec.md`, updated to the built
+**Review rounds 1, 2 and 3** (the last three sections of this page) changed many of the numbers in the sections above
+(budgets, decisions 5, 6, 14, 15, the particle tuning, the known weaknesses). Those sections are kept as the record of the
+first build; where they disagree, the review sections (round 3 last) and the spec (`pass5-spec.md`, updated to the built
 numbers) are current.
 
 ## What was built
@@ -144,8 +144,8 @@ that the module uses until te5 is uploaded.
 | `06_day_side.jpg` | Day, from the wearer's right: the clock still faces the viewer, beyond the wearer |
 | `07_day_far.jpg` | Day, 130 studs: particles and fine detail dropped (far LOD); the silhouette still reads |
 | `08_clock_closeup.jpg` | Close-up from the front and above (orbit 24°, 26° up, 27 studs): bezel, chapter ring, rete, the movement plate behind the dial, the void |
-| `09_assembly_strip.jpg` | The equip assembly, 0.7 s to 6.6 s |
-| `10_te5_day_studio.jpg` | After the te5 textures are uploaded: day, studio camera (numerals, accretion streaks, ribbon) |
+| `09_assembly_strip.jpg` | The equip assembly, 0.7 s to 6.6 s (studio camera: the rings rise first, as before; at the default zoom they wait for the hands) |
+| `10_te5_day_studio.jpg` | After the te5 textures are uploaded: day, studio camera (numerals, accretion streaks, the 56-stud engraved stage) |
 | `11_te5_night_front34.jpg` | After te5 upload: night, front 3/4 |
 | `12_te5_clock_closeup_night.jpg` | After te5 upload: the same close-up at night (star window, moon face, accretion) |
 | `13_pass4_vs_pass5_day.jpg` | The real pass-4 Studio screenshot next to the pass-5 preview from the same camera |
@@ -573,3 +573,270 @@ measurements and preview renders.
 33. Highlights in a full server: count them (≤ 31 per client), and the owner's tone is never the one dropped.
 34. Texture memory on a phone at graphics level 1-3 (F9 -> Memory -> GraphicsTexture) before and after equipping.
 35. The `HIGHLIGHT_FILL` 0.65 / 0.8 A/B with the neutral silvers.
+
+## Review round 3
+
+Four critics reviewed the round-2 build (126,319 bytes): the art director (AD3-01 to AD3-09), the wearer's and other players'
+view (R3W-1 to R3W-8), a Studio skeptic (R3S-1 to R3S-10) and a code review (CR3-01 to CR3-08): 2 priority-1, 10 priority-2 and
+23 priority-3 findings. The art director's verdict, in short: the particles still add little at the framings Milo screenshots,
+and uploading te5 made them *weaker*; at Milo's camera pass 5 takes up less of the screen than the pass 4 that is live now; the
+void reads as space art (a ball, a Saturn ring, a sticker star, an ink stick to the floor). The wearer's verdict: the close-camera
+layout only works at 12.5-20 studs, and between ~22 and ~40 studs the watch towers over the top of the screen again.
+
+Duplicates were merged: R3S-7 = CR3-07 (texture preload by quality), R3S-8 = CR3-03 (the floor motes' size flip), R3S-10 ~
+CR3-05 (the grade after a reset), AD3-09 ~ R3W-6 (white sticks round the lens in first person), R3W-8 ~ AD3-02 (ring
+segments), AD3-03 + AD3-02 (the lensed bands pay for the rounder rings). Every priority-1 and priority-2 finding is done (R3S-3's
+"commit and push" is the one part this session may not do, see below); of the priority-3 findings, R3W-5 and R3W-7's textured
+column were declined and R3W-8 is partly done, with the reasons below. **Still nothing has run in Roblox Studio**: everything
+here is harness output, snapshot measurements and preview renders.
+
+### What changed, and why
+
+**Particles that read, with te5 and without** (AD3-01, P1; AD3-05, AD3-07, AD3-09, R3W-6, CR3-04)
+
+- **te5_smoke** is a new texture: a dense cauliflower billow (frame coverage 31-36 % of the cell, the core 93 % opaque) that
+  dissolves from the edge inward over its last four frames (no frame-to-frame jump: steps under 0.035 in the body, under 0.10
+  in the dissolve; the generator checks this). Round 2's wispy curl covered ~30 % of a cell and was mostly translucent, so
+  the void's "ink" read as a teal veil over the day sky. The void smoke is now drawn at the fallback's size (the 1.3x te5
+  scale is gone) with a stronger core (peak transparency 0.08, was 0.16). Measured on the te5 day render at the default zoom,
+  the smoke's median colour went from (93, 154, 148) to (58, 101, 104) (measured before the last opacity step; the final
+  curve is more opaque and was not re-measured).
+- **The wearer burns with it** (P11, replaces the sole drips: 0.18-stud specks that showed at no framing): silver wisps rise off
+  the shoulders and back (te5_smoke, Box surface of the UpperTorso / Torso, 7/s, 3 on low, 1.2 -> 3.4 studs) and sparks stream
+  up the body (glint5, 14/s, 6 on low). They are silver, not ink, because from every camera the wearer stands against the black
+  dial. They live on the character (in `charStuff`, so `destroy()` removes them), stop while hidden or in first person, and the
+  wisps stop while travelling (the sparks keep going: a comet's tail). Measured on the te5 back view, particles now change
+  16.2 % of the pixels on the body (0.8 % before).
+- **The air** (P6a): the 0.22-0.40-stud motes that never read became a field of slow four-point sparkles (glint5, 14/s, 4 on low,
+  3-4.5 s, up to 1.1 studs) through a 44 x 22 x 44 volume round the whole aura. With the 56-stud stage (below) this gives the aura
+  pass 4's footprint back as solid, readable work.
+- **The floor** (P8a, AD3-07): the te5 motes read as white pearls with a grey rim on the black pool; they are glint5 four-point
+  twinkles now, each at its own angle, turning slowly.
+- **P5's slot** (CR3-04, option B): P5's 1.9-stud glints sat on the bezel, inside the silver Highlight, which composites over
+  them. P5 is deleted (it was on low too, at 3/s); its rate went to the time-dust ring (P13, 16 -> 20/s) and the air's
+  sparkles, and its slot to the body wrap (which also replaces the two sole drips). 19 emitters on high (limit 20; 11 on low,
+  was 12) and ≈ 194/s by day: one spare slot and no budget raised.
+- **Travelling** (AD3-05): grey smoke clouds and dust were left hanging 20-30 studs behind a gliding wearer. While travelling the
+  moon's smoke stops, the void's ink thins to 1.5/s (1 on low) and dies young (1.0-1.4 s), the moon dust halves and the body's
+  wisps stop: the trail behind is the silver speed streaks and the body's sparks, nothing grey.
+- **First person** (AD3-09 = R3W-6): the camera sits inside the floor funnel and just above the palms, so the funnel and palm
+  streaks (and the air's sparkles) passed within a few studs of the lens as white sticks. Those emitters are off in first person
+  (a new "nearcam" kind); the galaxy ash drops from 8/s to 3/s there.
+- Measured, the same way as round 2 (share of pixels changed by more than 24 levels when the particles are drawn; this round's
+  renderer): te5 studio 3.5 -> 6.4 %, back 3.2 -> 7.3 %, night back 3.5 -> 6.3 %, default zoom 12.0 -> 14.1 % (more than 60
+  levels: 4.8 -> 10.4 %); fallback studio 5.5 -> 6.1 %, back 6.2 -> 7.7 %, night back 5.6 -> 7.0 %. With te5 the particles now
+  add about as much as with the fallback (90-105 %; round 2: about 60 %), so the upload no longer makes them weaker.
+
+**The owner's camera from 12.5 to 40 studs** (R3W-1, P1)
+
+- Round 2's close-camera layout ramps out between 14 and 30 studs, so from ~22 to ~40 studs the 36-stud watch came forward
+  again and its top left the screen. Now, for the owner only, the clock steps back along the view until a point `FRAME_TOP`
+  (9.6 studs, the XII numeral) above its hub is in frame, from the camera's real pitch and field of view. It glides there
+  (spring rate 3), never jumps, is capped at 32 studs (more for a larger `FRAME_TOP`), and is off in first person.
+  `FRAME_TOP` is an attribute (0 = off, 22.4 = the whole watch with the crown; Milo's call, MILO_PROMPT step 4).
+- Measured on snapshots (follow camera behind, pitched down 0.35, XII's height on screen as a fraction from the top; < 0 =
+  off the screen): before 0.02 / 0.05 / 0.03 / -0.00 / -0.01 / 0.06 at 12.5 / 18 / 22 / 26 / 30 / 35 studs; now 0.04 / 0.05 /
+  0.04 / 0.04 / 0.04 / 0.05. At 40 and 50 studs nothing changes (0.11, 0.19), nor from the 40-stud studio camera.
+
+**The default zoom: orbs, rings and silver** (R3W-2, R3W-3, AD3-02, R3W-8, P2/P3)
+
+- **Orbs** (R3W-3): at 12.5 studs the moon's face was the biggest thing on screen, 40 % of the screen height beside a 45 % dial.
+  The orbs now move back (and a little out) as the camera comes close: moon 28 %, void 20 %, dial 41 % at 12.5 studs (18 studs:
+  moon 32 -> 24 %). Nothing changes from 30 studs out; in first person they stay back as in round 2, 3 studs further out to the
+  sides (first-person renders looking left and right: both orbs out of view).
+- **Rings rise after the lock** (R3W-2): at the default zoom the meridian stood between the camera and the dial while the hands
+  spun and locked. For the owner's close camera (decided at the first visible frame) the rings now lie flat on the dais until
+  the hands lock (3.5 s later), then rise; from 30+ studs and for everyone else they rise first, as before (the assembly strip
+  is from the studio camera).
+- **Rounder, finer rings** (AD3-02; R3W-8 partly): meridian 28 segments of 0.26 x 0.15 (was 18 of 0.40 x 0.24), equator 22 of
+  0.20 x 0.32 (was 18 of 0.20 x 0.4), ecliptic 24 of 0.28 x 0.14 (was 16 of 0.45 x 0.20); pins and the lume hours re-fitted.
+  On low the meridian has 18 segments (was 14); the equator stays 14 (below). The 32 extra parts were paid back without raising
+  the 360-part limit: the 9 lensed-arc blocks and the ribbon's end carrier (both replaced by the lensed bands below), 2 bow
+  segments (10 -> 8, slightly longer: the bow still reads round), 4 dais-rim blocks (28 -> 24) and 6 chapter-ring blocks
+  (24 -> 18: its inner edge is dark on the dark star window and the inlay covers its face). Thinner bands also block less:
+  "view blocked" showcase_front 38 -> 32 %, camera_orbit 27 -> 20 %, fast_turn90 28 -> 23 %.
+- **Silver close up** (AD3-02): the Highlight's day fill grows by up to 45 % as the camera comes close (same 0.05 steps as the
+  outline, written only when the step moves), so the rings read silver, not pale cyan, at the default zoom. The warm close-up
+  FillColor the art director offered as a second step waits for Studio (STUDIO-VERIFY 44).
+
+**The void** (AD3-03, AD3-08, R3S-6)
+
+- The ink ribbon (a black stick from the ball to the dais from the studio and back cameras: "a lollipop") and the 9-block lensed
+  arc are gone. The lensed disc is now two beams on the horizon host: a bright band arching over the shadow (width 1.5) and a
+  thinner one under it (0.8), Bezier-curved, flowing, fading in from 0.9 s, slimmer as the camera comes close (x 1 - 0.45 czq,
+  so they do not crowd the default zoom). te5_ribbon is dropped from the upload list (18 textures now).
+- The heart is smaller (spikes 1.3 / 0.9, were 1.6 / 1.1): a pinpoint inside the lensed band, not a sticker. On low (AD3-08) it
+  is the lume ball alone; a single pair of spikes read as a slit pupil.
+- **Hairlines** (R3S-6): Roblox draws without anti-aliasing at lower graphics levels and on phones, and the preview uses 4x MSAA.
+  The photon ring and the seconds needle now thicken in three bands with camera distance (under 50, 50-95, over 95 studs; 5
+  studs of hysteresis, so a resting camera never flips them; low starts one band up): the photon ring is 0.13 / 0.22 / 0.36
+  thick, the needle 0.12 / 0.2 / 0.3. The preview has `--aa off` to look at this (tools/preview/README).
+
+**Presence and the stage** (AD3-04, P2)
+
+- The engraving became a stage: 56 studs across (was 40; moved to CORE, since from far away it is the silhouette), a new
+  te5_engraving with a guilloché ring, 120 ticks, Roman numerals 3 studs tall at R ~22, stars, an inked minute band with a white
+  frame and 60 ticks, lume batons; opaque lines, Brightness 1.0 by day (the ink carries it) and 2.0 at night. The fallback
+  (pass 2's gring) is drawn at the same size. Measured on the te5 studio render, the aura now covers 18.8 % of the frame (round 2:
+  12.5 %; the real pass-4 capture: 16.6 %).
+- The floor's particles (mist, twinkles, ash) moved to their own invisible disc 0.8 studs above the top floor layer (`FloorFx`,
+  R3S-5), so they draw over the galaxy whether Roblox sorts a particle by its emitter's part or by the particles themselves. The
+  preview has `--sort host` to look at the pessimistic case.
+
+**Other wearers** (R3W-4, R3S-1, R3S-4)
+
+- **Their clock steps back** (R3W-4): each client places another wearer's clock beyond that wearer as seen from your camera, so a
+  friend beside or behind you put their solid clock and moon in front of yours (the harness's `pair_side` / `pair_behind` now
+  check this: 11 of 11 samples hid the owner's clock before, 0 now). Another wearer's clock and orbs that would cover your own
+  clock now step back along your view until they stand 12 studs behind it (a spring, tested where they would stand without
+  stepping back, held 1.5 s so they never swing back and forth).
+- **Rings leave the Highlight while they fade** (R3S-1): a Highlight paints a part at full strength whatever its
+  `LocalTransparencyModifier`, so the near-camera fade and the ghost left a grey, ink-outlined silhouette of the rings. While
+  their `LocalTransparencyModifier` is above 0, the ring parts move to a sibling model outside the Highlight's adornee (two parent
+  writes each way, only when it flips).
+- **Your own pool on top** (R3S-4): the owner's dais layers now sit highest (0.0366), other wearers' at 0 or 0.0183 by user id, so
+  your own galaxy never sinks under a friend's where two pools overlap (W2-4 had proposed this; round 2 had it the other way).
+
+**Robustness** (R3S-2, CR3-01, R3S-9, CR3-02, R3S-7 = CR3-07, R3S-8 = CR3-03, R3S-10 ~ CR3-05, CR3-06, CR3-08)
+
+- **Slopes** (R3S-2): the dais was a level plane at the ground height under the root part; on a hill its downhill side floated
+  and its uphill side sank. Every 0.2 s three rays (9 studs out, 120° apart) fit the ground's plane; it is used only if all three
+  hit, the slope is under ~20° and all three points lie within 0.6 studs of the plane (so stairs and cliff edges keep the level
+  dais), and the tilt is smoothed. The dais, its rim and the stage lie along the slope; the rings and the wheel lift with it; the
+  clock lifts (at most 4 studs) where the ground rises toward the camera. The rays exclude the aura, the character and the
+  framework's container. New harness scenario `slope` (a 10° plaza).
+- **Teleports** (CR3-01): after a vertical teleport the 28-stud watch drifted up through the ground on its spring for a couple
+  of seconds. A jump of 30+ studs, or 8+ studs vertically, in one frame now snaps everything into place. Scenario `teleport`.
+- **NaN** (R3S-9): one NaN in the root's CFrame (a physics fling) poisoned every spring for the life of the aura. `update`
+  returns on a NaN frame, a NaN camera keeps its last position, and any NaN that still reaches a spring resets the state and
+  snaps on the next good frame. Scenario `nan_frame`.
+- **The pass-2 rim texture** (CR3-02): the night corona, the void's horizon glow and the moon halo are sized from where te5_halo's
+  ring peaks (r ≈ 0.73); until te5 is uploaded they use pass 2's `rim`, whose ring peak is not known here. A new attribute `RIM_R`
+  (default 0.86, a guess from the texture generator) rescales the three of them until te5_halo loads; studio check 14 measures it
+  in one capture.
+- **Preload** (R3S-7 = CR3-07): instead of every filled-in te5 id at require, each build asks only for the textures it draws,
+  once per id, in the background after it is built; a phone on low no longer downloads the six high-only textures. A failed id
+  falls back for every key that uses it.
+- **Floor twinkle sizes** (R3S-8 = CR3-03): one swap of the size curve at 22 studs jumped ~56 live twinkles 2x in one frame. Now
+  five steps (1.3 -> 0.65 studs), each under 20 %, with hysteresis.
+- **The grade after a reset** (R3S-10 ~ CR3-05): the screen grade is skipped when the build comes within 12 s of the character
+  spawning (was 4 s) or within 15 s of the owner's previous aura being destroyed on another character (a reset or a respawn,
+  however long the framework waits before rebuilding).
+- **Flags** (CR3-06): `NEAR_HIDE` and `GHOST_REMOTE` are copied into each build's state, so flipping the attribute during an A/B
+  never strands rings unparented or a friend's aura ghosted. With a negative `CLOCK_TILT` the height clamp now uses the front
+  face (the bezel no longer dips 0.2 studs into the dais rim at -10°).
+- **Docs** (CR3-08): spec §15 (attributes re-read at every build), §18.2 check 4 (the saturation rule the lint enforces), the
+  module header (the fallback moon is pass 4's moon cropped round on a grey disc). The silvers' "neutral, a hair warm" is put
+  to Milo in plain words (MILO_PROMPT step 4); CLAUDE.md's style line is his to change, not this session's.
+- **The fallback moon** (AD3-06): pass 4's pale moon at Brightness 1.0 / 1.7 washed into a white plate. It glows less now (0.75 /
+  1.25; te5's moon keeps 1.25 / 2.6): its maria read (luminance spread 7.6 -> 9.4 by day, 4.8 -> 6.2 at night).
+
+**The install kit** (R3S-3, R3W-7)
+
+- MILO_PROMPT step 1 has a stop rule: after `git pull`, `make_payloads.py --check` must report this module's bytes and checksum
+  (143,408 bytes, checksum 678854451), or the Mac stops and tells Milo. README names the chunk files by the manifest's order.
+  The far beacon now has its own step (MILO_PROMPT step 5, studio check 16): two screenshots at 200 studs, beacon off and on,
+  shown to Milo, his answer recorded. Upload list, README and studio checks: 18 textures, te5_moon first.
+- Studio checks: new 13 (reset), 14 (the rim radius), 15 (hairlines far away), 16 (the far beacon), 17 (wrap up); steps 2, 3, 6
+  and 8 describe the round-3 look; eleven new STUDIO-VERIFY rows.
+
+**Tools**
+
+- Harness: scenarios `teleport`, `nan_frame` and `slope` (35 in all) with their own checks (the clock within 1 stud of where it
+  belongs after a NaN frame; the dais on the slope's plane); `pair_side` / `pair_behind` check the owner's clock is never hidden
+  by the other wearer's; the flicker lint also counts Size writes. The round-2 module fails the new teleport, slope and NaN
+  checks; this one passes.
+- Preview: `--aa on|off` (no MSAA, like phones), `--sort centroid|host` (sort particles by their emitter's part), a tilted plaza
+  for the slope scenario. FIDELITY.md and the READMEs updated.
+
+### Every round-3 finding
+
+| Finding | Status |
+|---|---|
+| AD3-01 particles regress with te5, nothing on the body (P1) | Done: new te5_smoke, body wrap (P11), sparkle field (P6a), twinkles (P8a); measured above. |
+| AD3-02 default-zoom armillary (P2) | Done: finer, rounder rings (28 / 22 / 24 segments, not the proposed 30 / 28 / 26, to stay at 360 parts), fill strengthened close up; the warm close-up FillColor waits for Studio. |
+| AD3-03 void "Saturn lollipop" (P2) | Done: ribbon and arc blocks out, two lensed bands, smaller heart. |
+| AD3-04 smaller than pass 4 (P2) | Done: 56-stud engraved stage on CORE + the sparkle field; 18.8 % of the studio frame (pass 4: 16.6 %). |
+| AD3-05 glide smoke clumps (P3) | Done. |
+| AD3-06 fallback moon plate (P3) | Done (0.75 / 1.25). |
+| AD3-07 floor pearls (P3) | Done (glint5 twinkles). |
+| AD3-08 low heart slit (P3) | Done (ball only on low). |
+| AD3-09 first-person needles (P3) | Done (funnel, palm streaks and air sparkles off in first person). |
+| R3W-1 clock towers at 22-40 studs (P1) | Done (owner frame fit, `FRAME_TOP`). |
+| R3W-2 rings rise before the lock (P2) | Done (owner's close camera only). |
+| R3W-3 moon biggest at the default zoom (P2) | Done (orbs back: moon 40 -> 28 % of the height). |
+| R3W-4 a friend's clock in front of yours (P3) | Done (their clock steps back; pair checks). |
+| R3W-5 face window (P3) | Declined (below); the thinner rings cut "view blocked" by 5-7 points instead. |
+| R3W-6 palm intake in first person (P3) | Done (= AD3-09). |
+| R3W-7 far beacon never asked (P3) | Asking Milo: done. Textured column: declined (below). |
+| R3W-8 low rings 14-gons (P3) | Partly: meridian 18 segments on low; equator stays 14 (below). |
+| R3S-1 Highlight vs LocalTransparencyModifier (P2) | Done (rings leave the tone while they fade). STUDIO-VERIFY 36. |
+| R3S-2 the dais on a slope (P2) | Done (plane fit; clock lift capped at 4 instead of the proposed extra ray). |
+| R3S-3 branch and checksum (P2) | Stop rule and README done. Commit and push: not done by this session (hard rule: no git commit / push); the workflow's own checkpoint commits already track `bad_part_writes.lua` and remove the two dropped PNGs. |
+| R3S-4 layer order (P3) | Done (owner on top). |
+| R3S-5 particle sort centres (P3) | Done (FloorFx carrier; preview `--sort host`). |
+| R3S-6 hairlines without MSAA (P3) | Done (distance bands; preview `--aa off`). |
+| R3S-7 preload by quality (P3) | Done (= CR3-07). |
+| R3S-8 mote size flip (P3) | Done (= CR3-03). |
+| R3S-9 NaN poisons state (P3) | Done. |
+| R3S-10 grade after a late rebuild (P3) | Done (12 s; and 15 s after the owner's last aura on another character). The registry fallback the skeptic offered (if the framework rebuilds much later) waits for a Studio report. |
+| CR3-01 teleport (P2) | Done. |
+| CR3-02 rim radius (P2) | Done (`RIM_R`, studio check 14). |
+| CR3-03 mote size flip (P3) | Done. |
+| CR3-04 P5 under the Highlight (P3) | Done (option B). |
+| CR3-05 grade spawn race (P3) | Done (= R3S-10). |
+| CR3-06 live flags, negative tilt (P3) | Done (both). |
+| CR3-07 preload (P3) | Done. |
+| CR3-08 doc drift (P3) | Done in the spec and the module; CLAUDE.md's style line is Milo's call (asked in MILO_PROMPT). |
+
+### Declined or only partly done
+
+| Finding | Why |
+|---|---|
+| R3W-5 face window | Fading ring segments near the face line needs per-segment `LocalTransparencyModifier`, and under the Highlight (R3S-1) a see-through segment still paints at full strength unless it leaves the tone model: segments hopping in and out of the Highlight every ~2 s would read as gaps and pops in the silver. The finer rings (bands 0.14-0.15 thick, the equator 0.32 deep) cut showcase_front 38 -> 32 %, camera_orbit 27 -> 20 %, fast_turn90 28 -> 23 % and leave a line, not a block, across the face. Revisit after Studio if it still bothers Milo. |
+| R3W-7 te5_column | Sub-pixel ticks on a column seen from 200-300 studs would crawl without anti-aliasing (R3S-6), it is one more upload for a flag that is off by default, and Milo has not said yet whether he wants the beacon at all. The install kit now asks him (part 1 done). |
+| R3W-8 low equator 14 | Low quality is held at 150 parts (the phone budget); the meridian, the biggest silver shape at the default phone zoom, got the extra segments (14 -> 18), paid for by the low heart's spike pair (4 wedges, AD3-08). The equator would need 4 more parts. |
+| AD3-02 segment counts 30 / 28 / 26 | 28 / 22 / 24 keeps 360 parts without raising the limit; at the default zoom the facets are under a few pixels. |
+| AD3-02 warm close-up FillColor | Only if the default zoom still reads cool in Studio (STUDIO-VERIFY 44): the cloud renderer's sky tint is an approximation. |
+| R3S-2 extra clock ray | Replaced by the plane fit's own rise along the view (capped at 4 studs), which costs no extra ray. |
+| R3S-3 commit / push | This session may not commit or push (workflow rule). Everything is in the working tree with matching payloads and the stop rule. |
+| R3S-10 registry fallback | Conditional on how the real framework rebuilds; wait for studio check 13. |
+| CR3-08 CLAUDE.md style line | Changing project instructions is Milo's call; MILO_PROMPT asks him. |
+
+### Checks run (cloud only)
+
+- **Harness, 35 scenarios:** 0 errors, 0 harness gaps, nothing left behind after `destroy()`, no flicker, 0 new instances per
+  frame, 1 BulkMoveTo per update, 0 steady-state GUI or Transparency writes. The same 3 warning kinds as rounds 1 and 2 (the
+  `translucent-layer` lint on the rim-only moon halo and night corona, §7.3's allowed soft elements).
+- **Budgets** (no limit raised): parts 360 / 150, emitters 19 / 11, rate ≈ 194/s idle by day (182 while travelling) / 56, beams
+  6 / 2, GUIs 11 / 8, PointLights 2 / 0, 1 Highlight; registers 33 spare at -O0 and 67 at -O1 / -O2 (`End.build`).
+- **Self-tests:** `tools/harness/tests/run_tests.py` passes (pass 4 clean in all 35 scenarios); `roblox/install/test/run_tests.py`
+  25/25 (the patch-TEX5 stand-in fixture dropped its `ribbon` key to match spec §16.1; the test reads the real module when it
+  exists, so nothing was loosened). Texture generators: `make_te5_particles.py` and `make_te5_surfaces.py` checks pass;
+  `patch_tex5.py status` 18 keys, up to date. Preview `npm test` passes.
+- **Measured on snapshots and renders:** the numbers above (XII on screen, orb sizes, particle pixel shares, coverage, view
+  blocked, the pair checks, the moon's luminance spread); renders before / after (fallback and te5, day and night, studio,
+  back, front 3/4, default zoom, first person, slope, pair) were compared side by side and iterated (two passes on first
+  person, one on the slope, one on the smoke's opacity).
+- Module 143,408 bytes, checksum 678854451. Payloads regenerated (`make_payloads.py`, 11 pieces) and checked (`--check`).
+- Curated renders in `docs/the-end/pass5-renders/` regenerated (same names; 2.1 MB).
+
+### New STUDIO-VERIFY items (also in `roblox/install/studio_checks.md`)
+
+36. A Highlight on parts with `LocalTransparencyModifier`: by day, zoom slowly from 13 to 8 studs, and stand a stand-in wearer 5
+    studs beside you. The rings fade with no grey or ink-outlined silhouette and nothing snaps.
+37. The owner's frame fit: from 12.5 to 60 studs, camera tilted up and down, XII always in frame; the clock glides, never jumps;
+    from the 40-stud studio camera it stands where it always did. Then the `FRAME_TOP` 22.4 A/B for Milo.
+38. At the default zoom the rings wait on the dais until the hands lock; at 30+ studs they rise first.
+39. The dais on a ~10° hill or the beach lies along the ground; on stairs and cliff edges it stays level; no rocking.
+40. The void's lensed bands: an arch over the shadow and a thinner one under it, flowing smoothly, not cut by the accretion plane.
+41. Particle sorting: the floor's twinkles and ash draw over the galaxy floor, the swirl over the accretion disc.
+42. Hairlines without anti-aliasing (phone / graphics 3-5, a wearer 60-150 studs away): the photon ring and needle do not crawl.
+43. Texture memory with one wearer on low: lower than round 2 (low builds no longer load the six high-only te5 textures).
+44. The silver at the default zoom by day: silver, not pale cyan; if still cool, warm the close-up FillColor next pass.
+45. The void's ink smoke by day reads as black ink on the sky, not a teal haze (after the te5 upload).
+46. `RIM_R` (studio check 14): before te5, the night corona hugs the bezel.
+47. Two players side by side and one behind the other: the other wearer's clock and orbs step back behind yours and never swing.
+48. Reset with THE END on (studio check 13): no grade over the respawn; the assembly plays once.
+49. A teleport (`PivotTo` 60 studs up): the aura arrives with you, no drift through the ground.
+50. The body wrap on R15 and R6: wisps off the shoulders and back, sparks up the body; nothing in the first-person view.

@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 10_chunk_09_of_11.luau | step 10: piece 9 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "10_chunk_09_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-141659-402664341-11-730820328"
-local NEW_LEN, NEW_SUM = 141659, 402664341
+local RUN = "TheEnd-143408-678854451-11-550560669"
+local NEW_LEN, NEW_SUM = 143408, 678854451
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 11
-local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
-local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
+local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
+local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,10 +68,30 @@ local function chunkOk(h, i)
 end
 
 local K = 9
--- piece 9 of 11 of the new source (13287 bytes, checksum 132410676, long bracket level 0)
+-- piece 9 of 11 of the new source (13254 bytes, checksum 985105631, long bracket level 0)
 local DATA = [[
+				if not b[9] then b[1].LocalTransparencyModifier = m end
+			end
+		end
+		toneOn()
+		local off = q >= 0.5
+		if off ~= st.ghostGui then
+			st.ghostGui = off
+			for _, g in ipairs(ghostGuis) do g.Enabled = not off end
+			if corona then corona.Enabled = nq > 0.05 and not off end
+			if not st.fxLtm then
+				refreshEmitters()
+				refreshBeams()
+			end
+		end
+	end
+	-- the rings' see-through: their own ghost (another wearer's rings in your way) or the near-camera fade, whichever is more
+	local function writeRings()
+		local m = max(0.75 * st.armGQ, st.armQ)
+		for _, p in ipairs(ringParts) do p.LocalTransparencyModifier = m end
 		-- (a Highlight paints a see-through part at full strength, whatever its LocalTransparencyModifier: while the rings
 		-- fade or ghost they leave the silver tone, two parent writes each way, so no grey outlined silhouette stays behind)
+		-- STUDIO-VERIFY: a part moved out of the Highlight's Model loses the tone at once (zoom from 13 to 8 studs by day)
 		local out = m > 0
 		if out ~= st.ringsOut then
 			st.ringsOut = out
@@ -354,15 +374,6 @@ local DATA = [[
 		-- the dais (its lowest edge stays 0.24 above the dais rim's top, 0.54 above the floating galaxy layers)
 		local sitT = st.sitT
 		local Hc = CONFIG.CLOCK_HEIGHT - 0.5 * g - 3 * cz + 16 * fp - 3 * sitT
-		local Dc = CONFIG.CLOCK_DIST + 2 * g + (remote and CLOSE.distRemote or CLOSE.dist) * cz + 6 * fp - 2 * sitT
-		local tilt = rad(clamp(CONFIG.CLOCK_TILT + 14 * g + 4 * st.speedT + CLOSE.tilt * cz - 32 * fp, -10, 50))
-		-- (its lowest point is the bezel's back edge when it leans back, its front edge when it leans forward; on a slope
-		-- the ground under it is higher or lower by the slope's rise along the view)
-		local vl = V.LookVector
-		local rise = slopeT > 0 and -(gn.X * vl.X + gn.Z * vl.Z) / gn.Y or 0
-		local minHc = dY + rise * Dc + 1.2 - st.kY + 14.2 * cos(tilt) + (tilt >= 0 and 1.44 or 1.12) * abs(sin(tilt))
-		if Hc < minHc then Hc = minHc end
-		-- the owner's camera: the clock steps back along the view until FRAME_TOP above its hub (the XII numeral: the hands
 ]]
 
 local function main()

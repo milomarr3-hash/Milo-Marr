@@ -29,12 +29,14 @@ function sheetOf(images, w, h) {
 
 window.PREVIEW = {
 	async render(args) {
-		const { snapshot, textures, views, env, clock, size, ss = 1, props = true, labels = true, sheet = true, maxPerEmitter, bloom = true, hide = [], tone } = args;
+		const { snapshot, textures, views, env, clock, size, ss = 1, props = true, labels = true, sheet = true, maxPerEmitter, bloom = true, hide = [], tone,
+			aa = true, sort = 'centroid' } = args;
 		const [w, h] = size, W = Math.round(w * ss), H = Math.round(h * ss);
 		if (!pv) pv = new Preview(canvas, { width: W, height: H }); else pv.setSize(W, H);
+		pv.post.setSamples(aa ? 4 : 0);
 		await pv.loadTextures(textures);
 		const t0 = performance.now();
-		const info = pv.build(snapshot, { env, clock, props, maxPerEmitter, hide, tone });
+		const info = pv.build(snapshot, { env, clock, props, maxPerEmitter, hide, tone, sortHost: sort === 'host' });
 		const images = [], canvases = [];
 		window.__last = { canvases, views: [], w, h };
 		for (const v of views) {

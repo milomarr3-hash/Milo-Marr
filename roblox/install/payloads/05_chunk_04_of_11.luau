@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 05_chunk_04_of_11.luau | step 5: piece 4 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "05_chunk_04_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-141659-402664341-11-730820328"
-local NEW_LEN, NEW_SUM = 141659, 402664341
+local RUN = "TheEnd-143408-678854451-11-550560669"
+local NEW_LEN, NEW_SUM = 143408, 678854451
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 11
-local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
-local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
+local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
+local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,24 @@ local function chunkOk(h, i)
 end
 
 local K = 4
--- piece 4 of 11 of the new source (13189 bytes, checksum 655489799, long bracket level 1)
+-- piece 4 of 11 of the new source (13259 bytes, checksum 677570473, long bracket level 1)
 local DATA = [=[
+	local function filmSolid(tpl, size, name, tok, h, grp, L)
+		local ok, p = pcall(function()
+			local c = tpl:Clone()
+			if not CONFIG.FILM_KEEP_TEXTURES then
+				c:ClearAllChildren()
+				pcall(function() c.TextureID = "" end)
+			end
+			pcall(function() c.RenderFidelity = Enum.RenderFidelity.Automatic end) -- STUDIO-VERIFY: may not be settable at runtime (harmless if not)
+			c.Name = name
+			c.Size = size
+			return c
+		end)
+		if not ok or not p then return nil end
+		return solidPart(p, tok, h, grp, L)
+	end
+
 	---------------------------------------------------------------- THE CLOCK: a skeleton pocket watch, 28 studs, 8 studs beyond
 	-- (frame K: x = viewer's right, y = toward XII, z = toward the viewer; the angle θ runs clockwise from XII)
 	local function radial(th, r, z) return CFrame.Angles(0, 0, -rad(th)) * CFrame.new(0, r, z) end
@@ -305,13 +321,6 @@ local DATA = [=[
 	end
 
 	-- the night corona: a soft ring of light just outside the bezel (night only, rim-only, behind the clock). Kept at every
-	-- distance: at night it is the clock's glow from across the plaza
-	-- (the corona, the void's horizon glow and the moon halo are sized for te5_halo, whose ring peaks at 0.73 of its
-	-- half-width. Until it is uploaded, or if it fails to load, the pass-2 "rim" texture stands in: hs scales them so its
-	-- ring, at RIM_R, lands in the same place)
-	hosts.hs = isTe5("halo") and 1 or 0.73 / CONFIG.RIM_R
-	local corona, coronaEntry
-	if hi then
 ]=]
 
 local function main()

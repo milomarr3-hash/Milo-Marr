@@ -73,8 +73,72 @@ Must read by day (bright tropical islands, cyan sky) and by night.
   cores up to 2 studs and a time-dust ring, an event-horizon glow, the default-zoom layout with XII in frame, first-person
   look-follow, upright armillary, jump height spring, split ghosting of other players' auras (beams and particles too), dais
   layer lift, far-detail fades, hide/show lifecycle that is safe whichever way the framework updates hidden auras, 32 harness
-  scenarios. Module 126,319 bytes (checksum 822800729), payloads regenerated. **Still not run in Studio**: next step is
-  Milo's Mac (`roblox/install/MILO_PROMPT.md`), first with the fallback textures, then with the 19 te5 uploads.
+  scenarios. Module 126,319 bytes (checksum 822800729), payloads regenerated.
+- Pass 5 review round 3 in the cloud (2026-10-16; four critics, then a lead fixer): particles that read with te5 and without
+  (a dense te5_smoke billow, silver wisps and sparks on the wearer's body, a field of four-point sparkles, floor twinkles
+  instead of pearls), a 56-stud engraved stage round the dais, the void's ink ribbon and arc blocks replaced by two lensed
+  bands, finer rounder rings, the owner's clock stepping back so XII stays in frame from 12.5 to 40 studs (`FRAME_TOP`), orbs
+  back at the default zoom, rings rising after the hands lock at the default zoom, another wearer's clock stepping back behind
+  yours, the dais lying along gentle slopes, teleport / NaN / reset robustness, `RIM_R` for the pass-2 rim texture, per-build
+  texture preload, 35 harness scenarios. te5_ribbon dropped: **18 te5 textures** to upload. Module **143,408 bytes (checksum
+  678854451)**, 11 payload pieces; MILO_PROMPT step 1 stops if the Mac's copy reports anything else. **Still not run in
+  Studio**: next step is Milo's Mac (`roblox/install/MILO_PROMPT.md`), first with the fallback textures, then with the 18 te5
+  uploads. Milo's calls pending: the far beacon (on/off), `FRAME_TOP` 9.6 vs 22.4 (XII vs the whole watch in frame), and
+  whether "neutral, a hair warm" silver is ok (CLAUDE.md's style line says only a faint *cool* tint).
+
+## Status (cloud, 2026-10-16)
+
+Pass 5 of THE END's equipped aura is **built and verified in the cloud only**. Review rounds 1-3 are finished, and a final
+verification pass re-ran every check below. **Nothing has run in Roblox Studio.**
+
+**What's built, and where**
+- Module: `roblox/ReplicatedStorage/AuraFX/TheEnd.lua`, **143,408 bytes, checksum 678854451** (2,630 lines). TEX5 is empty
+  until the upload, so the aura falls back to pass-4 textures. Live pass 4 for rollback and diffing:
+  `TheEnd.pass4-live.lua` (35,000 bytes, checksum 489406639).
+- Budgets (high / low): 360 / 150 parts in one BulkMoveTo, 19 emitters (17 on by day) / 11, about 194 / 56 particles per
+  second, 6 / 2 beams, 11 / 8 GUIs, 2 / 0 PointLights, 1 Highlight. Registers: 33 spare in `End.build` at -O0, 67 at
+  -O1 and -O2.
+- Textures: 18 te5 PNGs (7 particles, 11 surfaces) in `textures/te5/`, with their generators and manifests.
+  `patch_tex5.py status`: 18 keys, 0 filled.
+- Docs: `docs/the-end/README.md` (status page for Milo), `pass5-spec.md` (the design, synced to the build),
+  `pass5-build-notes.md` (the build, review rounds 1-3, STUDIO-VERIFY items 1-50), `pass5-art-direction.md`, and 14 curated
+  preview renders in `pass5-renders/`.
+- Install kit: `roblox/install/` (README, MILO_PROMPT, studio_checks, upload_textures, patch_tex5.py, make_payloads.py).
+  Payloads: `01_backup`, 11 pieces, `13_apply` (13 to run in order), plus `00_status` (read-only), `90_install_from_file`
+  (plan B) and `99_rollback`. Manifest runId `TheEnd-143408-678854451-11-550560669`.
+
+**Cloud tools** (see `tools/README.md`): `tools/check_aura.sh MODULE OUTDIR` (harness over 35 scenarios, then preview
+renders and day/night sheets); `tools/harness/run_aura.py` (mock Roblox runtime, lints, snapshots);
+`tools/preview/render.mjs` (three.js in headless Chromium); `tools/harness/tests/run_tests.py`;
+`tools/harness/register_headroom.py`; `tools/harness/typecheck.sh` (needs a luau-lsp binary in `LUAU_LSP`; none is
+installed system-wide, so build one per tools/harness/README.md); `roblox/install/test/run_tests.py`. To preview the
+post-upload te5 look, use a temp copy with `TEX5 = "pending:<key>"`. Never ship that.
+
+**Final verification results (2026-10-16, all headless)**
+- `run_aura.py` (35 scenarios): 0 errors and 0 harness failures. 3 known warning kinds, all `translucent-layer` on the rim-only
+  moon halo and the night corona (spec §7.3's allowed soft elements).
+- `tests/run_tests.py`: all passed, with luau-lsp included. `install/test/run_tests.py`: 25/25, typecheck included.
+- `make_payloads.py --check`: payloads match. `check_aura.sh`: no module errors, 14 renders. `typecheck.sh`: 0 diagnostics
+  in the module's own mode. `--strict --api-only` gives 41, all from the dynamic helper style (prop tables, nil-guarded
+  values), none of them real API mistakes. `npm --prefix tools/preview test`: passed.
+
+**Pending**
+- Commit and push the working tree. The pushed checkpoint `e6ac8af` has an older module (141,659 bytes), and
+  MILO_PROMPT's stop rule will refuse it.
+- First Studio install and Play test with the fallback textures (`roblox/install/MILO_PROMPT.md`, `studio_checks.md`
+  steps 1-2).
+- Measure `RIM_R` (studio check 14), then upload the 18 te5 textures (te5_moon first). Fill TEX5 with `patch_tex5.py`,
+  re-make the payloads with `--label pass5tex` and install again.
+- STUDIO-VERIFY items 1-50: write the results in `docs/the-end/pass5-studio-results.md`, saying only what was really seen.
+- Milo's calls: the far beacon (on/off), `FRAME_TOP` 9.6 vs 22.4, and the "neutral, a hair warm" silver.
+- Maybe later: 512² low-quality texture variants (if Studio's memory measurement asks for them), R3W-5 (rings across the
+  face), the warm close-up FillColor (STUDIO-VERIFY 44), the R3S-10 registry fallback (studio check 13).
+
+**Next steps**
+1. Studio test on the Mac (fallback textures), then the te5 upload and a second test. Fix whatever Studio shows. Iterate
+   with Milo's screenshots.
+2. Then the other auras. Milo wants "all vfx tenfold better". None of their modules are in this repo yet: copy them from
+   `ReplicatedStorage.AuraFX` on the Mac first, and reuse pass 5's tooling (harness, preview, install kit) for each.
 
 ## Framework contract (from the pass-4 module)
 
@@ -113,6 +177,10 @@ Must read by day (bright tropical islands, cyan sky) and by night.
   aura).
 - Luau's register limit (200 per function) has half the headroom at -O0 that it has at -O1/-O2: check all three
   (`tools/harness/register_headroom.py`).
+- (Cloud review round 3, unverified in Studio) A Highlight paints a part at full strength whatever its
+  `LocalTransparencyModifier`: to fade parts of a highlighted model, move them to a sibling model outside the adornee while
+  they fade. Phones and low graphics draw without anti-aliasing: hairlines (≤ 0.15 studs) need to thicken with distance or
+  they crawl. A dais that is a level plane floats on hills: fit the ground plane with a few rays, but keep it level on stairs.
 
 ## Texture ids in use (pass 4 TEX table)
 

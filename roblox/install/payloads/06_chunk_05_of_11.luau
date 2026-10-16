@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 06_chunk_05_of_11.luau | step 6: piece 5 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "06_chunk_05_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-141659-402664341-11-730820328"
-local NEW_LEN, NEW_SUM = 141659, 402664341
+local RUN = "TheEnd-143408-678854451-11-550560669"
+local NEW_LEN, NEW_SUM = 143408, 678854451
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 11
-local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
-local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
+local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
+local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,15 @@ local function chunkOk(h, i)
 end
 
 local K = 5
--- piece 5 of 11 of the new source (13236 bytes, checksum 441189153, long bracket level 1)
+-- piece 5 of 11 of the new source (13322 bytes, checksum 205776046, long bracket level 1)
 local DATA = [=[
+	-- distance: at night it is the clock's glow from across the plaza
+	-- (the corona, the void's horizon glow and the moon halo are sized for te5_halo, whose ring peaks at 0.73 of its
+	-- half-width. Until it is uploaded, or if it fails to load, the pass-2 "rim" texture stands in: hs scales them so its
+	-- ring, at RIM_R, lands in the same place)
+	hosts.hs = isTe5("halo") and 1 or 0.73 / CONFIG.RIM_R
+	local corona, coronaEntry
+	if hi then
 		local cp = carrier("Corona", CORE, GK, Vector3.new(44, 44, 0.05) * hosts.hs, CFrame.new(0, 0, -3.2) * frontL) -- (ring peak R 16.3: seen from the front, 3.2 studs back, it lands just outside the bezel)
 		corona, coronaEntry = surface(cp, frontFace, 512, 1.8, nil, "halo", 5.0, 6.0, Color3.fromRGB(240, 240, 242))
 		corona.Enabled = false
@@ -280,18 +287,10 @@ local DATA = [=[
 		end
 		-- the floor's particles (mist, motes, ash) rise from their own invisible disc just above the top floor layer, so they
 		-- draw over the galaxy whether Roblox sorts a particle by its emitter's part or by the particles themselves
+		-- (STUDIO-VERIFY: by day, close up, the twinkles and ash are never hidden under the floor's SurfaceGuis)
 		hosts.floorFx = carrier("FloorFx", CORE, GG0, Vector3.new(29.6, 0.05, 29.6), CFrame.new(0, 0.8, 0))
 		-- the rim: fluted blocks (bright silver and satin) rising in a wave round the pool on equip
 		local NR = low and 16 or 24
-		for i = 0, NR - 1 do
-			local th = i * 360 / NR
-			local h = i % 2 == 0 and 0.90 or 0.96
-			local k = solid("DaisRim", i % 2 == 0 and "SILVER" or "SATIN", CORE, GDAIS, "Block",
-				Vector3.new(2 * 15.55 * math.tan(rad(180 / NR)) + 0.02, h, 0.80), CFrame.Angles(0, rad(th), 0) * CFrame.new(0, h / 2, -15.15))
-			local a = 4.0 + 0.8 * i / NR
-			motion(k, CFrame.Angles(0, rad(th), 0) * CFrame.new(0, h / 2 - 1.2, -15.15), a, 0.45)
-			fadeWin(k, a, a + 0.15)
-		end
 ]=]
 
 local function main()

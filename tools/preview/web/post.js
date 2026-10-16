@@ -96,6 +96,15 @@ export class Post {
 		this.maskTopMat = new THREE.MeshBasicMaterial({ color: 0xffffff, depthWrite: false, depthTest: false });
 	}
 
+	// multisampling of the scene and the Highlight mask: 4 (default) or 0 (render.mjs --aa off: as Roblox at low graphics
+	// levels and on phones, where thin lines crawl in stair-steps)
+	setSamples(n) {
+		if (this.sceneRT.samples === n) return;
+		this.sceneRT.dispose(); this.maskRT.dispose();
+		this.sceneRT = new THREE.WebGLRenderTarget(this.w, this.h, { type: THREE.HalfFloatType, samples: n });
+		this.maskRT = new THREE.WebGLRenderTarget(this.w, this.h, { samples: n });
+	}
+
 	setSize(w, h) {
 		if (w === this.w && h === this.h) return;
 		this.w = w; this.h = h;

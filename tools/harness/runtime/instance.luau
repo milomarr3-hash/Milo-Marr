@@ -108,9 +108,11 @@ do
 	end
 	local function hasFlag(fl, c) return fl:find(c, 1, true) ~= nil end
 	-- props whose rapid back-and-forth changes would read as flicker
+	-- (Size: a ParticleEmitter's Size sequence resizes its live particles at once, so a size swapped back and forth pulses;
+	-- only NumberSequence sizes are measured, part and GUI sizes are not numbers)
 	local FLICKER = { Transparency = true, ImageTransparency = true, Brightness = true, LightEmission = true, Enabled = true,
 		BackgroundTransparency = true, TextTransparency = true, FillTransparency = true, OutlineTransparency = true, Visible = true,
-		Range = true }
+		Range = true, Size = true }
 
 	local function getClass(name)
 		local ci = classCache[name]

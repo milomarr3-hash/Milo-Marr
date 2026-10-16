@@ -32,6 +32,9 @@ Context from the code (`roblox/ReplicatedStorage/AuraFX/TheEnd.lua`):
   `STREAK_FLIP`, `FRONT_FACES`, `SWIRL_POINTS` (true fixes a wrong-looking result), `HIGHLIGHT_FILL` / `HIGHLIGHT_OUTLINE`
   (the silver tone's day strength), `YAW_LAG_MAX`, `ZOOM_FAR` / `ZOOM_NEAR`, `NEAR_ARM_HIDE` / `NEAR_ARM_SHOW`, `AIR_ON` /
   `AIR_OFF`. `FAR_BEACON = true` turns on a thin spire that only far-away players see (off until Milo says yes).
+  Review round 3: `FRAME_TOP` (how much of the watch the owner's camera always keeps in frame: 9.6 = up to XII, the
+  default; 22.4 = the whole watch with its bow; 0 = off) and `RIM_R` (where the pass-2 "rim" texture's ring peaks, check
+  14: the night corona, the void's horizon glow and the moon halo are scaled by it until te5_halo is uploaded).
 
 ## The snippets
 
@@ -234,10 +237,10 @@ return string.format("%s: %d parts, %d emitters (%d on, rate %.0f/s), %d GUIs, %
 	#logs > 0 and (": " .. table.concat(logs, " || ")) or "")
 ```
 
-Budget (spec §14). High quality: 360 parts, 17 emitters in the model (the other 2 of the spec's 19 are the foot drips
-on the character, outside the model), total Rate under 200/s, 6 beams, 11 GUIs, 2 lights (on at night only) and
-1 highlight. Low quality: 149 parts, 9 emitters (+2 foot drips), under 80/s, 2 beams, 7 GUIs, 1 light. (These are the
-numbers S2 printed when it was run against the module in the cloud's mock world; Studio may differ.)
+Budget (spec §14, review round 3). High quality: 360 parts, 17 emitters in the model (the other 2 of the spec's 19 are
+the body's wisps and sparks on the character's torso, outside the model), total Rate under 200/s, 6 beams, 11 GUIs,
+2 lights (on at night only) and 1 highlight. Low quality: 150 parts, 10 emitters (+2 on the torso), under 80/s, 2 beams,
+8 GUIs, no lights. (These are the module's numbers in the cloud's mock world; Studio may differ.)
 
 ### S3. Move (Client)
 
@@ -490,6 +493,7 @@ local SET = {
 	-- FLOW_SIGN = -1, ACC_DIR = -1, FUNNEL_DIR = -1, GALAXY_DIR = -1,
 	-- WEDGE_SWAP = true, STREAK_FLIP = true, FRONT_FACES = true, SWIRL_POINTS = true,
 	-- FAR_BEACON = true,
+	-- FRAME_TOP = 22.4, RIM_R = 0.8,
 	-- DEBUG = true,
 }
 local CLEAR = {} -- names to remove, e.g. { "FILM_BEZEL" }
@@ -563,63 +567,86 @@ Start with `payloads/00_status.luau` (Edit). It should say `the NEW version`. It
    Do steps 2-3 once with the **fallback textures** (TEX5 empty). Then upload te5 (`upload_textures.md`), install again,
    and repeat them.
 2. **Reveal, day and night** (S1, then S2 each time). Start Play. Run S1 with `VIEW = "owner", CLOCK_TIME = 14,
-   EQUIP = true, WAIT = 2`, and capture during the assembly: void, then moon, then the rings unfold, then the bezel sweeps
-   in, gears, hands lock, and the dais wave. Your screen dims and cools, then comes back. There must be **no pulse and no
-   flash**, and the hands visibly lock at XII **inside the frame** (review round 2 moved the default-zoom clock further back so
-   the dial with XII is on screen). Run S2: `grade: on`. Capture again at 9 s. Then take these, with `TURN_TO_OPEN = true` the first time:
+   EQUIP = true, WAIT = 2`, and capture during the assembly: void, then moon, then the bezel sweeps in, gears, hands
+   lock, and the dais wave. At this close zoom the rings lie flat on the dais until the hands have locked at XII, then rise
+   and close round you as the finale (review round 3: risen earlier, the meridian stood across the dial during the lock).
+   Your screen dims and cools, then comes back. There must be **no pulse and no flash**, and the hands visibly lock at XII
+   **inside the frame**. Run S2: `grade: on`. Capture again at 9 s. Then take these, with `TURN_TO_OPEN = true` the first time:
    - `VIEW = "studio", CLOCK_TIME = 14, WAIT = 21` for day, then `CLOCK_TIME = 0.5, WAIT = 21` for night. Name them
      `real_day_studio.jpg` and `real_night_studio.jpg` if they go to `tools/baseline/pass5/`.
    - `VIEW = "owner"` (Roblox's default zoom, 12.5 studs: the clock stands 32 studs further back, drops a little and
-     leans back as the camera comes in, and the orbs come down and toward you, so the whole dial with XII, the moon and the
-     void all fit on screen (the crown and bow may be cut at the top: scroll out to ~30 studs to see the whole watch);
-     check the moon against the stats panel; close up the ink outline on the silver is lighter), `"owner25"` (zoomed out
+     leans back as the camera comes in, and the orbs come down and move well behind you, so the whole dial with XII, the
+     moon (about the dial's size, beside it, clear of the stats panel) and the void fit on screen. At **every** zoom the
+     dial and the hands at XII stay in frame: the clock steps back along the view as needed (review round 3); scroll
+     slowly from 12.5 to 60 studs and tilt the camera up and down: the clock glides back and forth smoothly and never jumps.
+     To see the crown and bow, tilt the camera up a little or scroll out past ~50 studs, or try S8 `FRAME_TOP = 22.4`
+     (the whole watch, smaller at the default zoom) and ask Milo which he likes. Close up the ink outline on the silver is
+     lighter and the silver fill stronger (no pale-cyan rings)), `"owner25"` (zoomed out
      to 25: the layout eases back to the 40-stud look), `"first"` (first person: the rings fade out, the clock rises into
      the sky; **turn left and right**: since review round 2 the clock and the orbs follow where you look, so the void and
-     the moon never fill the view, and the palm streams are off), and `"high"` (as steep as the camera goes: the clock
+     the moon never fill the view, the palm streams, the funnel and palm streaks, the air's sparkles and the body's wisps
+     and sparks are off: no needles or flakes across the lens), and `"high"` (as steep as the camera goes: the clock
      holds still, and you see the crown and bow). Zoom slowly between 8 and 13 studs: the rings fade out and back in
-     three soft steps (never snap).
+     three soft steps (never snap), and **no grey or outlined ring silhouette** stays behind while they fade (review round 3
+     takes the fading rings out of the silver Highlight).
    - S4 orbit at 120 deg/s: the clock trails smoothly and shows its bezel band. No jitter, no snapping. Then flick the
      camera half a turn with the mouse as fast as you can: the clock and the orbs trail by at most ~22° (YAW_LAG_MAX) and
      never swing into the lens.
    - `VIEW = "far"`: past 110 studs the particles stop and details drop, but the shape still reads.
    - `VIEW = "clock"` and `"void"` close-ups: the bezel band is thick, the flutes, the chapter-ring step, gears at 3
-     depths, hands above the dial; on the void, the thin photon ring hugging the silhouette with a gap, the lensed arc,
-     the small heart, the soft horizon glow at night, and the disc's near half crossing in front. On the moon: the face is
+     depths, hands above the dial; on the void, the thin photon ring hugging the silhouette with a gap, the **lensed
+     disc** (review round 3: a bright band arching over the black shadow and a thinner one under it, like the film
+     Interstellar's black hole; no ink stick down to the dais any more), the small heart, the soft horizon glow at night,
+     the disc's near half crossing in front, and dense ink smoke boiling off it (black on the day sky, not teal). On the moon: the face is
      whole (nothing silver painted over it where it overlaps the bezel), and its smoke does not veil it grey.
    - Then `VIEW = "reset"`.
-3. **Movement** (S3, camera from S1 `owner25` or `studio`). `walk` and `fast`: the glide pose (the armillary stays upright
-   since review round 2: your head stays visible from the follow camera), the clock drops, steps back and leans a little more, a short trail of silver streaks streams out behind you, and the void's
-   smoke thins (no trail of puffs). `jump` with the place's real jump (JumpHeight 7.2 or JumpPower 50): the dais stays on
+3. **Movement** (S3, camera from S1 `owner25` or `studio`). Standing still, silver wisps rise off your shoulders and back
+   and sparks stream up your body (review round 3). `walk` and `fast`: the glide pose (the armillary stays upright
+   since review round 2: your head stays visible from the follow camera), the clock drops, steps back and leans a little more, a short trail of silver streaks streams out behind you, the wisps stop
+   and the sparks stream out behind like a comet's tail, and the smoke thins and dies young (no grey smog patches left
+   hanging 20-30 studs behind you). `jump` with the place's real jump (JumpHeight 7.2 or JumpPower 50): the dais stays on
    the ground, and the clock and the orbs barely move (they ride a heavy spring: no 28-stud watch bouncing on every jump). **Sit on a bench or seat**: the dais stays on the floor (not on the seat), the clock stands behind the seat
-   like a throne back, the balance wheel drops onto the dais and the foot drips stop. If your body still floats 2.4 above
+   like a throne back and the balance wheel drops onto the dais. If your body still floats 2.4 above
    the seat, that is the framework's hover (tell the session: the framework should zero the hover while
-   `Humanoid.Sit`). Walk **down a slope or stairs**: the dais keeps up (no lag), the rings never dip into it. `air`: the
-   dais floats about 2.4 under the feet. Also try a short avatar (a small bundle): nothing cuts the dais. For R6, use S5 with `RIG = "r6", IS_LOCAL = true, QUALITY = "high"`. The palm streams and foot drips find the R6
-   arms and legs.
+   `Humanoid.Sit`). Walk **down a slope or stairs**: the dais keeps up (no lag), the rings never dip into it. **Stand still
+   on a slope of about 10°** (a hill, the beach): since review round 3 the pool and the engraved stage tilt to lie along
+   the ground (no black plate half buried in the hill on one side and floating on the other); on stairs and at a cliff
+   edge they stay level. **Teleport** (a pad, or `plr.Character:PivotTo(...)` 60 studs up from the command bar): the
+   clock and the orbs arrive with you at once (they do not slide across the sky). `air`: the
+   dais floats about 2.4 under the feet. Also try a short avatar (a small bundle): nothing cuts the dais. For R6, use S5 with `RIG = "r6", IS_LOCAL = true, QUALITY = "high"`. The palm streams find the R6
+   arms and the body's wisps rise from the R6 Torso.
 4. **Day colour.** By day with `VIEW = "studio"`, run S7 `ON = false`, capture, then `ON = true`, capture. With the
    Highlight on, silver looks neutral, not cyan or baby-blue (review round 2 made the silvers neutral). Then an A/B of the
    fill strength: S8 `HIGHLIGHT_FILL = 0.8` (weaker fill: the metal keeps more of its own light and dark), re-equip,
    capture, compare with the default 0.65, and keep the one Milo likes. The black void stays **pure black** in every shot.
 5. **Low quality.** S5 with `QUALITY = "low"` (and `IS_LOCAL = true` to see the assembly). S2 with
-   `WHO = "TheEndBench1"`: 150 parts, 12 emitters (the speed trail is off while you stand still), 2 beams, 8 GUIs,
-   0 lights. It must still read as the clock, armillary,
-   moon, void and dais. By hand: Test -> Device (a phone) or Esc -> Settings -> Graphics Quality 1-3, then rejoin. The
+   `WHO = "TheEndBench1"`: 150 parts, 10 emitters in the model (+2 on the torso; the speed trail is off while you stand
+   still), 2 beams, 8 GUIs, 0 lights. It must still read as the clock, armillary,
+   moon, void and dais. The meridian reads as a ring, not a lumpy polygon (review round 3: 18 segments on low), and the
+   void's heart is a round pinpoint (no slit pupil). By hand: Test -> Device (a phone) or Esc -> Settings -> Graphics Quality 1-3, then rejoin. The
    framework picks low on phones and low graphics.
 6. **Other players.** S5 with `IS_LOCAL = false, QUALITY = "high"`. The stand-in's clock stands on the far side of the
    stand-in **from your camera** (S2 says `clock on the far side: true`). Its assembly plays and there is no grade on your
    screen. Walk so the stand-in is **between you and your camera**: its clock and orbs fade to a see-through ghost (in 3
-   quick steps), together with its smoke and ribbon, and come back 1.2 s after it is clear; your own character stays
-   visible. Then stand **beside** it (5 studs to its side): only its rings go see-through; its clock, orbs and dial stay
-   solid. With two wearers 10 studs apart, orbit the camera and look where the two galaxy pools overlap: **no crawling
-   shimmer** (each player's pool sits a hair above or below the others'). For real: Milo can use Test -> Clients and Servers -> 2 players and watch Player1 equip from Player2's window.
+   quick steps), together with its smoke and streams, and come back 1.2 s after it is clear; your own character stays
+   visible. Then stand **beside** it (5 studs to its side): only its rings go see-through, as glass with no grey or
+   outlined silhouette across your body; its clock, orbs and dial stay solid. With **two real players both wearing THE
+   END** (Test -> Clients and Servers -> 2 players; S5's stand-ins run their own copy of the module, so they cannot see
+   your aura), stand side by side and then one behind the other: **the other player's clock and orbs step back behind
+   your own clock** (review round 3), so yours is never hidden; theirs glides back, smaller, and stays solid. With two wearers 10 studs apart, orbit the camera
+   and look where the two galaxy pools and engraved stages overlap: **no crawling shimmer**, and **your own pool is on
+   top** and stays on top as you orbit (review round 3 lifts your own pool above everyone else's). If the two swap as
+   you orbit, write it down: the next pass hides the overlapping part of the other pool instead. For real: Milo can use Test -> Clients and Servers -> 2 players and watch Player1 equip from Player2's window.
 7. **Flow directions** (watch it live, or compare two captures about 0.5 s apart). The streams flow from each orb **into**
-   the palm, and the ribbon flows down from the void to the dais (all four use one sign: if they run backwards, S8
-   `FLOW_SIGN = -1`). The accretion streaks trail their spin (else `ACC_DIR = -1`), the galaxy arms trail theirs (else
+   the palm (all four use one sign: if they run backwards, S8 `FLOW_SIGN = -1`; the void's lensed bands share the sign
+   and read either way). The accretion streaks trail their spin (else `ACC_DIR = -1`), the galaxy arms trail theirs (else
    `GALAXY_DIR = -1`), the floor vortex winds with the arms (else `FUNNEL_DIR = -1`). Re-equip after each flip.
 8. **Particle shapes** (close-ups). The matter around the void spirals **inward**, and so does the funnel under the feet
-   (if they spray as flat sheets over the disc: `SWIRL_POINTS = true`). The palm intake converges on the palm. The rim
-   glints sit on the bezel annulus, not across the dial. Metal shards break off around 10-11 o'clock and fly into the
-   void. Ink smoke boils off the void and silver smoke off the moon, both curling outward and up.
+   (if they spray as flat sheets over the disc: `SWIRL_POINTS = true`). The palm intake converges on the palm. The
+   time-dust glints ride a ring just outside the bezel (none across the dial). Metal shards break off around 10-11 o'clock
+   and fly into the void. Ink smoke boils off the void and silver smoke off the moon, both curling outward and up. The
+   floor rises in slow four-point twinkles (not white pearls), a field of sparkles fills the air round the whole aura,
+   and the mist banks round the pool's rim, not across the galaxy.
 9. **Film-mesh flags.** For each of `FILM_BEZEL, FILM_DIAL, FILM_RETE, FILM_HANDS, FILM_GEARS, FILM_MOON, FILM_VOID`:
    stop Play, run S8 with `CLEAR_ALL = true` and `SET = { USE_FILM_MESHES = true, <FLAG> = true }`, start Play, run S1
    `VIEW = "studio", EQUIP = true, WAIT = 9`, capture and note what you see. If the film hands point at the hub, also set
@@ -638,15 +665,34 @@ Start with `payloads/00_status.luau` (Edit). It should say `the NEW version`. It
     ~40 MB on low, the next pass uploads 512² variants of the inlay, floor and star window for low quality.
 11. **Auto roll.** With Auto roll on and THE END equipped, watch a few normal rolls: if the roll animation switches the
     camera to Scriptable, the aura is hidden and shown again; since review round 1 it fades back in over 0.4 s (and the
-    foot drips wait a second) instead of popping. Report anything that still pops. **Then roll THE END itself** (or equip
+    body's wisps and sparks wait a second) instead of popping. Report anything that still pops. **Then roll THE END itself** (or equip
     it while a roll film plays): run S2 while the film plays: it must print `grade: none` (the grade and the assembly wait
     for the first frame you can see, whether or not the framework keeps updating hidden auras), and after the film the whole
     assembly plays in front of you.
 12. **Textures load.** After the te5 upload, stop Play and run S9: every te5 id should say `Success`. (The module checks the same in the
     background and falls back to the pass-4 texture for any that fails, with a warning in the Output; a time-out is asked for
-    once more 20 s later.) Fallback test: set `TEX5.ribbon` to a bad id in a scratch copy, equip: the ribbon must come back
-    **ink**, not a white strap.
-13. **Wrap up.** Stop Play. Write the report (below). Update `docs/memory/aura-rng.md` (and the Mac project's
+    once more 20 s later.) Fallback test: set `TEX5.moon` to a bad id in a scratch copy, equip: the face must come back as
+    pass 4's moon, cropped round and dimmer (0.75 by day), not a white plate; set `TEX5.halo` to a bad id: the night
+    corona must still glow just outside the bezel (not a separate circle further out).
+13. **Reset with THE END on** (review round 3). Reset your character (Esc -> Reset) with THE END equipped, and run S2 as
+    soon as you respawn: it must print `grade: none` (a respawn rebuilds the aura; it is not an equip). Then unequip and
+    equip it again on the same character: `grade: on`.
+14. **The pass-2 rim texture** (before the te5 upload; review round 3). Until te5_halo is uploaded, the night corona, the
+    void's horizon glow and the moon halo draw the pass-2 `rim` texture, and the module sizes them by where its ring
+    peaks (`RIM_R`, a guess of 0.86 of the half-width). Measure it on the Mac: `python3 -c "from PIL import Image; import
+    numpy as n; a=n.asarray(Image.open('PATH/TO/rim.png').convert('RGBA')).astype(float)[...,3]; h,w=a.shape;
+    y,x=n.mgrid[:h,:w]; r=n.hypot(x-(w-1)/2,y-(h-1)/2)/(w/2); b=n.round(r*50).astype(int); m=[a[b==k].mean() if (b==k).any()
+    else 0 for k in range(50)]; print('RIM_R =', m.index(max(m))/50)"` with the pass-2 rim PNG from `aura_work/tex3`.
+    If it is not about 0.86, set the attribute (S8 `RIM_R = <value>`). At night before te5: the corona glows just outside
+    the bezel (not a separate thin circle) and the void's horizon glow touches its black edge.
+15. **Hairlines far away** (review round 3). On a phone (Test -> Device) or at graphics level 3-5, watch a wearer from 60
+    to 150 studs while the camera moves: the void's photon ring and the seconds hand stay steady lines (they thicken in two
+    steps with distance), never a crawling stair-step.
+16. **The far beacon** (Milo decides). Stand 200 studs from a wearer (S5 stand-in, `IS_LOCAL = false`), by day and by
+    night. One screenshot with `FAR_BEACON` off (the default) and one with it on (S8 `FAR_BEACON = true`, re-equip).
+    Show Milo both and ask which he wants: it changes what everyone in the server sees. Write his answer in the report and
+    set the attribute to match.
+17. **Wrap up.** Stop Play. Write the report (below). Update `docs/memory/aura-rng.md` (and the Mac project's
     `CHANGELOG.md`). Show Milo the thumbnails.
 
 ## STUDIO-VERIFY items
@@ -657,12 +703,12 @@ wrong. The spec's list (§19) and how to see each one:
 
 | item | how to see it | right if |
 |---|---|---|
-| Disc emitter ShapePartial = inner-radius fraction | close-up of the clock (rim glints) | glints only on the bezel ring (R 12.2-14.2), none across the dial |
+| Disc emitter ShapePartial = inner-radius fraction | close-up of the clock (the time-dust ring, ShapePartial 0.9) and the dais (the mist, 0.8) | glints only on a ring just outside the bezel (R 14.2-15.8), none across the dial; the mist banks round the pool's rim, not across the galaxy |
 | Inward Cylinder / Sphere emitters | `void` close-up; funnel under the feet; palms | void matter and funnel spiral inward; palm motes converge on the palm |
 | LockedToPart on a spinning BulkMoveTo host | void and galaxy motes | motes swirl with the spin (spirals), not straight lines |
 | Wedge orientation | `void` close-up: the heart's 4 spikes | solid four-point star; hollow or notched spikes mean the ±90° halves need swapping |
 | SurfaceGui Face Back / Left mapping | `clock` close-up | inlay numerals face the viewer with XII up; the sub-dial face is on the front |
-| Beam TextureSpeed direction | live view of the streams and ribbon | flow goes orb -> palm, and void -> dais |
+| Beam TextureSpeed direction | live view of the streams | flow goes orb -> palm (the void's lensed bands share the sign; either way reads) |
 | Highlight on a Model of 200+ parts | day `studio` shot, S7 on/off | the whole silver model is toned evenly; no part is missing it |
 | Neon black under Bloom | night and day shots of the void | the void core is pure black, with no grey glow |
 | PointLight on an attachment of a moving part | night shots, S1 `air` and `walk` | the moon's key light and the wheel underlight move with the aura |
@@ -674,12 +720,23 @@ wrong. The spec's list (§19) and how to see each one:
 | The moon's face disc (review round 2: an opaque part turned to the camera, SurfaceGui on its Left face, a UICorner on the image) | moon close-up, at the screen edge, and where it overlaps the bezel | te5: the real moon, **not mirrored** (the big dark maria upper left), whole even where it overlaps the bezel (no silver painted over it), no grey veil of its own smoke; before te5: pass 4's moon cropped to a round disc, no square corners or white ring round it |
 | Neon colours stay neutral | night, Bloom on: compare the lume plots / heart with a white SmoothPlastic part | white, not pale blue |
 | Moving PointLights | night, high quality | the moon's light moves smoothly on the ground (the module has no light on low quality) |
-| Another wearer between you and your camera | 2 players, or S5 `IS_LOCAL = false` | their aura ghosts and returns; nothing of theirs stays opaque across your character: **no dark smoke or ink ribbon** either (beams and particles take `LocalTransparencyModifier` since review round 2) |
+| Another wearer between you and your camera | 2 players, or S5 `IS_LOCAL = false` | their aura ghosts and returns; nothing of theirs stays opaque across your character: **no dark smoke or ink stream** either (beams and particles take `LocalTransparencyModifier` since review round 2) |
 | Another wearer beside you | 2 players side by side | only their rings ghost; their clock, orbs and dial GUIs stay solid |
-| Two pools side by side | 2 or 3 wearers 10 studs apart, orbit the camera | no crawling seam where the galaxy pools / engravings overlap |
+| Two pools side by side | 2 or 3 wearers 10 studs apart, orbit the camera | no crawling seam where the galaxy pools / engravings overlap; your own pool is on top and does not swap as you orbit (if it swaps, Roblox sorts the SurfaceGuis per object: report it) |
 | The far-detail switch at ~110 studs (night) | walk away from a wearer past 110 studs and back | the lit patch under the moon fades in 0.5 s, never pops; the thin streams fade too |
 | The time-dust ring | clock at 30-40 studs, day and night | a slow ring of small glints just outside the bezel, turning clockwise with the hands; no flashing |
 | The speed trail direction | walk / fly fast | silver streaks stream out **behind** you; if they lead: `STREAK_FLIP = true` |
+| (round 3) A Highlight on parts with `LocalTransparencyModifier` | by day zoom slowly from 13 to 8 studs; and S5 `IS_LOCAL = false` with the stand-in 5 studs beside you | the rings fade with no grey or ink-outlined silhouette left behind and nothing snaps; the stand-in's ghosted rings read as glass, with no ink edges across your body (the module moves fading rings out of the Highlight; this checks that it is enough) |
+| (round 3) The owner's frame fit | scroll from 12.5 to 60 studs, tilt the camera up and down | XII always in frame; the clock glides back and forth, never jumps; at 40 studs from the `studio` camera it stands where it always did |
+| (round 3) The rings wait for the hands at the default zoom | equip at 12.5 studs | the rings lie flat on the dais while the hands spin and lock at XII, then rise; at 30+ studs they rise first, as before |
+| (round 3) The dais on a slope | stand on a ~10° hill or the beach, then on stairs | the pool and the stage lie along the slope; on stairs and cliff edges they stay level; no tilting back and forth |
+| (round 3) The void's lensed bands | `void` close-up, day and night | a bright band arching over the shadow and a thinner one under it, flowing smoothly; not cut by the accretion disc's plane; slimmer at the default zoom |
+| (round 3) Particle sorting | day close-ups of the floor and the void | the floor's twinkles and ash draw over the galaxy floor, and the swirl over the accretion disc (their carriers sit above those planes, so this should hold whichever way Roblox sorts) |
+| (round 3) Hairlines without anti-aliasing | phone / graphics 3-5, a wearer 60-150 studs away, camera moving | the photon ring and the seconds hand do not crawl |
+| (round 3) Texture memory per build | phone, F9 -> Memory -> GraphicsTexture with one wearer on low | lower than round 2's measurement: low builds no longer load the six high-only te5 textures |
+| (round 3) The silver tint at the default zoom | by day, `VIEW = "owner"` | the rings read silver, not pale cyan (the fill strengthens close up); if still cool, the next pass warms the day FillColor to (220, 212, 206) while the camera is close |
+| (round 3) The ink smoke by day | `void` and `owner` views, ClockTime 14 | the void's smoke reads as black ink on the sky, not a teal haze (te5_smoke is a dense billow now) |
+| (round 3) The pass-2 rim radius (`RIM_R`) | check 14 | the night corona hugs the bezel before the te5 upload |
 
 ## Reporting back
 

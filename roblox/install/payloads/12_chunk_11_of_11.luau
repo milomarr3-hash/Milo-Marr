@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 12_chunk_11_of_11.luau | step 12: piece 11 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "12_chunk_11_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-141659-402664341-11-730820328"
-local NEW_LEN, NEW_SUM = 141659, 402664341
+local RUN = "TheEnd-143408-678854451-11-550560669"
+local NEW_LEN, NEW_SUM = 143408, 678854451
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 11
-local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
-local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
+local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
+local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,40 @@ local function chunkOk(h, i)
 end
 
 local K = 11
--- piece 11 of 11 of the new source (9052 bytes, checksum 397877975, long bracket level 1)
+-- piece 11 of 11 of the new source (10628 bytes, checksum 503004703, long bracket level 1)
 local DATA = [=[
+			st.lodF = lt > st.lodF and min(1, st.lodF + dt / 0.5) or max(0, st.lodF - dt / 0.5)
+			local lq = math.floor(st.lodF * 20 + 0.5) / 20
+			if lq ~= st.lod then
+				st.lod = lq
+				applyLod()
+			end
+		end
+		-- first person: the palm streams, the palm and funnel streaks and the body's wisps and sparks switch off (they sit
+		-- just under or round the lens), and fewer ash flakes drift across the bottom of the view
+		local fpOn = fp > 0.5
+		if fpOn ~= st.fpOn then
+			st.fpOn = fpOn
+			refreshBeams()
+			refreshEmitters()
+			if em.ash then em.ash.Rate = fpOn and 3 or 8 end
+		end
+
+		-- 7. every part = its group's frame x its rest transform (eased from its start pose while it assembles)
+		for j = 1, nAct do
+			local i = act[j]
+			local L = PL[i]
+			local rr = PRR[i]
+			if rr then L = PROT[i] * CFrame.new(0, rt + rr, 0) end
+			if asm then
+				local S = PS[i]
+				if S and age < PM1[i] then
+					local kk = 1 - easeOutBack((age - PM0[i]) / (PM1[i] - PM0[i]))
+					if rr then
+						L = PROT[i] * CFrame.new(0, rt + rr + (PRS[i] - rt - rr) * kk, 0)
+					else
+						L = lerpCF(L, S, kk)
+					end
 				end
 			end
 			acf[j] = GCF[PG[i]] * L
@@ -220,6 +252,12 @@ local DATA = [=[
 				-- (GUIs ignore LocalTransparencyModifier: the dial's inlay, star window and sub-dial switch off meanwhile)
 				hosts.inlayGui.Enabled, hosts.subdialGui.Enabled, hosts.plateGui.Enabled = not cross, not cross, not cross
 			end
+		end
+		-- (a state that went NaN anyway, e.g. a physics fling the guard above did not catch: start everything again where it
+		-- belongs next frame, instead of every part drifting off for the rest of the session)
+		if st.zoomD ~= st.zoomD or st.kY ~= st.kY or daisY ~= daisY or st.lift ~= st.lift or st.fitD ~= st.fitD or st.yieldD ~= st.yieldD
+			or st.gn.Y ~= st.gn.Y then
+			st.snap, st.fitD, st.yieldD, st.yieldT, st.gn, st.gnT = true, 0, 0, 0, Vector3.yAxis, Vector3.yAxis
 		end
 		nightClock += dt
 		if nightClock >= CONFIG.NIGHT_INTERVAL then

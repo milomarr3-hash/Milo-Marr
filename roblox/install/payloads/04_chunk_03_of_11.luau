@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 04_chunk_03_of_11.luau | step 4: piece 3 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "04_chunk_03_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-141659-402664341-11-730820328"
-local NEW_LEN, NEW_SUM = 141659, 402664341
+local RUN = "TheEnd-143408-678854451-11-550560669"
+local NEW_LEN, NEW_SUM = 143408, 678854451
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 11
-local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
-local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
+local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
+local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,16 @@ local function chunkOk(h, i)
 end
 
 local K = 3
--- piece 3 of 11 of the new source (13303 bytes, checksum 818557759, long bracket level 0)
+-- piece 3 of 11 of the new source (13287 bytes, checksum 221987227, long bracket level 0)
 local DATA = [[
+-- where the time shards leave the bezel on equip (K angles), and the bezel point at eleven the metal shards break off from
+local SHARD_A = {}
+for i = 0, 7 do SHARD_A[i] = math.rad(300 + 20 * i) end
+local FEED_PT = Vector3.new(-10.72, 9.00, 0)
+-- the camera closeness (in 0.05 steps) at which the floor's twinkles step down a size (each step under 20 %)
+local MOTE_T = { 0.3, 0.45, 0.6, 0.75 }
+local DOWN9 = Vector3.new(0, -9, 0) -- (the dais's slope rays)
+local SWIRL_UP = CFrame.new(0, 0.3, 0)
 -- the hairlines (the photon ring's thickness, the seconds needle's width) by distance band: under 50 studs, 50-95, beyond.
 -- A 0.13-stud line is under a pixel past ~85 studs; drawn without anti-aliasing (phones, low graphics) it breaks into a
 -- crawling stair-step, so it thickens in two steps (5 studs of margin each way: no back and forth)
@@ -324,22 +332,6 @@ function End.build(ctx)
 		if goodMesh(m) then return m end
 		return nil
 	end
-	local function filmSolid(tpl, size, name, tok, h, grp, L)
-		local ok, p = pcall(function()
-			local c = tpl:Clone()
-			if not CONFIG.FILM_KEEP_TEXTURES then
-				c:ClearAllChildren()
-				pcall(function() c.TextureID = "" end)
-			end
-			pcall(function() c.RenderFidelity = Enum.RenderFidelity.Automatic end) -- STUDIO-VERIFY: may not be settable at runtime (harmless if not)
-			c.Name = name
-			c.Size = size
-			return c
-		end)
-		if not ok or not p then return nil end
-		return solidPart(p, tok, h, grp, L)
-	end
-
 ]]
 
 local function main()

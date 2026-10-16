@@ -14,31 +14,37 @@
 	and behind each other for real), about 26 studs deep, in black steel, silver and white lume.
 	  the clock      a skeleton pocket watch 28 studs across standing 8 studs beyond the wearer, always on the far side from
 	                 whoever is watching (each viewer's own camera, through a soft spring, so it never blocks the owner's
-	                 view and swings round to show its thickness): a fluted silver bezel 2.4 deep, a dark chapter ring with
-	                 inlaid white numerals and raised lume plots, an openwork star rete, a guilloché sub-dial, seven toothed
-	                 gears turning at meshed rates behind and in front of the dial (their teeth break the rim at 1:30, 4, 8
-	                 and 10:30), hands locked at twelve while the seconds hand sweeps, a crown and bow on top. Glints ride
-	                 the bezel and a ring of time-dust turns round it with the hands, metal shards break off at eleven and
-	                 fly into the void, and a corona rings it at night.
-	  the armillary  three gimballed rings round the wearer — a precessing silver meridian, a dark equator band with twelve
-	                 lume hours, the ecliptic at 23.4° — joined by pins, with eight time shards riding the ecliptic.
+	                 view and swings round to show its thickness; for the owner it steps back until XII is in the frame):
+	                 a fluted silver bezel 2.4 deep, a dark chapter ring with inlaid white numerals and raised lume plots,
+	                 an openwork star rete, a guilloché sub-dial, seven toothed gears turning at meshed rates behind and in
+	                 front of the dial (their teeth break the rim at 1:30, 4, 8 and 10:30), hands locked at twelve while the
+	                 seconds hand sweeps, a crown and bow on top. A ring of time-dust glints turns round it with the hands,
+	                 metal shards break off at eleven and fly into the void, and a corona rings it at night.
+	  the armillary  three gimballed rings of fine silver wire round the wearer — a precessing meridian, a satin equator
+	                 band with twelve lume hours, the ecliptic at 23.4° — joined by pins, with eight time shards riding the
+	                 ecliptic.
 	  the balance    a moon (a photographic full moon on an opaque disc that turns to face you) and a pure-black void hang
-	                 on an invisible beam on the viewer's left and right and rock slowly like scales. The void has a hairline
-	                 photon ring hugging its silhouette and a soft horizon glow, a lensed arc over the top, a small brilliant
-	                 four-point heart, an opaque accretion disc tilted toward the viewer (its near half crosses in front of
-	                 the core), ink smoke boiling off it and matter spiralling into it. Dust and grey smoke drift off the
-	                 moon; its own key light rims the wearer at night.
+	                 on an invisible beam on the viewer's left and right and rock slowly like scales. The void is a black
+	                 hole: a hairline photon ring hugging its silhouette, a soft horizon glow, the lensed disc (a bright band
+	                 arching over the shadow and a thinner one under it), a small brilliant four-point heart, an opaque
+	                 accretion disc tilted toward the viewer (its near half crosses in front of the core), dense ink smoke
+	                 boiling off it and matter spiralling into it. Dust and grey smoke drift off the moon; its own key light
+	                 rims the wearer at night.
 	  the streams    a silver stream arcs from the moon into one palm and an ink stream from the void into the other (the
 	                 palms drink them in).
+	  the wearer     burns with it: silver wisps rise off the shoulders and back, and sparks stream up the body.
 	  the dais       a dark galaxy pool 30 studs across with white arms inside a raised fluted silver rim, two floating arm
-	                 layers turning against it, an engraved clock ring round it, a balance wheel swinging
-	                 under the feet with a vortex of streaks climbing into it, motes and black ash rising, time dripping off
-	                 the soles, ankle mist when standing on the ground. It stays put for jumps and floats under a flyer.
-	  the air        silver dust, glints, and big slow bokeh drifting between the camera and the wearer (three scales).
+	                 layers turning against it, an engraved clock-ring stage 56 studs across round it (numerals 3 studs tall,
+	                 an inked minute track), a balance wheel swinging under the feet with a vortex of streaks climbing into
+	                 it, starlight twinkles and black ash rising, a mist bank round the rim when standing on the ground. It
+	                 stays put for jumps, lies along a slope and floats under a flyer.
+	  the air        a field of slow four-point sparkles, smaller glints, and big slow bokeh drifting between the camera and
+	                 the wearer (three scales).
 	Equip (~6 s, mechanical, no flash): the void condenses, the moon rises out of the floor, the rings unfold up round the
-	wearer, the bezel sweeps round from twelve, the gears slide out and spin down, the hands spin in and lock at twelve, the
-	dais rim rises in a wave, the crown drops on, the shards settle on their ring; the wearer's own screen dims and cools
-	meanwhile. After that everything turns, sways or drifts at a steady pace: no pulses, strobes or flicker, ever.
+	wearer (for the owner's close camera they wait flat on the dais until the hands lock), the bezel sweeps round from
+	twelve, the gears slide out and spin down, the hands spin in and lock at twelve, the dais rim rises in a wave, the crown
+	drops on, the shards settle on their ring; the wearer's own screen dims and cools meanwhile. After that everything
+	turns, sways or drifts at a steady pace: no pulses, strobes or flicker, ever.
 	Day reads by value (dark steel, black void and dark pool against white lume, silver metal and an ink contour; one
 	Highlight keeps the metal neutral under the cyan sky); night glows softly through GUI Brightness above the Bloom threshold.
 	Past ~110 studs the particles stop and the fine detail is dropped; low quality builds 150 parts. Flags: CONFIG below (a
@@ -399,6 +405,7 @@ local FEED_PT = Vector3.new(-10.72, 9.00, 0)
 -- the camera closeness (in 0.05 steps) at which the floor's twinkles step down a size (each step under 20 %)
 local MOTE_T = { 0.3, 0.45, 0.6, 0.75 }
 local DOWN9 = Vector3.new(0, -9, 0) -- (the dais's slope rays)
+local SWIRL_UP = CFrame.new(0, 0.3, 0)
 -- the hairlines (the photon ring's thickness, the seconds needle's width) by distance band: under 50 studs, 50-95, beyond.
 -- A 0.13-stud line is under a pixel past ~85 studs; drawn without anti-aliasing (phones, low graphics) it breaks into a
 -- crawling stair-step, so it thickens in two steps (5 studs of margin each way: no back and forth)
@@ -1121,6 +1128,7 @@ function End.build(ctx)
 		end
 		-- the floor's particles (mist, motes, ash) rise from their own invisible disc just above the top floor layer, so they
 		-- draw over the galaxy whether Roblox sorts a particle by its emitter's part or by the particles themselves
+		-- (STUDIO-VERIFY: by day, close up, the twinkles and ash are never hidden under the floor's SurfaceGuis)
 		hosts.floorFx = carrier("FloorFx", CORE, GG0, Vector3.new(29.6, 0.05, 29.6), CFrame.new(0, 0.8, 0))
 		-- the rim: fluted blocks (bright silver and satin) rising in a wave round the pool on equip
 		local NR = low and 16 or 24
@@ -1163,7 +1171,7 @@ function End.build(ctx)
 
 	---------------------------------------------------------------- THE AIR and the palm intake carriers
 	-- (the air volume turns to face the way the wearer travels, so the speed trail streams out behind)
-	hosts.air = carrier("AirVolume", CORE, GAIR, Vector3.new(36, 20, 36))
+	hosts.air = carrier("AirVolume", CORE, GAIR, Vector3.new(44, 22, 44)) -- (the sparkle field fills the space round the whole aura)
 	hosts.trail = new("Attachment", { Name = "Trail", Position = Vector3.new(0, -4, 0) }, hosts.air)
 	hosts.bokeh = hi and carrier("BokehHost", DETAIL, GBOKEH, Vector3.new(18, 10, 5))
 	hosts.palmMoon = carrier("PalmMoon", CORE, GPALMM, Vector3.new(2.6, 2.6, 2.6))
@@ -1376,7 +1384,7 @@ function End.build(ctx)
 		-- hang along the path. (te5_smoke's billows fill their cells like the pass-4 puff: both are drawn the same size)
 		em.smoke = pe(void, "smoke5", 1.0, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = rate(10, 4), Lifetime = n(3.5, 4.5),
 			Speed = n(1.4, 2.4), Drag = 0.35, Acceleration = Vector3.new(0, 0.4, 0), Size = seq({ { 0, 5 }, { 1, 14 } }),
-			Transparency = seq({ { 0, 1 }, { 0.2, 0.16 }, { 0.7, 0.45 }, { 1, 1 } }), Color = ColorSequence.new(SMOKE), Rotation = n(0, 360),
+			Transparency = seq({ { 0, 1 }, { 0.18, 0.08 }, { 0.7, 0.32 }, { 1, 1 } }), Color = ColorSequence.new(SMOKE), Rotation = n(0, 360),
 			RotSpeed = n(-25, 25), ZOffset = -3 })
 		em.smokeMoon = hi and pe(moon, "smoke5", 1.6, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = 5, Lifetime = n(3.5, 4.5),
 			Speed = n(0.9, 1.5), Drag = 0.35, Acceleration = Vector3.new(0, 0.3, 0), Size = seq({ { 0, 3.5 }, { 1, 9 } }),
@@ -1398,13 +1406,14 @@ function End.build(ctx)
 			if hosts.hs == 1 then fixUps[hz] = function(o) o.Size = NumberSequence.new(8.18 / CONFIG.RIM_R) end end
 		end
 		-- P6: three scales of air round the wearer: a field of slow four-point sparkles (they read from 40 studs, as pass
-		-- 4's did), smaller glints, and big slow bokeh between the camera and the wearer (showcase framings only)
+		-- 4's did), smaller glints, and big slow bokeh between the camera and the wearer (showcase framings only). In first
+		-- person the camera sits inside the air volume, so its sparkles stay off there
 		pe(hosts.air, "glint5", 2.5, { Shape = BOX, ShapeStyle = VOLUME, Rate = rate(14, 4), Lifetime = n(3, 4.5), Speed = n(0.1, 0.3),
 			SpreadAngle = Vector2.new(180, 180), Size = seq({ { 0, 0 }, { 0.3, 1.1, 0.3 }, { 0.7, 1.1, 0.3 }, { 1, 0 } }), Transparency = glintT,
-			Rotation = n(0, 90), RotSpeed = n(-15, 15) }, WHITE_LE, WHITE_BR)
+			Rotation = n(0, 90), RotSpeed = n(-15, 15) }, WHITE_LE, WHITE_BR, "nearcam")
 		pe(hosts.air, "glint5", 2.5, { Shape = BOX, ShapeStyle = VOLUME, Rate = rate(5, 1.5), Lifetime = n(4, 6), Speed = n(0.2, 0.5),
 			SpreadAngle = Vector2.new(180, 180), Size = seq({ { 0, 0 }, { 0.3, 0.7, 0.2 }, { 0.7, 0.7, 0.2 }, { 1, 0 } }),
-			Transparency = seq({ { 0, 1 }, { 0.3, 0.1 }, { 0.7, 0.1 }, { 1, 1 } }), Rotation = n(0, 90), RotSpeed = n(-20, 20) }, { 0.4, 1 }, WHITE_BR)
+			Transparency = seq({ { 0, 1 }, { 0.3, 0.1 }, { 0.7, 0.1 }, { 1, 1 } }), Rotation = n(0, 90), RotSpeed = n(-20, 20) }, { 0.4, 1 }, WHITE_BR, "nearcam")
 		em.bokeh = hi and pe(hosts.bokeh, "bokeh", 3.0, { Shape = BOX, ShapeStyle = VOLUME, Rate = 0.5, Lifetime = n(5, 7), Speed = n(0.1, 0.25),
 			SpreadAngle = Vector2.new(180, 180), Size = n(1.2, 2.4), Transparency = seq({ { 0, 1 }, { 0.25, 0.72 }, { 0.75, 0.72 }, { 1, 1 } }),
 			Color = ColorSequence.new(Color3.fromRGB(232, 236, 246)), Rotation = n(0, 360), RotSpeed = n(-4, 4) }, { 0.3, 0.8 }, { 1.2, 1.8 }, "bokeh")
@@ -1595,7 +1604,7 @@ function End.build(ctx)
 			if kind == "ground" then want = want and grounded
 			elseif kind == "bokeh" then want = want and not bokehNear
 			elseif kind == "body" then want = want and visible and st.footOk and not st.fpOn -- (they live on the character)
-			elseif kind == "nearcam" then want = want and not st.fpOn -- (the funnel and palm streaks: right under the lens)
+			elseif kind == "nearcam" then want = want and not st.fpOn -- (the funnel and palm streaks and the air's sparkles: round the lens)
 			elseif kind == "speed" then want = want and st.speedOn end
 			if e[6] and st.ghostGui and not st.fxLtm then want = false end -- (a ghosted aura without emitter LTM: smoke off)
 			if want ~= e[5] then
@@ -1826,6 +1835,7 @@ function End.build(ctx)
 		for _, p in ipairs(ringParts) do p.LocalTransparencyModifier = m end
 		-- (a Highlight paints a see-through part at full strength, whatever its LocalTransparencyModifier: while the rings
 		-- fade or ghost they leave the silver tone, two parent writes each way, so no grey outlined silhouette stays behind)
+		-- STUDIO-VERIFY: a part moved out of the Highlight's Model loses the tone at once (zoom from 13 to 8 studs by day)
 		local out = m > 0
 		if out ~= st.ringsOut then
 			st.ringsOut = out
@@ -2110,11 +2120,8 @@ function End.build(ctx)
 		local Hc = CONFIG.CLOCK_HEIGHT - 0.5 * g - 3 * cz + 16 * fp - 3 * sitT
 		local Dc = CONFIG.CLOCK_DIST + 2 * g + (remote and CLOSE.distRemote or CLOSE.dist) * cz + 6 * fp - 2 * sitT
 		local tilt = rad(clamp(CONFIG.CLOCK_TILT + 14 * g + 4 * st.speedT + CLOSE.tilt * cz - 32 * fp, -10, 50))
-		-- (its lowest point is the bezel's back edge when it leans back, its front edge when it leans forward; on a slope
-		-- the ground under it is higher or lower by the slope's rise along the view)
-		local vl = V.LookVector
-		local rise = slopeT > 0 and -(gn.X * vl.X + gn.Z * vl.Z) / gn.Y or 0
-		local minHc = dY + rise * Dc + 1.2 - st.kY + 14.2 * cos(tilt) + (tilt >= 0 and 1.44 or 1.12) * abs(sin(tilt))
+		-- (its lowest point is the bezel's back edge when it leans back, its front edge when it leans forward)
+		local minHc = dY + 1.2 - st.kY + 14.2 * cos(tilt) + (tilt >= 0 and 1.44 or 1.12) * abs(sin(tilt))
 		if Hc < minHc then Hc = minHc end
 		-- the owner's camera: the clock steps back along the view until FRAME_TOP above its hub (the XII numeral: the hands
 		-- at midnight) is inside the top of the frame, at every zoom and camera tilt players use; looking steeply down it
@@ -2126,7 +2133,13 @@ function End.build(ctx)
 				CLOSE.dist + 1.1 * max(0, ft - 9.6)) * (1 - fp)
 			st.fitD = snap and push or st.fitD + (push - st.fitD) * (1 - exp(-3 * dt))
 			Dc += st.fitD
-			if rise > 0 then Hc += rise * st.fitD end -- (uphill behind: it stands on the rising ground)
+		end
+		-- on a slope that rises behind the wearer it stands on the rising ground, at most 4 studs up (higher would lift it
+		-- out of the view; a steeper hill may hide its foot)
+		local vl = V.LookVector
+		if slopeT > 0 then
+			local rise = -(gn.X * vl.X + gn.Z * vl.Z) / gn.Y
+			if rise > 0 and Hc < minHc + min(4, rise * Dc) then Hc = minHc + min(4, rise * Dc) end
 		end
 		-- another wearer's clock and orbs step back behind your own clock instead of standing in front of it (decided
 		-- below, one frame late: a spring, so they glide)
@@ -2231,7 +2244,7 @@ function End.build(ctx)
 		-- (the void's centre stays >= 13.4 studs out horizontally, so its 13-stud disc always clears the rings' 6.3 reach)
 		-- (in first person they move back beside the view: about 97° off the line of sight, outside the 102° field of view)
 		local arm = 12.5 - CLOSE.arm * cz
-		local orbZ = 1.5 - CLOSE.orbZ * cz + 12 * fp - st.yieldD
+		local orbZ = 1.5 - CLOSE.orbZ * cz * (1 - fp) + 1.5 * fp - st.yieldD
 		local Pv = Vk * CFrame.new(0, 6.0 - CLOSE.orbY * cz, orbZ) * CFrame.Angles(0, 0, rad(10) * sin(TAU * t / 10) * sway)
 		local moonC = Pv * Vector3.new(-arm, 0, 0)
 		local voidC = Pv * Vector3.new(arm, 0, 0)
@@ -2280,7 +2293,9 @@ function End.build(ctx)
 		local dir = CONFIG.ACC_DIR -- (the accretion texture's streaks wind clockwise outward: a counter-clockwise turn makes them trail)
 		if asm then accExtra = (accExtra + rad(360 * exp(-3 * max(0, age - 0.3))) * dt * dir) % TAU end
 		GCF[GACC] = Dk * CFrame.Angles(0, (rad(40) * now * dir + accExtra) % TAU, 0)
-		GCF[GSWIRL] = Dk * CFrame.Angles(0, (rad(85) * now * dir) % TAU, 0)
+		-- (the swirl's carrier rides 0.3 studs above the accretion disc's plane, toward the viewer: its particles sort over
+		-- the disc and the void however Roblox keys an emitter, at its part or at its particles)
+		GCF[GSWIRL] = Dk * SWIRL_UP * CFrame.Angles(0, (rad(85) * now * dir) % TAU, 0)
 		GCF[GFEED] = CFrame.lookAt(K * FEED_PT, voidC)
 
 		-- 6. the air (turned to face the way the wearer travels: the speed trail streams out behind) and the palms
@@ -2522,6 +2537,12 @@ function End.build(ctx)
 				-- (GUIs ignore LocalTransparencyModifier: the dial's inlay, star window and sub-dial switch off meanwhile)
 				hosts.inlayGui.Enabled, hosts.subdialGui.Enabled, hosts.plateGui.Enabled = not cross, not cross, not cross
 			end
+		end
+		-- (a state that went NaN anyway, e.g. a physics fling the guard above did not catch: start everything again where it
+		-- belongs next frame, instead of every part drifting off for the rest of the session)
+		if st.zoomD ~= st.zoomD or st.kY ~= st.kY or daisY ~= daisY or st.lift ~= st.lift or st.fitD ~= st.fitD or st.yieldD ~= st.yieldD
+			or st.gn.Y ~= st.gn.Y then
+			st.snap, st.fitD, st.yieldD, st.yieldT, st.gn, st.gnT = true, 0, 0, 0, Vector3.yAxis, Vector3.yAxis
 		end
 		nightClock += dt
 		if nightClock >= CONFIG.NIGHT_INTERVAL then

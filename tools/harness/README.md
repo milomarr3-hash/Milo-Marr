@@ -11,7 +11,7 @@ It is a strong filter, not a replacement for Studio: see [What it can't tell you
 ## Quick start
 
 ```sh
-# all 32 scenarios, report + snapshots in tools/harness/out/<module>/
+# all 35 scenarios, report + snapshots in tools/harness/out/<module>/
 python3 tools/harness/run_aura.py roblox/ReplicatedStorage/AuraFX/TheEnd.pass4-live.lua
 
 # a few scenarios, custom output, extra snapshot frames (frames, or t= seconds)
@@ -95,8 +95,11 @@ end of every scenario the aura is destroyed and the harness keeps running 1.5 s 
 | `small_avatar` | a short R15 (HipHeight 1.4), idle then walking |
 | `downhill` | walking while the ground drops 6 studs/s (the plaza part moves down) |
 | `equip_in_cutscene`, `equip_in_cutscene_paused` | equipped while the roll cutscene's Scriptable camera holds the screen (0-5 s); the first keeps calling `update` while the aura is hidden, the second does not (the real framework is not in this repo, so both are tested): the assembly and the screen grade must wait for the player |
-| `pair_side` | another wearer stands 5 studs to your side (friends side by side: nothing of theirs is in your way) |
+| `pair_side` | another wearer stands 5 studs to your side (friends side by side: nothing of theirs is in your way); with `pair_behind` it also checks that nothing solid of theirs hides your own clock's hub or XII from your camera (`own-clock-hidden`) |
 | `visit_close` | a player without the aura stands in front of a wearer, then walks round to their side |
+| `teleport` | the wearer is teleported 60 studs up and back down (no hide): the clock and orbs must arrive with them (`teleport-lag`) and the speed trail must not fire (`teleport-trail`) |
+| `nan_frame` | one update gets a NaN hover, another a NaN HumanoidRootPart CFrame (a physics fling): no part may keep a NaN position and the clock must ride where it did (`nan-state`) |
+| `slope` | the plaza is a 10-degree slope; idle, then walking uphill: the dais must lie along it and no rim block may sink into it (`slope-dais`); snapshots record the tilted plaza and the renderer tilts the ground |
 
 The world: a plaza part at y = 0 (the only thing rays hit), the camera, `Lighting` with the place's Bloom
 (Intensity 1, Size 24, Threshold 2), players `Player1` (local) ... with R15 characters built like Roblox's
@@ -140,7 +143,7 @@ The mock's classes, members, types, enums, read-only flags and defaults come fro
 | `palette` | (THE END rules) a colour with saturation > 0.15: outside the black/white/silver lock |
 | `translucent-layer` | (THE END rules) an element over 6 studs at a uniform transparency of 0.3..0.8: the pass-5 opacity rule against ghostly stacked planes |
 | `billboard-cut` | a solid camera-facing sprite (ImageTransparency < 0.3, inner half of its quad) crosses a SurfaceGui plane, which cuts it in Roblox (the pass-4 "white wedge" on the moon) |
-| `flicker` | brightness/transparency reversing 3+ times in a second, or on/off 4+ times (no flashes or strobes) |
+| `flicker` | brightness/transparency reversing 3+ times in a second, or on/off 4+ times (no flashes or strobes); a ParticleEmitter's Size sequence too (it resizes the live particles at once) |
 | `grade-over-cutscene`, `assembly-unseen` | a ColorCorrectionEffect under the camera more than 0.6 s into a Scriptable-camera period (it dims the roll cutscene); the void already full size on the first frame after the cutscene (the equip assembly played while hidden; `equip_in_cutscene*` only) |
 | `view-blocked` | from the default follow camera, solid aura parts (or opaque SurfaceGui planes) cover the wearer's head in > 40% of samples |
 | `leak-instances`, `leak-connections`, `leak-renderstep`, `leak-tweens` | after `destroy()`: instances the aura made still in the game (e.g. on the character or camera), connections still live, bindings or tweens still running |

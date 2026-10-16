@@ -1,16 +1,20 @@
 # Uploading the te5 textures and filling TEX5
 
-Pass 5 has 19 new textures, all code-generated PNGs of 1024² or smaller:
+Pass 5 has 18 new textures, all code-generated PNGs of 1024² or smaller:
 
 - 7 particle textures in `textures/te5/particles/`: shards, smoke, mote, glint, bokeh, streak and ash. (te5_streak is a 256²
   square, because particles are drawn square. Review round 2 made te5_ash a single 256² flake: the 1024² flipbook cost 5 MB
   of texture memory for a flake of ~20 px. The two flipbooks, shards and smoke, are 1024², the size Roblox needs to animate
   a flipbook.)
-- 12 surface textures in `textures/te5/surfaces/`: dial inlay, sub-dial, accretion, galaxy floor/arms/core, engraving,
-  halo, stream, ribbon, and (review round 1) the photographic **moon** face and the **star window** on the clock's
-  movement plate. The moon is an opaque face disc turned to the camera either way: with te5_moon on it, the photographic
-  moon; until then pass 4's moon, cropped to its disc. (Review round 2 dropped te5_hairspring: the spiral under the feet
-  was invisible at every framing.)
+- 11 surface textures in `textures/te5/surfaces/`: dial inlay, sub-dial, accretion, galaxy floor/arms/core, engraving,
+  halo, stream, and (review round 1) the photographic **moon** face and the **star window** on the clock's movement plate.
+  The moon is an opaque face disc turned to the camera either way: with te5_moon on it, the photographic moon; until then
+  pass 4's moon, cropped to its disc. (Review round 2 dropped te5_hairspring: the spiral under the feet was invisible at
+  every framing. Review round 3 dropped te5_ribbon: the void's ink ribbon became the lensed band, which uses te5_stream.
+  Review round 3 also regenerated te5_smoke, a dense billow instead of a thin curl, and te5_engraving, now a 56-stud stage.)
+
+**Upload te5_moon first** (review round 3): the moon is the first thing Milo looks at, and the photographic moon is much
+better than pass 4's pale moon on the face disc. The first batch below starts with it.
 
 Their `manifest.json` files list each one's `texKey` (its key in the module's `TEX5` table) and `uploadedId` (still
 `null`). Until a key has an id, the aura uses that texture's pass-4 fallback. So upload them **after** the first install
@@ -30,15 +34,14 @@ cd ~/Documents/Milo-Marr/textures/te5 && python3 -m http.server 8765 --bind 127.
 Then upload in batches of up to 5. The pass-4 uploads used 5 per call, and the big PNGs are about 1 MB each:
 
 ```
-upload_image  imagePaths: ["http://127.0.0.1:8765/particles/te5_shards.png", "http://127.0.0.1:8765/particles/te5_smoke.png",
-                           "http://127.0.0.1:8765/particles/te5_mote.png", "http://127.0.0.1:8765/particles/te5_glint.png",
-                           "http://127.0.0.1:8765/particles/te5_bokeh.png"]
-upload_image  imagePaths: [".../particles/te5_streak.png", ".../particles/te5_ash.png",
-                           ".../surfaces/te5_dial_inlay.png", ".../surfaces/te5_subdial.png", ".../surfaces/te5_accretion.png"]
-upload_image  imagePaths: [".../surfaces/te5_galaxy_floor.png", ".../surfaces/te5_galaxy_arms.png",
-                           ".../surfaces/te5_galaxy_core.png", ".../surfaces/te5_engraving.png", ".../surfaces/te5_halo.png"]
-upload_image  imagePaths: [".../surfaces/te5_stream.png", ".../surfaces/te5_ribbon.png",
-                           ".../surfaces/te5_moon.png", ".../surfaces/te5_star_window.png"]
+upload_image  imagePaths: ["http://127.0.0.1:8765/surfaces/te5_moon.png", "http://127.0.0.1:8765/particles/te5_smoke.png",
+                           "http://127.0.0.1:8765/particles/te5_glint.png", "http://127.0.0.1:8765/surfaces/te5_engraving.png",
+                           "http://127.0.0.1:8765/surfaces/te5_halo.png"]
+upload_image  imagePaths: [".../particles/te5_shards.png", ".../particles/te5_mote.png", ".../particles/te5_bokeh.png",
+                           ".../particles/te5_streak.png", ".../particles/te5_ash.png"]
+upload_image  imagePaths: [".../surfaces/te5_dial_inlay.png", ".../surfaces/te5_subdial.png", ".../surfaces/te5_accretion.png",
+                           ".../surfaces/te5_galaxy_floor.png", ".../surfaces/te5_galaxy_arms.png"]
+upload_image  imagePaths: [".../surfaces/te5_galaxy_core.png", ".../surfaces/te5_stream.png", ".../surfaces/te5_star_window.png"]
 ```
 
 (`...` stands for `http://127.0.0.1:8765`. Always write the full URL.)
@@ -56,7 +59,7 @@ Then stop the web server (kill the background `http.server`).
 
 ## B. By hand with Studio's Asset Manager
 
-1. In Studio, open **View -> Asset Manager** and click **Bulk Import**. Pick all 19 PNGs from `textures/te5/particles/`
+1. In Studio, open **View -> Asset Manager** and click **Bulk Import**. Pick all 18 PNGs from `textures/te5/particles/`
    and `textures/te5/surfaces/`.
 2. When they are done, open **Images** in the Asset Manager. Right-click each one, choose **Copy Asset ID**, and note
    which file it belongs to.
@@ -87,7 +90,8 @@ What the commands do:
 ## Notes
 
 - **Moderation:** a new image can show as blank or grey until Roblox approves it. Wait a few minutes before judging how it
-  looks in Play. The module asks ContentProvider for every filled-in te5 id when it loads; one that does not load (wrong
+  looks in Play. The module asks ContentProvider for the filled-in te5 ids each build draws (a low-quality build never asks
+  for the six that only high quality uses); one that does not load (wrong
   id, rejected, still pending) is reported in the Output (`TheEnd: te5 texture ... did not load ...; using its pass-4
   fallback`) and swapped for its fallback, so the aura never shows a blank.
 - **Flipbooks must be 1024²:** `patch_tex5.py record` and `patch` refuse to run while a texture whose manifest layout is a

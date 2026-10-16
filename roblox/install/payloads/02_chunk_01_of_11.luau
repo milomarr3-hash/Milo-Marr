@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 02_chunk_01_of_11.luau | step 2: piece 1 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "02_chunk_01_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-141659-402664341-11-730820328"
-local NEW_LEN, NEW_SUM = 141659, 402664341
+local RUN = "TheEnd-143408-678854451-11-550560669"
+local NEW_LEN, NEW_SUM = 143408, 678854451
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 11
-local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
-local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
+local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
+local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,7 +68,7 @@ local function chunkOk(h, i)
 end
 
 local K = 1
--- piece 1 of 11 of the new source (13243 bytes, checksum 563366530, long bracket level 1)
+-- piece 1 of 11 of the new source (13324 bytes, checksum 617994297, long bracket level 1)
 local DATA = [=[
 --[[
 	AuraFX.TheEnd — 『 THE END 』 worn (1 in 1,000,000,000). Midnight of the universe, worn: black, white and silver only.
@@ -86,31 +86,37 @@ local DATA = [=[
 	and behind each other for real), about 26 studs deep, in black steel, silver and white lume.
 	  the clock      a skeleton pocket watch 28 studs across standing 8 studs beyond the wearer, always on the far side from
 	                 whoever is watching (each viewer's own camera, through a soft spring, so it never blocks the owner's
-	                 view and swings round to show its thickness): a fluted silver bezel 2.4 deep, a dark chapter ring with
-	                 inlaid white numerals and raised lume plots, an openwork star rete, a guilloché sub-dial, seven toothed
-	                 gears turning at meshed rates behind and in front of the dial (their teeth break the rim at 1:30, 4, 8
-	                 and 10:30), hands locked at twelve while the seconds hand sweeps, a crown and bow on top. Glints ride
-	                 the bezel and a ring of time-dust turns round it with the hands, metal shards break off at eleven and
-	                 fly into the void, and a corona rings it at night.
-	  the armillary  three gimballed rings round the wearer — a precessing silver meridian, a dark equator band with twelve
-	                 lume hours, the ecliptic at 23.4° — joined by pins, with eight time shards riding the ecliptic.
+	                 view and swings round to show its thickness; for the owner it steps back until XII is in the frame):
+	                 a fluted silver bezel 2.4 deep, a dark chapter ring with inlaid white numerals and raised lume plots,
+	                 an openwork star rete, a guilloché sub-dial, seven toothed gears turning at meshed rates behind and in
+	                 front of the dial (their teeth break the rim at 1:30, 4, 8 and 10:30), hands locked at twelve while the
+	                 seconds hand sweeps, a crown and bow on top. A ring of time-dust glints turns round it with the hands,
+	                 metal shards break off at eleven and fly into the void, and a corona rings it at night.
+	  the armillary  three gimballed rings of fine silver wire round the wearer — a precessing meridian, a satin equator
+	                 band with twelve lume hours, the ecliptic at 23.4° — joined by pins, with eight time shards riding the
+	                 ecliptic.
 	  the balance    a moon (a photographic full moon on an opaque disc that turns to face you) and a pure-black void hang
-	                 on an invisible beam on the viewer's left and right and rock slowly like scales. The void has a hairline
-	                 photon ring hugging its silhouette and a soft horizon glow, a lensed arc over the top, a small brilliant
-	                 four-point heart, an opaque accretion disc tilted toward the viewer (its near half crosses in front of
-	                 the core), ink smoke boiling off it and matter spiralling into it. Dust and grey smoke drift off the
-	                 moon; its own key light rims the wearer at night.
+	                 on an invisible beam on the viewer's left and right and rock slowly like scales. The void is a black
+	                 hole: a hairline photon ring hugging its silhouette, a soft horizon glow, the lensed disc (a bright band
+	                 arching over the shadow and a thinner one under it), a small brilliant four-point heart, an opaque
+	                 accretion disc tilted toward the viewer (its near half crosses in front of the core), dense ink smoke
+	                 boiling off it and matter spiralling into it. Dust and grey smoke drift off the moon; its own key light
+	                 rims the wearer at night.
 	  the streams    a silver stream arcs from the moon into one palm and an ink stream from the void into the other (the
 	                 palms drink them in).
+	  the wearer     burns with it: silver wisps rise off the shoulders and back, and sparks stream up the body.
 	  the dais       a dark galaxy pool 30 studs across with white arms inside a raised fluted silver rim, two floating arm
-	                 layers turning against it, an engraved clock ring round it, a balance wheel swinging
-	                 under the feet with a vortex of streaks climbing into it, motes and black ash rising, time dripping off
-	                 the soles, ankle mist when standing on the ground. It stays put for jumps and floats under a flyer.
-	  the air        silver dust, glints, and big slow bokeh drifting between the camera and the wearer (three scales).
+	                 layers turning against it, an engraved clock-ring stage 56 studs across round it (numerals 3 studs tall,
+	                 an inked minute track), a balance wheel swinging under the feet with a vortex of streaks climbing into
+	                 it, starlight twinkles and black ash rising, a mist bank round the rim when standing on the ground. It
+	                 stays put for jumps, lies along a slope and floats under a flyer.
+	  the air        a field of slow four-point sparkles, smaller glints, and big slow bokeh drifting between the camera and
+	                 the wearer (three scales).
 	Equip (~6 s, mechanical, no flash): the void condenses, the moon rises out of the floor, the rings unfold up round the
-	wearer, the bezel sweeps round from twelve, the gears slide out and spin down, the hands spin in and lock at twelve, the
-	dais rim rises in a wave, the crown drops on, the shards settle on their ring; the wearer's own screen dims and cools
-	meanwhile. After that everything turns, sways or drifts at a steady pace: no pulses, strobes or flicker, ever.
+	wearer (for the owner's close camera they wait flat on the dais until the hands lock), the bezel sweeps round from
+	twelve, the gears slide out and spin down, the hands spin in and lock at twelve, the dais rim rises in a wave, the crown
+	drops on, the shards settle on their ring; the wearer's own screen dims and cools meanwhile. After that everything
+	turns, sways or drifts at a steady pace: no pulses, strobes or flicker, ever.
 	Day reads by value (dark steel, black void and dark pool against white lume, silver metal and an ink contour; one
 	Highlight keeps the metal neutral under the cyan sky); night glows softly through GUI Brightness above the Bloom threshold.
 	Past ~110 studs the particles stop and the fine detail is dropped; low quality builds 150 parts. Flags: CONFIG below (a
@@ -250,24 +256,6 @@ do
 			retried[id] = true
 			task.delay(20, function()
 				pcall(function() game:GetService("ContentProvider"):PreloadAsync({ id }, onStatus) end)
-			end)
-			return
-		end
-		dead[id] = status
-		for _, k in ipairs(ks) do failKey(k, id, status) end
-	end
-	function preloadUsed()
-		local ids = {}
-		for k in pairs(usedKeys) do
-			local id = idOf(TEX5[k], k)
-			if id and not string.match(id, "^pending:") then
-				local ks = keysOf[id]
-				if not ks then
-					ks = {}
-					keysOf[id] = ks
-				end
-				if not table.find(ks, k) then table.insert(ks, k) end
-				if dead[id] then
 ]=]
 
 local function main()

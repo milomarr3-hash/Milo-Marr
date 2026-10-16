@@ -513,7 +513,14 @@ do
 		-- the plaza's top (the scenario's ground: a seat or a slope does not move it), so the renderer draws the floor there
 		if H.plaza and D[H.plaza] and not D[H.plaza].destroyed then
 			local pc, ps = g(H.plaza, "CFrame"), g(H.plaza, "Size")
-			snap.world = H.obj({ groundY = pc.Position.Y + ps.Y / 2 })
+			local up = pc.UpVector
+			if up.Y < 0.99999 then
+				-- (a tilted plaza, e.g. the slope scenario: its top surface's centre and normal, so the renderer tilts the ground)
+				local top = pc * Vector3.new(0, ps.Y / 2, 0)
+				snap.world = H.obj({ groundY = top.Y, groundTop = v3Arr(top), groundUp = v3Arr(up) })
+			else
+				snap.world = H.obj({ groundY = pc.Position.Y + ps.Y / 2 })
+			end
 		end
 		if rec then
 			local s = rec.lastS

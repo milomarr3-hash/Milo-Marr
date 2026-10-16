@@ -113,7 +113,9 @@ export class Preview {
 		// the plaza's top as recorded by the harness (a wearer on a seat has the seat top as "ground": the floor stays put)
 		const groundY = snapshot.world && snapshot.world.groundY != null ? snapshot.world.groundY
 			: snapshot.wearer && snapshot.wearer.ground ? snapshot.wearer.ground[1] : 0;
-		const st = this.env.apply({ mode: opts.env || 'auto', clockTime: clock, focus: body, groundY, props: opts.props !== false });
+		const w = snapshot.world || {};
+		const groundTilt = w.groundUp && w.groundTop ? { top: w.groundTop, up: w.groundUp } : null; // (a sloped plaza: tilt the ground)
+		const st = this.env.apply({ mode: opts.env || 'auto', clockTime: clock, focus: body, groundY, groundTilt, props: opts.props !== false });
 		this.envState = st;
 		this.scene.environment = this.env.envMap;
 		this.scene.environmentIntensity = this.env.envIntensity;
@@ -142,7 +144,7 @@ export class Preview {
 			const guis = buildGuis(snapshot, ctx); aura.add(guis.group); this.dynamic.push(guis.update);
 			const beams = buildBeams(snapshot, ctx); aura.add(beams.group); this.dynamic.push(beams.update);
 			const trails = buildTrails(snapshot, ctx); aura.add(trails.group); this.dynamic.push(trails.update);
-			const em = buildEmitters(snapshot, ctx, { maxPerEmitter: opts.maxPerEmitter }); aura.add(em.group); this.dynamic.push(em.update);
+			const em = buildEmitters(snapshot, ctx, { maxPerEmitter: opts.maxPerEmitter, sortHost: opts.sortHost }); aura.add(em.group); this.dynamic.push(em.update);
 			this.particleCount = em.total;
 			for (const l of snapshot.lights || []) {
 				if (l.enabled === false) continue;

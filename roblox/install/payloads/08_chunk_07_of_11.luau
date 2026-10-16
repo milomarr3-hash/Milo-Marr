@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 08_chunk_07_of_11.luau | step 8: piece 7 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "08_chunk_07_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-141659-402664341-11-730820328"
-local NEW_LEN, NEW_SUM = 141659, 402664341
+local RUN = "TheEnd-143408-678854451-11-550560669"
+local NEW_LEN, NEW_SUM = 143408, 678854451
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 11
-local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
-local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
+local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
+local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,13 @@ local function chunkOk(h, i)
 end
 
 local K = 7
--- piece 7 of 11 of the new source (13225 bytes, checksum 374124160, long bracket level 1)
-local DATA = [=[
+-- piece 7 of 11 of the new source (13235 bytes, checksum 843372519, long bracket level 0)
+local DATA = [[
+		-- P1: matter spirals in along the accretion disc and vanishes into the black core (straight inward motion inside a
+		-- spinning host becomes a spiral). STUDIO-VERIFY: Cylinder + Surface + Inward emits on the curved side toward the
+		-- axis (if not: attribute SWIRL_POINTS), and LockedToPart particles ride a host moved by BulkMoveTo
+		local p1 = { Rate = rate(28, 12), Lifetime = n(1.1, 1.3), Speed = n(2.2, 2.6), Size = seq({ { 0, 1.5 }, { 1, 0.35 } }),
+			Transparency = seq({ { 0, 1 }, { 0.15, 0.05 }, { 0.8, 0.05 }, { 1, 0.4 } }),
 			Color = ColorSequence.new(WHITE, Color3.fromRGB(170, 174, 184)), LockedToPart = true, ZOffset = 0.3 }
 		if CONFIG.SWIRL_POINTS then
 			p1.EmissionDirection, p1.SpreadAngle = N_.Front, Vector2.new(0, 10)
@@ -100,7 +105,7 @@ local DATA = [=[
 		-- hang along the path. (te5_smoke's billows fill their cells like the pass-4 puff: both are drawn the same size)
 		em.smoke = pe(void, "smoke5", 1.0, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = rate(10, 4), Lifetime = n(3.5, 4.5),
 			Speed = n(1.4, 2.4), Drag = 0.35, Acceleration = Vector3.new(0, 0.4, 0), Size = seq({ { 0, 5 }, { 1, 14 } }),
-			Transparency = seq({ { 0, 1 }, { 0.2, 0.16 }, { 0.7, 0.45 }, { 1, 1 } }), Color = ColorSequence.new(SMOKE), Rotation = n(0, 360),
+			Transparency = seq({ { 0, 1 }, { 0.18, 0.08 }, { 0.7, 0.32 }, { 1, 1 } }), Color = ColorSequence.new(SMOKE), Rotation = n(0, 360),
 			RotSpeed = n(-25, 25), ZOffset = -3 })
 		em.smokeMoon = hi and pe(moon, "smoke5", 1.6, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = 5, Lifetime = n(3.5, 4.5),
 			Speed = n(0.9, 1.5), Drag = 0.35, Acceleration = Vector3.new(0, 0.3, 0), Size = seq({ { 0, 3.5 }, { 1, 9 } }),
@@ -122,13 +127,14 @@ local DATA = [=[
 			if hosts.hs == 1 then fixUps[hz] = function(o) o.Size = NumberSequence.new(8.18 / CONFIG.RIM_R) end end
 		end
 		-- P6: three scales of air round the wearer: a field of slow four-point sparkles (they read from 40 studs, as pass
-		-- 4's did), smaller glints, and big slow bokeh between the camera and the wearer (showcase framings only)
+		-- 4's did), smaller glints, and big slow bokeh between the camera and the wearer (showcase framings only). In first
+		-- person the camera sits inside the air volume, so its sparkles stay off there
 		pe(hosts.air, "glint5", 2.5, { Shape = BOX, ShapeStyle = VOLUME, Rate = rate(14, 4), Lifetime = n(3, 4.5), Speed = n(0.1, 0.3),
 			SpreadAngle = Vector2.new(180, 180), Size = seq({ { 0, 0 }, { 0.3, 1.1, 0.3 }, { 0.7, 1.1, 0.3 }, { 1, 0 } }), Transparency = glintT,
-			Rotation = n(0, 90), RotSpeed = n(-15, 15) }, WHITE_LE, WHITE_BR)
+			Rotation = n(0, 90), RotSpeed = n(-15, 15) }, WHITE_LE, WHITE_BR, "nearcam")
 		pe(hosts.air, "glint5", 2.5, { Shape = BOX, ShapeStyle = VOLUME, Rate = rate(5, 1.5), Lifetime = n(4, 6), Speed = n(0.2, 0.5),
 			SpreadAngle = Vector2.new(180, 180), Size = seq({ { 0, 0 }, { 0.3, 0.7, 0.2 }, { 0.7, 0.7, 0.2 }, { 1, 0 } }),
-			Transparency = seq({ { 0, 1 }, { 0.3, 0.1 }, { 0.7, 0.1 }, { 1, 1 } }), Rotation = n(0, 90), RotSpeed = n(-20, 20) }, { 0.4, 1 }, WHITE_BR)
+			Transparency = seq({ { 0, 1 }, { 0.3, 0.1 }, { 0.7, 0.1 }, { 1, 1 } }), Rotation = n(0, 90), RotSpeed = n(-20, 20) }, { 0.4, 1 }, WHITE_BR, "nearcam")
 		em.bokeh = hi and pe(hosts.bokeh, "bokeh", 3.0, { Shape = BOX, ShapeStyle = VOLUME, Rate = 0.5, Lifetime = n(5, 7), Speed = n(0.1, 0.25),
 			SpreadAngle = Vector2.new(180, 180), Size = n(1.2, 2.4), Transparency = seq({ { 0, 1 }, { 0.25, 0.72 }, { 0.75, 0.72 }, { 1, 1 } }),
 			Color = ColorSequence.new(Color3.fromRGB(232, 236, 246)), Rotation = n(0, 360), RotSpeed = n(-4, 4) }, { 0.3, 0.8 }, { 1.2, 1.8 }, "bokeh")
@@ -206,21 +212,7 @@ local DATA = [=[
 			Transparency = seq({ { 0, 0.2 }, { 0.6, 0.3 }, { 1, 1 } }), Color = ColorSequence.new(Color3.fromRGB(226, 230, 240)),
 			Orientation = VPAR, Rotation = stRot }, WHITE_LE, WHITE_BR, "speed"), stS, { { 0, 0.5 }, { 1, 0.1 } })
 		-- which emitters belong to the parts that turn see-through while another wearer's aura is in your way (their smoke,
-		-- swirl, dust, shards, glints, horizon and palm streaks must not stay solid across your character)
-		local ghostHost = { [moon] = true, [void] = true }
-		for _, h in ipairs({ "swirl", "shardFeed", "horizon", "timeDust", "palmMoon", "palmVoid" }) do
-			if hosts[h] then ghostHost[hosts[h]] = true end
-		end
-		for _, e in ipairs(emitters) do
-			local par = e[1].Parent
-			if par and par:IsA("Attachment") then par = par.Parent end
-			e[6] = ghostHost[par] == true
-		end
-	end
-	table.sort(emitters, function(a, b) return a[2] < b[2] end)
-
-	-- lights: the moon's key light (above) and the wheel's underlight on the feet (night only, high quality)
-]=]
+]]
 
 local function main()
 	if game:GetService("RunService"):IsRunning() then

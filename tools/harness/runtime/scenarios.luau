@@ -337,6 +337,7 @@ do
 			placeWearer(S.rec, v3(0, 3, 0), 0)
 			placeWearer(S.rec2, v3(4, 3, 7), 0)
 			followCam(S.rec, 16, 6, dt)
+			if H.ownClockCheck then H.ownClockCheck(S, t) end
 		end)
 	def("pair_walkby", "Local wearer idle, follow camera; a remote wearer walks across behind you (z = 8) from x = -30 to +30",
 		{ duration = 14, clock = 14 },
@@ -459,6 +460,7 @@ do
 			placeWearer(S.rec, v3(0, 3, 0), 0)
 			placeWearer(S.rec2, v3(5, 3, 0), 0)
 			followCam(S.rec, 16, 6, dt)
+			H.ownClockCheck(S, t)
 		end)
 	def("visit_close", "A player without the aura stands 9 studs in front of a wearer, then (t = 7..9) walks round to 5 studs at their side; follow camera",
 		{ duration = 14, clock = 14 },
@@ -479,5 +481,183 @@ do
 			placeWearer(S.me, v3(r * sin(th), 3, r * cos(th)), th, (u > 0 and u < 1) and v3(cos(th), 0, -sin(th)) or nil)
 			placeWearer(S.rec, v3(0, 3, 0), 0)
 			followCam(S.me, 16, 6, dt)
+		end)
+	-------------------------------------------------------------------------------------- added in THE END pass-5 review round 3
+	-- (teleports, a NaN frame, a slope, and another wearer's aura in front of your own clock)
+	local function auraModel(rec)
+		local name = "TheEnd_" .. D[rec.char].name
+		for _, m in ipairs(D[H.container].children) do
+			local d = D[m]
+			if d and not d.destroyed and d.name == name then return m end
+		end
+		return nil
+	end
+	local function auraPart(rec, nm)
+		local m = auraModel(rec)
+		local found = nil
+		if m then
+			H.forDescendants(m, function(c)
+				local d = D[c]
+				if not found and d.cls.isa.BasePart and d.name == nm then found = c end
+			end)
+		end
+		return found
+	end
+	-- heights of the clock (its inlay), the moon and the void relative to the HumanoidRootPart
+	local function heights(rec)
+		local out = {}
+		local hy = H.rawGet(rec.hrp, "CFrame").Position.Y
+		for _, nm in ipairs({ "Inlay", "Moon", "Void" }) do
+			local p = auraPart(rec, nm)
+			if p then out[nm] = H.rawGet(p, "CFrame").Position.Y - hy end
+		end
+		return out
+	end
+	local function trailOn(rec)
+		local m = auraModel(rec)
+		local on = false
+		if m then
+			H.forDescendants(m, function(c)
+				local d = D[c]
+				if d.cls.name == "ParticleEmitter" and d.parent and D[d.parent] and D[d.parent].name == "Trail" and H.rawGet(c, "Enabled") then on = true end
+			end)
+		end
+		return on
+	end
+	-- (another wearer beside you: from your camera, nothing of theirs that is solid may hide your own clock's hub or its XII)
+	function H.ownClockCheck(S, t)
+		if t < 7 or t > 12.01 or (S.lastOwn and t - S.lastOwn < 0.5) then return end
+		S.lastOwn = t
+		local hub, inlay = auraPart(S.rec, "Hub"), auraPart(S.rec, "Inlay")
+		local other = S.rec2 and auraModel(S.rec2)
+		if not (hub and inlay and other) then return end
+		local camPos = H.rawGet(H.camera, "CFrame").Position
+		local targets = { hub = H.rawGet(hub, "CFrame").Position, XII = H.rawGet(inlay, "CFrame") * v3(0, 9.6, 0) }
+		for nm, p in pairs(targets) do
+			local dv = p - camPos
+			local len = dv.Magnitude
+			local hit = nil
+			H.forDescendants(other, function(c)
+				local d = D[c]
+				if hit or not d.cls.isa.BasePart then return end
+				if (d.props.Transparency or 0) >= 0.5 or (d.props.LocalTransparencyModifier or 0) >= 0.5 then return end
+				if H.rayPart(camPos, dv / len, len - 0.5, c) then hit = d.name end
+			end)
+			S.ownTotal = (S.ownTotal or 0) + 1
+			if hit then
+				S.ownHidden = (S.ownHidden or 0) + 1
+				H.recordWarning("own-clock-hidden", "another wearer's solid " .. hit .. " hides your own clock's " .. nm .. " from your camera")
+			end
+		end
+	end
+	def("teleport", "Idle; the wearer is teleported 60 studs up onto a platform at t = 8 and back down at t = 10 (PivotTo, no hide); the camera follows at once",
+		{ duration = 12, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } S.y = 0 end,
+		function(S, t, dt)
+			local want = (t >= 8 and t < 10) and 60 or 0
+			if want ~= S.y then
+				S.before = heights(S.rec) -- (where the clock and the orbs stand before the jump)
+				S.y = want
+				S.check = 3
+			elseif S.check then
+				-- the first frames after the jump: the clock and the orbs must arrive with the wearer, not spring across
+				local after = heights(S.rec)
+				for k, v in pairs(S.before) do
+					if after[k] and math.abs(after[k] - v) > 0.5 then
+						H.recordWarning("teleport-lag", string.format("after a %d-stud teleport the %s is %.1f studs from where it rides (it springs across instead of arriving with the wearer)",
+							60, k, after[k] - v))
+					end
+				end
+				if trailOn(S.rec) then H.recordWarning("teleport-trail", "a teleport switched the speed trail on") end
+				S.check -= 1
+				if S.check <= 0 then S.check = nil end
+			end
+			D[H.plaza].props.CFrame = CFrame.new(0, S.y - 0.5, 0)
+			placeWearer(S.rec, v3(0, S.y + 3, 0), 0)
+			local focus = H.rawGet(S.rec.hrp, "CFrame").Position + v3(0, 1.5, 0)
+			setCamera(focus + v3(0, 6, 16), focus)
+		end)
+	def("nan_frame", "Idle; at t = 8 one frame hands the aura a NaN hover and at t = 9 a NaN HumanoidRootPart position (a physics fling): it skips them and carries on",
+		{ duration = 11, clock = 14, steadyAfter = 9.5 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt)
+			local nan = 0 / 0
+			S.rec.hoverBase = (t >= 8 and not S.n1) and nan or (S.rec.hoverBase ~= S.rec.hoverBase and 2.4 or S.rec.hoverBase)
+			if t >= 8 and not S.n1 then S.n1 = true S.before = heights(S.rec) end
+			if t >= 9 and not S.n2 then
+				S.n2 = true
+				S.rec.nanOnce = true
+			end
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			followCam(S.rec, 16, 6, dt)
+			if (t >= 8.5 and not S.c1) or (t >= 9.5 and not S.c2) then
+				if t >= 9.5 then S.c2 = true else S.c1 = true end
+				local m = auraModel(S.rec)
+				local bad = 0
+				if m then
+					H.forDescendants(m, function(c)
+						local d = D[c]
+						if d.cls.isa.BasePart then
+							local p = H.rawGet(c, "CFrame").Position
+							if p.X ~= p.X or p.Y ~= p.Y or p.Z ~= p.Z then bad += 1 end
+						end
+					end)
+				end
+				if bad > 0 then H.recordWarning("nan-state", bad .. " aura parts have a NaN position after a NaN frame (the springs never recover)") end
+				-- (the clock rides steadily; the orbs rock like scales by +-2 studs, so only the clock is compared)
+				local after = heights(S.rec)
+				local b = S.before and S.before.Inlay
+				if b and after.Inlay and math.abs(after.Inlay - b) > 1.0 then
+					H.recordWarning("nan-state", string.format("after a NaN frame the clock is %.1f studs from where it rode before", after.Inlay - b))
+				end
+			end
+		end)
+	-- the plaza tilted 10 degrees (rising toward -Z): the dais must lie along it, and no rim block may sink into it
+	local SLOPE = math.rad(10)
+	local function slopeY(z) return -z * math.tan(SLOPE) end
+	local function slopeCheck(S, label)
+		local base = auraPart(S.rec, "DaisBase")
+		if not base then return end
+		local up = H.rawGet(base, "CFrame").RightVector -- (the base disc is an upright cylinder: its axis is local X)
+		local n = H.rawGet(H.plaza, "CFrame").UpVector
+		local ang = math.deg(math.acos(math.clamp(up:Dot(n), -1, 1)))
+		if ang > 1.5 then
+			H.recordWarning("slope-dais", string.format("%s: on a 10-degree slope the dais is %.1f degrees off the ground's slope (half of it sinks into the hill)", label, ang))
+		end
+		local m = auraModel(S.rec)
+		local worst = math.huge
+		if m then
+			H.forDescendants(m, function(c)
+				local d = D[c]
+				if d.cls.isa.BasePart and d.name == "DaisRim" then
+					local cf = H.rawGet(c, "CFrame")
+					local sz = H.rawGet(c, "Size")
+					local p = cf * v3(0, -sz.Y / 2, 0)
+					local h = p.Y - slopeY(p.Z)
+					worst = math.min(worst, h * math.cos(SLOPE))
+				end
+			end)
+		end
+		if worst < -0.1 then
+			H.recordWarning("slope-dais", string.format("%s: a dais rim block sinks %.2f studs into the 10-degree slope", label, -worst))
+		end
+	end
+	def("slope", "Day; the plaza is a 10-degree slope (rising ahead): idle, then walks uphill at 16 studs/s (t = 8..10), then idle; follow camera",
+		{ duration = 13, clock = 14 },
+		function(S)
+			D[H.plaza].props.CFrame = CFrame.Angles(SLOPE, 0, 0) * CFrame.new(0, -0.5, 0)
+			S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } S.z = 0
+		end,
+		function(S, t, dt)
+			D[H.plaza].props.CFrame = CFrame.Angles(SLOPE, 0, 0) * CFrame.new(0, -0.5, 0)
+			local md = nil
+			if t >= 8 and t < 10 then
+				S.z -= 16 * dt
+				md = v3(0, 0, -1)
+			end
+			placeWearer(S.rec, v3(0, slopeY(S.z) + 3, S.z), 0, md)
+			followCam(S.rec, 16, 6, dt)
+			if t >= 7.5 and not S.c1 then S.c1 = true slopeCheck(S, "standing") end
+			if t >= 12 and not S.c2 then S.c2 = true slopeCheck(S, "after walking uphill") end
 		end)
 end

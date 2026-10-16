@@ -46,6 +46,8 @@ printed per snapshot.
 | `--labels on\|off`, `--sheet on\|off`, `--bloom on\|off` | `on` | caption strip, contact sheet, the place's Bloom. |
 | `--hide LIST` | | debug: hide `parts,guis,beams,trails,particles,lights,characters,env` (e.g. `--hide guis,beams` to see only particles). |
 | `--tone filmic\|neutral` | `filmic` | tone curve: `filmic` (Narkowicz ACES fit, calibrated to Studio) or `neutral` (Khronos PBR Neutral, the first calibration). |
+| `--aa on\|off` | `on` | `off`: no multisampling, as Roblox draws at low graphics levels and on phones (thin moving lines crawl in stair-steps). |
+| `--sort centroid\|host` | `centroid` | the point a particle emitter is sorted at against other transparent objects: its particles' centre, or its host part (Roblox's rule is unverified; FIDELITY.md). |
 | `--max-particles N` | `6000` | per emitter; above it 1 in k is drawn (warned). |
 | `--tex5 DIR` / `--no-tex5` | `textures/te5` | where te5 manifests live (see Textures). |
 | `--texmap FILE` | `texmap.json` | |

@@ -303,18 +303,22 @@ export class Environment {
 
 		this.groundTex = paintGround();
 		const gm = new THREE.MeshStandardMaterial({ map: this.groundTex, roughness: 0.96, metalness: 0 });
+		// (the terrain group holds the ground, the far ground and the props; it tilts for a sloped plaza: the slope scenario)
+		this.terrain = new THREE.Group();
+		this.terrain.name = 'terrain';
+		this.group.add(this.terrain);
 		this.ground = new THREE.Mesh(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE), gm);
 		this.ground.rotation.x = -Math.PI / 2;
 		this.ground.receiveShadow = true;
-		this.group.add(this.ground);
+		this.terrain.add(this.ground);
 		this.farGround = new THREE.Mesh(new THREE.CircleGeometry(16000, 64), new THREE.MeshStandardMaterial({ color: C(146, 212, 92), roughness: 1 }));
 		this.farGround.rotation.x = -Math.PI / 2;
 		this.farGround.position.y = -0.03;
 		this.farGround.receiveShadow = false;
-		this.group.add(this.farGround);
+		this.terrain.add(this.farGround);
 
 		this.props = buildProps();
-		this.group.add(this.props);
+		this.terrain.add(this.props);
 
 		this.sun = new THREE.DirectionalLight(0xffffff, 1);
 		this.sun.castShadow = true;
@@ -354,7 +358,8 @@ export class Environment {
 	}
 
 	// mode: 'day' | 'night' | 'auto'; clockTime 0..24; focus = Vector3 (the wearer) for the shadow camera
-	apply({ mode = 'auto', clockTime = 14, focus = new THREE.Vector3(), groundY = 0, props = true }) {
+	// groundTilt: { top: [x, y, z], up: [x, y, z] } for a sloped plaza (its top surface's centre and normal), else null
+	apply({ mode = 'auto', clockTime = 14, focus = new THREE.Vector3(), groundY = 0, groundTilt = null, props = true }) {
 		let ct = clockTime;
 		if (mode === 'day' && dayFactor(ct) < 0.99) ct = 14;
 		if (mode === 'night' && dayFactor(ct) > 0.01) ct = 0;
@@ -399,11 +404,28 @@ export class Environment {
 		this.light = L.light[0] + (L.light[1] - L.light[0]) * day;
 
 		this.fog = new THREE.Fog(pal.fog, pal.fogNear, pal.fogFar);
-		this.ground.position.y = groundY;
-		this.farGround.position.y = groundY - 0.03;
+		let gy = groundY;
+		const tiltKey = groundTilt ? groundTilt.top.concat(groundTilt.up).join(',') : '';
+		if (groundTilt) {
+			// the plane through the plaza's top centre with its normal: pivot where it crosses the vertical through the origin
+			const [tx, ty, tz] = groundTilt.top, n = new THREE.Vector3(...groundTilt.up).normalize();
+			this.terrain.position.set(0, ty + (n.x * tx + n.z * tz) / n.y, 0);
+			this.terrain.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), n);
+			gy = 0;
+		} else {
+			this.terrain.position.set(0, 0, 0);
+			this.terrain.quaternion.identity();
+		}
+		this.ground.position.y = gy;
+		this.farGround.position.y = gy - 0.03;
 		this.farGround.material.color.copy(C(146, 212, 92));
 		this.props.visible = props;
-		if (this.props.position.y !== groundY) { this.props.position.y = groundY; this.props.children.forEach((o) => { o.userData.sphere = null; }); }
+		if (this.props.position.y !== gy || this.tiltKey !== tiltKey) {
+			this.props.position.y = gy;
+			this.props.children.forEach((o) => { o.userData.sphere = null; });
+		}
+		this.tiltKey = tiltKey;
+		this.terrain.updateMatrixWorld(true);
 
 		// re-bake the environment map only when the sky changed
 		const key2 = [mode, ct.toFixed(2), tone].join('|');

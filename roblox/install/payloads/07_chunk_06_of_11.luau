@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 07_chunk_06_of_11.luau | step 7: piece 6 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "07_chunk_06_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-141659-402664341-11-730820328"
-local NEW_LEN, NEW_SUM = 141659, 402664341
+local RUN = "TheEnd-143408-678854451-11-550560669"
+local NEW_LEN, NEW_SUM = 143408, 678854451
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 11
-local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
-local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
+local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
+local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,17 @@ local function chunkOk(h, i)
 end
 
 local K = 6
--- piece 6 of 11 of the new source (13281 bytes, checksum 861752101, long bracket level 0)
+-- piece 6 of 11 of the new source (13265 bytes, checksum 240581101, long bracket level 0)
 local DATA = [[
+		for i = 0, NR - 1 do
+			local th = i * 360 / NR
+			local h = i % 2 == 0 and 0.90 or 0.96
+			local k = solid("DaisRim", i % 2 == 0 and "SILVER" or "SATIN", CORE, GDAIS, "Block",
+				Vector3.new(2 * 15.55 * math.tan(rad(180 / NR)) + 0.02, h, 0.80), CFrame.Angles(0, rad(th), 0) * CFrame.new(0, h / 2, -15.15))
+			local a = 4.0 + 0.8 * i / NR
+			motion(k, CFrame.Angles(0, rad(th), 0) * CFrame.new(0, h / 2 - 1.2, -15.15), a, 0.45)
+			fadeWin(k, a, a + 0.15)
+		end
 		-- the balance wheel under the feet (the watch's heartbeat: a slow smooth swing, no ticking)
 		local NW = low and 8 or 12
 		for i = 0, NW - 1 do
@@ -100,7 +109,7 @@ local DATA = [[
 
 	---------------------------------------------------------------- THE AIR and the palm intake carriers
 	-- (the air volume turns to face the way the wearer travels, so the speed trail streams out behind)
-	hosts.air = carrier("AirVolume", CORE, GAIR, Vector3.new(36, 20, 36))
+	hosts.air = carrier("AirVolume", CORE, GAIR, Vector3.new(44, 22, 44)) -- (the sparkle field fills the space round the whole aura)
 	hosts.trail = new("Attachment", { Name = "Trail", Position = Vector3.new(0, -4, 0) }, hosts.air)
 	hosts.bokeh = hi and carrier("BokehHost", DETAIL, GBOKEH, Vector3.new(18, 10, 5))
 	hosts.palmMoon = carrier("PalmMoon", CORE, GPALMM, Vector3.new(2.6, 2.6, 2.6))
@@ -278,11 +287,6 @@ local DATA = [[
 		local function rimPoint(host, r)
 			return new("Attachment", { Name = "SwirlPoint", CFrame = CFrame.lookAt(Vector3.new(r, 0, 0), Vector3.zero) }, host)
 		end
-		-- P1: matter spirals in along the accretion disc and vanishes into the black core (straight inward motion inside a
-		-- spinning host becomes a spiral). STUDIO-VERIFY: Cylinder + Surface + Inward emits on the curved side toward the
-		-- axis (if not: attribute SWIRL_POINTS), and LockedToPart particles ride a host moved by BulkMoveTo
-		local p1 = { Rate = rate(28, 12), Lifetime = n(1.1, 1.3), Speed = n(2.2, 2.6), Size = seq({ { 0, 1.5 }, { 1, 0.35 } }),
-			Transparency = seq({ { 0, 1 }, { 0.15, 0.05 }, { 0.8, 0.05 }, { 1, 0.4 } }),
 ]]
 
 local function main()

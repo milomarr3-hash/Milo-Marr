@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 09_chunk_08_of_11.luau | step 9: piece 8 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "09_chunk_08_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-141659-402664341-11-730820328"
-local NEW_LEN, NEW_SUM = 141659, 402664341
+local RUN = "TheEnd-143408-678854451-11-550560669"
+local NEW_LEN, NEW_SUM = 143408, 678854451
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 11
-local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
-local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
+local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
+local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,22 @@ local function chunkOk(h, i)
 end
 
 local K = 8
--- piece 8 of 11 of the new source (13249 bytes, checksum 158431880, long bracket level 1)
+-- piece 8 of 11 of the new source (13284 bytes, checksum 959695815, long bracket level 1)
 local DATA = [=[
+		-- swirl, dust, shards, glints, horizon and palm streaks must not stay solid across your character)
+		local ghostHost = { [moon] = true, [void] = true }
+		for _, h in ipairs({ "swirl", "shardFeed", "horizon", "timeDust", "palmMoon", "palmVoid" }) do
+			if hosts[h] then ghostHost[hosts[h]] = true end
+		end
+		for _, e in ipairs(emitters) do
+			local par = e[1].Parent
+			if par and par:IsA("Attachment") then par = par.Parent end
+			e[6] = ghostHost[par] == true
+		end
+	end
+	table.sort(emitters, function(a, b) return a[2] < b[2] end)
+
+	-- lights: the moon's key light (above) and the wheel's underlight on the feet (night only, high quality)
 	local wheelLight = hi and new("PointLight", { Name = "Underlight", Range = 12, Color = Color3.fromRGB(230, 234, 246), Brightness = 0,
 		Shadows = false, Enabled = false }, wheelHub)
 
@@ -169,7 +183,7 @@ local DATA = [=[
 			if kind == "ground" then want = want and grounded
 			elseif kind == "bokeh" then want = want and not bokehNear
 			elseif kind == "body" then want = want and visible and st.footOk and not st.fpOn -- (they live on the character)
-			elseif kind == "nearcam" then want = want and not st.fpOn -- (the funnel and palm streaks: right under the lens)
+			elseif kind == "nearcam" then want = want and not st.fpOn -- (the funnel and palm streaks and the air's sparkles: round the lens)
 			elseif kind == "speed" then want = want and st.speedOn end
 			if e[6] and st.ghostGui and not st.fxLtm then want = false end -- (a ghosted aura without emitter LTM: smoke off)
 			if want ~= e[5] then
@@ -379,25 +393,6 @@ local DATA = [=[
 				if e[6] then e[1].LocalTransparencyModifier = m end
 			end
 			for _, b in ipairs(beams) do
-				if not b[9] then b[1].LocalTransparencyModifier = m end
-			end
-		end
-		toneOn()
-		local off = q >= 0.5
-		if off ~= st.ghostGui then
-			st.ghostGui = off
-			for _, g in ipairs(ghostGuis) do g.Enabled = not off end
-			if corona then corona.Enabled = nq > 0.05 and not off end
-			if not st.fxLtm then
-				refreshEmitters()
-				refreshBeams()
-			end
-		end
-	end
-	-- the rings' see-through: their own ghost (another wearer's rings in your way) or the near-camera fade, whichever is more
-	local function writeRings()
-		local m = max(0.75 * st.armGQ, st.armQ)
-		for _, p in ipairs(ringParts) do p.LocalTransparencyModifier = m end
 ]=]
 
 local function main()

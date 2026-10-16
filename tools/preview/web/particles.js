@@ -269,6 +269,8 @@ export function buildEmitters(snapshot, ctx, opts = {}) {
 		const cen = new THREE.Vector3();
 		for (let i = 0; i < count; i++) cen.x += src.P[i * 3] / count, cen.y += src.P[i * 3 + 1] / count, cen.z += src.P[i * 3 + 2] / count;
 		mesh.position.copy(cen);
+		// (render.mjs --sort host: sort the emitter at its host part, which Roblox may do, instead of its particles' centre)
+		if (opts.sortHost && curCf) mesh.position.set(curCf[0], curCf[1], curCf[2]);
 		group.add(mesh);
 		const order = new Uint32Array(count).map((_, i) => i);
 		const d2 = new Float32Array(count);

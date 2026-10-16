@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 11_chunk_10_of_11.luau | step 11: piece 10 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "11_chunk_10_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-141659-402664341-11-730820328"
-local NEW_LEN, NEW_SUM = 141659, 402664341
+local RUN = "TheEnd-143408-678854451-11-550560669"
+local NEW_LEN, NEW_SUM = 143408, 678854451
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 11
-local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
-local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
+local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
+local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,14 @@ local function chunkOk(h, i)
 end
 
 local K = 10
--- piece 10 of 11 of the new source (13321 bytes, checksum 886213953, long bracket level 0)
+-- piece 10 of 11 of the new source (13310 bytes, checksum 395268242, long bracket level 0)
 local DATA = [[
+		local Dc = CONFIG.CLOCK_DIST + 2 * g + (remote and CLOSE.distRemote or CLOSE.dist) * cz + 6 * fp - 2 * sitT
+		local tilt = rad(clamp(CONFIG.CLOCK_TILT + 14 * g + 4 * st.speedT + CLOSE.tilt * cz - 32 * fp, -10, 50))
+		-- (its lowest point is the bezel's back edge when it leans back, its front edge when it leans forward)
+		local minHc = dY + 1.2 - st.kY + 14.2 * cos(tilt) + (tilt >= 0 and 1.44 or 1.12) * abs(sin(tilt))
+		if Hc < minHc then Hc = minHc end
+		-- the owner's camera: the clock steps back along the view until FRAME_TOP above its hub (the XII numeral: the hands
 		-- at midnight) is inside the top of the frame, at every zoom and camera tilt players use; looking steeply down it
 		-- settles at most CLOSE.dist further back. It glides there (never jumps) and is off in first person
 		local ft = (ctx.isLocal and cam) and CONFIG.FRAME_TOP or 0
@@ -79,7 +85,13 @@ local DATA = [[
 				CLOSE.dist + 1.1 * max(0, ft - 9.6)) * (1 - fp)
 			st.fitD = snap and push or st.fitD + (push - st.fitD) * (1 - exp(-3 * dt))
 			Dc += st.fitD
-			if rise > 0 then Hc += rise * st.fitD end -- (uphill behind: it stands on the rising ground)
+		end
+		-- on a slope that rises behind the wearer it stands on the rising ground, at most 4 studs up (higher would lift it
+		-- out of the view; a steeper hill may hide its foot)
+		local vl = V.LookVector
+		if slopeT > 0 then
+			local rise = -(gn.X * vl.X + gn.Z * vl.Z) / gn.Y
+			if rise > 0 and Hc < minHc + min(4, rise * Dc) then Hc = minHc + min(4, rise * Dc) end
 		end
 		-- another wearer's clock and orbs step back behind your own clock instead of standing in front of it (decided
 		-- below, one frame late: a spring, so they glide)
@@ -184,7 +196,7 @@ local DATA = [[
 		-- (the void's centre stays >= 13.4 studs out horizontally, so its 13-stud disc always clears the rings' 6.3 reach)
 		-- (in first person they move back beside the view: about 97° off the line of sight, outside the 102° field of view)
 		local arm = 12.5 - CLOSE.arm * cz
-		local orbZ = 1.5 - CLOSE.orbZ * cz + 12 * fp - st.yieldD
+		local orbZ = 1.5 - CLOSE.orbZ * cz * (1 - fp) + 1.5 * fp - st.yieldD
 		local Pv = Vk * CFrame.new(0, 6.0 - CLOSE.orbY * cz, orbZ) * CFrame.Angles(0, 0, rad(10) * sin(TAU * t / 10) * sway)
 		local moonC = Pv * Vector3.new(-arm, 0, 0)
 		local voidC = Pv * Vector3.new(arm, 0, 0)
@@ -233,7 +245,9 @@ local DATA = [[
 		local dir = CONFIG.ACC_DIR -- (the accretion texture's streaks wind clockwise outward: a counter-clockwise turn makes them trail)
 		if asm then accExtra = (accExtra + rad(360 * exp(-3 * max(0, age - 0.3))) * dt * dir) % TAU end
 		GCF[GACC] = Dk * CFrame.Angles(0, (rad(40) * now * dir + accExtra) % TAU, 0)
-		GCF[GSWIRL] = Dk * CFrame.Angles(0, (rad(85) * now * dir) % TAU, 0)
+		-- (the swirl's carrier rides 0.3 studs above the accretion disc's plane, toward the viewer: its particles sort over
+		-- the disc and the void however Roblox keys an emitter, at its part or at its particles)
+		GCF[GSWIRL] = Dk * SWIRL_UP * CFrame.Angles(0, (rad(85) * now * dir) % TAU, 0)
 		GCF[GFEED] = CFrame.lookAt(K * FEED_PT, voidC)
 
 		-- 6. the air (turned to face the way the wearer travels: the speed trail streams out behind) and the palms
@@ -293,38 +307,6 @@ local DATA = [[
 		-- silver tone fade over 0.5 s instead of switching in one frame (at night a lit patch of plaza would pop)
 		local lt = near and 1 or 0
 		if st.lodF ~= lt then
-			st.lodF = lt > st.lodF and min(1, st.lodF + dt / 0.5) or max(0, st.lodF - dt / 0.5)
-			local lq = math.floor(st.lodF * 20 + 0.5) / 20
-			if lq ~= st.lod then
-				st.lod = lq
-				applyLod()
-			end
-		end
-		-- first person: the palm streams, the palm and funnel streaks and the body's wisps and sparks switch off (they sit
-		-- just under or round the lens), and fewer ash flakes drift across the bottom of the view
-		local fpOn = fp > 0.5
-		if fpOn ~= st.fpOn then
-			st.fpOn = fpOn
-			refreshBeams()
-			refreshEmitters()
-			if em.ash then em.ash.Rate = fpOn and 3 or 8 end
-		end
-
-		-- 7. every part = its group's frame x its rest transform (eased from its start pose while it assembles)
-		for j = 1, nAct do
-			local i = act[j]
-			local L = PL[i]
-			local rr = PRR[i]
-			if rr then L = PROT[i] * CFrame.new(0, rt + rr, 0) end
-			if asm then
-				local S = PS[i]
-				if S and age < PM1[i] then
-					local kk = 1 - easeOutBack((age - PM0[i]) / (PM1[i] - PM0[i]))
-					if rr then
-						L = PROT[i] * CFrame.new(0, rt + rr + (PRS[i] - rt - rr) * kk, 0)
-					else
-						L = lerpCF(L, S, kk)
-					end
 ]]
 
 local function main()
