@@ -1,0 +1,44 @@
+[
+ {
+  "name": "te5_billow",
+  "file": "te5_billow.png",
+  "repoPath": "textures/te5/smoke/te5_billow.png",
+  "texKey": "billow",
+  "fallbackTexKey": "puff",
+  "size": "1024x1024",
+  "layout": "Grid4x4",
+  "mode": "OneShot",
+  "purpose": "P4a the void's dense ink smoke and P4b the moon's grey-silver smoke (one puff per particle life)",
+  "uploadedId": null,
+  "notes": "Flipbook 4x4 OneShot: frame k shows the puff at life fraction (k + 0.5) / 16. A volumetric puff ray-marched in 3D (Beer-Lambert, key light upper front left with a shadow march, multiple-scattering lift, rim light from behind, sky from above): born dense and compact (visible radius ~0.19 of the cell), billows out in rolling cauliflower lobes (radius ~0.38 by frame 11), softens, and from frame ~11 thins into curling veils (texture mean alpha falls ~70 % over frames 11-15 by itself). Opaque core (alpha 1) in frames 0-10. Baked light comes from the upper left: keep the particle's Rotation within about +-20 deg (not 0-360) or the light turns with it. The puff grows inside its cell, so the emitter's Size curve should grow less than for te5_smoke (see the recommended settings).",
+  "sha256": "778509a82286ad0d449066688a0ab5ff4790dd7a4ab35bd24b73e6cea023a642"
+ },
+ {
+  "name": "te5_wisp",
+  "file": "te5_wisp.png",
+  "repoPath": "textures/te5/smoke/te5_wisp.png",
+  "texKey": "wisp",
+  "fallbackTexKey": "puff",
+  "size": "1024x1024",
+  "layout": "Grid4x4",
+  "mode": "OneShot",
+  "purpose": "P11 silver wisps rising off the wearer's shoulders and back",
+  "uploadedId": null,
+  "notes": "Flipbook 4x4 OneShot (life ~1.6-2.2 s = 7-10 fps): thin twisted ribbons of smoke advected through curl noise -- a slender rising thread at birth that curls into incense-like tendrils (bright where a fold is edge-on, a veil where it is face-on) and thins out. OneShot, not Loop: the wisp's own life (thread -> curls -> fade) matches the particle's, every particle starts thin at the body, and a loop would have to fold back on itself (a visible cycle at 8-10 fps). It rises toward the TOP of the cell: keep Rotation within about +-15 deg.",
+  "sha256": "9b85876a5dd1dfb412cbe8910ac7f75735910a9b92641a181e48754fcac99630"
+ },
+ {
+  "name": "te5_mistbank",
+  "file": "te5_mistbank.png",
+  "repoPath": "textures/te5/smoke/te5_mistbank.png",
+  "texKey": "mistbank",
+  "fallbackTexKey": "puff",
+  "size": "512x512",
+  "layout": "None",
+  "mode": null,
+  "purpose": "P7 the low mist bank round the dais rim",
+  "uploadedId": null,
+  "notes": "One image (FlipbookLayout None): a soft low fog bank ~0.8 of the image wide and ~0.3 tall, densest along its middle line (where the floor cuts a particle born on it), billowy and thinning upward, lit from above, in soft horizontal layers. A single image because the mist lives 6-8 s: a flipbook at 2-3 fps would step visibly. Keep Rotation within about +-5 deg so the bank stays level.",
+  "sha256": "d171348fd5257f8298a5e9efc466f1c7cb6ac2ec2353bb916e4142e7fca525f5"
+ }
+]
