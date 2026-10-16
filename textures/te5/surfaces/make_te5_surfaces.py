@@ -1909,7 +1909,8 @@ def sheet_zoom():
 
 def insitu_clock():
     """The dial at its in-game size (bezel 28 studs ~ 430 px, as in the pass-4 Studio capture): silver bezel, dark
-    chapter ring + te5_dial_inlay, the open skeleton centre, the dark sub-dial + te5_subdial. Day (Brightness 1.6/1.4)
+    chapter ring + te5_dial_inlay, the skeleton centre showing the movement plate's te5_star_window (Brightness 1.1 / 2.0),
+    the dark sub-dial + te5_subdial. Day (Brightness 1.6/1.4)
     over the sky and night (2.6/2.2, bloom) over the night sky."""
     S = 15.4                                   # px per stud
     W, H = 520, 520
@@ -1918,6 +1919,10 @@ def insitu_clock():
     for mode in ("day", "night"):
         cp = Comp(W, H, BG_SKY if mode == "day" else (20, 22, 30))
         cp.disc(cx, cy, 12.2 * S, 14.0 * S, (176, 180, 190) if mode == "day" else (120, 124, 134))   # bezel
+        # the movement plate (24.6 studs, black) with te5_star_window on it, seen through the skeleton dial
+        cp.disc(cx, cy, 0, 12.3 * S, (12, 12, 16))
+        sw = resize_premult(load("te5_star_window"), int(24.6 * S), int(24.6 * S))
+        cp.put(sw, int(cx - sw.shape[1] / 2), int(cy - sw.shape[0] / 2), bright=1.1 if mode == "day" else 2.0)
         cp.disc(cx, cy, 12.0 * S, 12.2 * S, (60, 62, 68))
         cp.disc(cx, cy, 9.4 * S, 12.2 * S, (44, 46, 52))                                              # chapter ring
         inl = resize_premult(load("te5_dial_inlay"), int(24.4 * S), int(24.4 * S))
@@ -2120,6 +2125,7 @@ def _load_from(d, name):
 
 
 def sheet_before_after(before):
+    global OUT, SHEETS
     tile, pad, lab = 300, 12, 24
     names = [nm for nm in REBUILT if os.path.exists(os.path.join(before, nm + ".png"))]
     W = 4 * (tile + pad) + pad
@@ -2154,15 +2160,34 @@ def sheet_before_after(before):
         label(out, t, xy, 14)
     paths = []
     p = os.path.join(SHEETS, "before_after.png"); out.save(p); paths.append(p)
-    # the in-situ mock-ups, before | after, when the old sheets are there too
-    for nm in ("insitu_void", "insitu_dais", "insitu_halo_beams", "insitu_clock"):
-        po = os.path.join(before, "sheets", nm + ".png"); pn = os.path.join(SHEETS, nm + ".png")
-        if os.path.exists(po) and os.path.exists(pn):
+    # the in-situ mock-ups, before | after: the old PNGs go through the SAME mock-up code (a temporary folder holding this
+    # folder's PNGs with the old ones copied over them), so only the textures differ
+    import shutil, tempfile
+    keep = (OUT, SHEETS)
+    tmp = tempfile.mkdtemp(prefix="te5_before_")
+    try:
+        for f in os.listdir(keep[0]):
+            if f.endswith(".png"):
+                shutil.copy(os.path.join(keep[0], f), tmp)
+        for f in os.listdir(before):
+            if f.endswith(".png"):
+                shutil.copy(os.path.join(before, f), tmp)
+        OUT, SHEETS = tmp, os.path.join(tmp, "sheets")
+        os.makedirs(SHEETS)
+        old_sheets = {fn.__name__: fn()[0] for fn in (insitu_void, insitu_dais, insitu_halo_beams, insitu_clock)}
+        OUT, SHEETS = keep
+        for nm, po in old_sheets.items():
+            pn = os.path.join(SHEETS, nm + ".png")
+            if not os.path.exists(pn):
+                continue
             a, b = Image.open(po).convert("RGB"), Image.open(pn).convert("RGB")
             big = Image.new("RGB", (a.width + b.width + 12, max(a.height, b.height) + 28), (30, 31, 36))
             big.paste(a, (0, 28)); big.paste(b, (a.width + 12, 28))
             label(big, "BEFORE", (6, 6), 16); label(big, "AFTER", (a.width + 18, 6), 16)
             p = os.path.join(SHEETS, f"before_after_{nm}.png"); big.save(p); paths.append(p)
+    finally:
+        OUT, SHEETS = keep
+        shutil.rmtree(tmp, ignore_errors=True)
     return paths
 
 

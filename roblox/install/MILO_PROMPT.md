@@ -4,22 +4,23 @@ Milo: copy everything inside the box below and paste it into Claude Code on your
 first, with the Studio MCP connected.
 
 ```text
-Hi! A cloud Claude session built pass 5 of THE END's equipped aura ("The Last Clock") plus an install kit. It could
-not test anything in Studio, so you're the first to run it. Please:
+Hi! A cloud Claude session built pass 5.1 of THE END's equipped aura ("The Last Clock": film-quality textures, lit
+volumetric smoke, a star halo and a duality helix) plus an install kit. It could not test anything in Studio, so
+you're the first to run it. Please:
 
 1. Get the files. If ~/Documents/Milo-Marr exists: cd there, then git fetch, git checkout claude/loving-planck-hsidm6,
    git pull. If not: cd ~/Documents && git clone https://github.com/milomarr3-hash/Milo-Marr && cd Milo-Marr &&
    git checkout claude/loving-planck-hsidm6. Then run
    python3 roblox/install/make_payloads.py roblox/ReplicatedStorage/AuraFX/TheEnd.lua --check
-   It must report the module as 143,408 bytes, checksum 678854451 (review round 3). If it reports anything else,
+   It must report the module as 155,147 bytes, checksum 484396720 (pass 5.1). If it reports anything else,
    STOP: you have an older version of the branch. Tell Milo and do not install.
 2. Read roblox/install/README.md and docs/memory/aura-rng.md, then install exactly as the README says. Studio must be in
    Edit mode. Run make_payloads.py first. Then send the payloads in the order roblox/install/payloads/manifest.json
-   lists under "order" (13 for this version: 01_backup, the 11 pieces 02-12, 13_apply), each with execute_luau
+   lists under "order" (14 for this version: 01_backup, the 12 pieces 02-13, 14_apply), each with execute_luau
    (datamodel_type "Edit") as the file's exact text. Every result must start with OK before you go on; if not, follow
    the README's table. Never turn on HttpService, never publish, never delete anything in
    ServerStorage.AuraRNG_Backups.
-3. Test it once with the fallback textures (studio_checks.md steps 1-2). Then upload the 18 te5 textures
+3. Test it once with the fallback textures (studio_checks.md steps 1-2). Then upload the 23 te5 textures
    (roblox/install/upload_textures.md, te5_moon first), record the ids, patch TEX5, re-make the payloads with --label
    pass5tex and install again (follow the new manifest's order: the piece count can change). Before the upload,
    measure the pass-2 "rim" texture's ring radius (studio_checks.md check 14) and set the RIM_R attribute if it is

@@ -18,7 +18,7 @@ match, the old text is put back. Keep **HttpService OFF** (the kit doesn't need 
 | `MILO_PROMPT.md` | the message Milo pastes into his local Claude Code |
 | `make_payloads.py` | module file -> `payloads/` (run it before every install) |
 | `payloads/` | `00_status`, `01_backup`, `02..` pieces, `NN_apply`, `90_install_from_file` (plan B), `99_rollback`, `manifest.json` |
-| `upload_textures.md`, `patch_tex5.py` | upload the 18 te5 textures, record their ids, fill the module's `TEX5` table |
+| `upload_textures.md`, `patch_tex5.py` | upload the 23 te5 textures, record their ids, fill the module's `TEX5` table |
 | `studio_checks.md` | the Play-mode test checklist with ready-to-run `execute_luau` snippets, and how to report back |
 | `test/` | cloud tests: the payloads run in the luau CLI against `mock_studio.luau` |
 
@@ -120,7 +120,7 @@ run it from the Command Bar instead.
 
 ## 3. Upload the new textures, fill TEX5, install again
 
-Follow **`upload_textures.md`**. In short: serve `textures/te5/` on `127.0.0.1` and send the 18 PNGs with `upload_image`, or
+Follow **`upload_textures.md`**. In short: serve `textures/te5/` on `127.0.0.1` and send the 23 PNGs with `upload_image`, or
 use Asset Manager -> Bulk Import. Then run `patch_tex5.py record`, then `patch_tex5.py patch`. Then make the payloads
 again with a new label and repeat step 2c:
 

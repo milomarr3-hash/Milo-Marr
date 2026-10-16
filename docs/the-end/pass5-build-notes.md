@@ -840,3 +840,82 @@ here is harness output, snapshot measurements and preview renders.
 48. Reset with THE END on (studio check 13): no grade over the respawn; the assembly plays once.
 49. A teleport (`PivotTo` 60 studs up): the aura arrives with you, no drift through the ground.
 50. The body wrap on R15 and R6: wisps off the shoulders and back, sparks up the body; nothing in the first-person view.
+
+## Pass 5.1: particles and textures "tenfold" (cloud, 2026-10-16)
+
+Milo, after review round 3: *"i still think you can make it even better, improve the particle effects and texture tenfold,
+i know you can do it better! Keep working hard on it."* Three texture agents rebuilt the textures at film quality while the
+lead redesigned the particle systems and wired everything in. Nothing here has run in Studio: all evidence is the harness,
+the preview renderer and the generators' own self-tests.
+
+### Textures (all procedural: python3 + numpy + PIL; deterministic; each generator has `--check`)
+
+- **Particles** (`textures/te5/particles/`, 9): te5_shards is now a ray-traced blade of polished steel tumbling through 16
+  frames (Fresnel reflections of a studio, chamfered edges, the highlights glide across it); te5_ash is a tumbling ember
+  flake (charred black, burning white-hot on one side; now a Grid4x4 Loop flipbook); te5_glint a photographic star
+  (core, glow, tapering diffraction spikes); new te5_twinkle (Grid4x4 OneShot: a star that blooms, holds while its
+  spikes turn ~14°, then shrinks to a point); new te5_stardust (Grid4x4 Loop: a cluster of ~30 grains that swell and fade
+  on their own phases, never blinking); new te5_spark (a hot fleck with a hairline tail, VelocityParallel); te5_streak a
+  comet (hot head at the TOP, tapering tail with filaments); te5_mote a soft point of light (no dark ring); te5_bokeh a
+  real out-of-focus disc (nine-blade iris, brighter rim). 108 self-tests.
+- **Smoke** (`textures/te5/smoke/`, 3, new group): te5_billow and te5_wisp are 3D volumes ray-marched with a key light
+  from the upper front left, real self-shadowing, a rim light and a sky term, the velocity field traced back from each frame
+  so consecutive frames are the same smoke moved on. Billow (Grid4x4 OneShot): born dense and compact, billows out in
+  rolling lobes, softens and thins into veils (frame-to-frame change 0.008-0.038, the old te5_smoke jumped to 0.09 when
+  it broke apart). Wisp (Grid4x4 OneShot): a faint tuft drawn up into curling incense-like tendrils. te5_mistbank (512,
+  single image): a low layered fog bank. 29 self-tests. **te5_smoke is retired**: out of the module and the manifests; its
+  PNG lives on in `textures/te5/particles/retired/` only for the comparison sheets.
+- **Surfaces** (`textures/te5/surfaces/`, 7 rebuilt, 4 unchanged): te5_moon is a lit globe rendered from a near-side
+  albedo (maria made by flooding older terrain, ~26,000 craters with a realistic size spread plus 247 named ones, ray
+  systems for Tycho, Copernicus, Kepler, Aristarchus and ~500 small ones; light 22° from the upper left; data in
+  `te5_lunar_data.py`); te5_accretion is sheared turbulent gas in trailing streaks with filaments, hot knots, dark lanes and a
+  white-hot inner edge, kept even all round so nothing sweeps as the disc spins; the galaxy floor / arms / core have star
+  clouds, bright knots, broken dust lanes on each arm's inner edge, a bulge and a bar (core pitch 15°, was 10°: at 10° it
+  read as rings from the default camera); te5_star_window has a curved Milky Way band with a dark rift, ~22,000 stars with a
+  realistic magnitude spread and 34 distant galaxies; te5_stream (now 512×128, same 4:1) is a braid of glowing strands
+  with ink edges. Every geometric convention the module relies on is kept and checked numerically (65 checks).
+- **23 te5 textures** to upload in all (was 18). Six are flipbooks, all exactly 1024² (Roblox refuses any other size).
+
+### Particle systems (`roblox/ReplicatedStorage/AuraFX/TheEnd.lua`)
+
+- **New:** P15 the **star halo** (a ring of twinkles 1.7 studs and stardust clusters 3-4 studs, 16-21 studs out on a 12°/8°
+  tilt, locked to a carrier turning 14°/s: half passes in front of the aura and half behind the clock. It sits beyond
+  Roblox's default follow camera, 12.5-16 studs back, so its stars never sail past the lens); P16 the **duality helix**
+  (two points spinning 220°/s round the body at the feet leave a silver ribbon of motes and an ink ribbon of wisps that braid
+  up about one and a half turns; not locked, which is what draws the spiral; thinned while travelling); P17 **twinkles
+  inside the dial's star window** (locked to the dial); P18 **sparks** spraying where the shards break off at XI (short,
+  falling, VelocityParallel).
+- **Retuned:** the time dust, the air field and the halo are twinkles (the flipbook does the bloom, so size and
+  transparency stay steady); the air's finer scale is stardust; the body sparks are spark flecks streaking up the body; motes
+  1.2x; shards 1.6x; the ember flake is drawn white (an ASH tint would put the burn out) and comes back black, unlit and its
+  old size if its texture fails; the void's and the moon's smoke use billow, the rim mist mistbank, the body wisps wisp, all
+  near upright (the light is baked in from above), each falling back to the pass-4 puff's own settings (`propsFix`) if its
+  te5 texture is missing or fails to load; the moon face's night Brightness is 2.0 (was 2.6: the new moon's bright
+  highlands clipped to white).
+- **Budget** (high / low): 362 / 151 parts (two invisible carriers: the halo and the helix hub), 25 emitters (23 on by day)
+  / 12 on, about 304 / 78 particles a second, about 770 / 165 alive. The per-frame cost in the mock is unchanged. Registers: 31 spare in
+  `End.build` at -O0, 67 at -O1 / -O2.
+
+### Checks run (cloud only)
+
+- `run_aura.py`: 35 scenarios, 0 errors, 0 harness failures; the 3 known translucent-layer warnings only (moon halo, night
+  corona). `tests/run_tests.py`: all passed. `install/test/run_tests.py`: 25/25 (the snippet test now expects 362 / 151
+  parts; the patch-TEX5 test copies the PNGs so the flipbook-size check can see them). `typecheck.sh`: 0 diagnostics.
+  Preview `npm test`: passed. All three texture generators' `--check`: passed.
+- Module 155,147 bytes, checksum 484396720. Payloads regenerated (12 pieces) and checked.
+- Renders: `docs/the-end/pass51-renders/` (the finished look and before/after against review round 3 from the same
+  cameras).
+
+### New STUDIO-VERIFY items
+
+51. The twinkle flipbook's steps over the halo's 3.5-4.5 s life and the dial's 2.6-3.4 s: no visible frame pops.
+52. The star halo's Disc emission: ShapePartial 0.76 as the inner radius gives a ring 16-21 studs out (not a full disc).
+53. The helix: non-locked particles from attachments on a BulkMoveTo-moved hub leave a spiral (not a column), and the
+    travelling flip keeps the wake short.
+54. te5_spark and te5_streak with VelocityParallel lead with the image's TOP (if they fly tail-first: `STREAK_FLIP`).
+55. The ember flake by day (black char) and by night (a burning fragment), and the shard size at 1.6x.
+56. The billow smoke's ink (24,24,30) by day and its night Brightness 2.2; whether the denser void smoke hides too much of
+    the accretion disc or the clock (if so, Rate 8).
+57. The new moon at night at Brightness 2.0 (the bright craters keep their detail); te5_galaxy_core's 15° arms from the
+    default camera (spirals, not rings).
+58. Texture memory with one and three wearers on high (six 1024² flipbooks plus the surfaces).

@@ -900,13 +900,17 @@ is held no longer leaves rings unparented or an aura ghosted until the next equi
 
 ## 14. Budget (asserted by the harness)
 
+> **Pass 5.1 (2026-10-16):** the particle budget was raised for Milo's "particle effects tenfold" (new systems P15-P18,
+> film-quality textures). The table rows below for parts, emitters and rate carry the pass 5.1 numbers; the texture list is
+> in §16 and the details in `pass5-build-notes.md`, "Pass 5.1".
+
 Counts as built after review round 3 (fallback and te5 textures alike). **No limit was raised**: the finer armillary (+22
 parts) was paid for by the lensed arc (9 blocks), the ribbon's end carrier, 2 bow segments, 4 dais-rim blocks and 6
 chapter-ring blocks, and the new FloorFx carrier by P5's rim-glint carrier.
 
 | Item | High | Low | Limit |
 |---|---|---|---|
-| **Parts moved per frame** (one `BulkMoveTo`) | **360** | **150** | ≤ 360 / ≤ 150 |
+| **Parts moved per frame** (one `BulkMoveTo`) | **362** (pass 5.1: + the star halo and helix hub carriers) | **151** (+ the helix hub) | ≤ 362 / ≤ 151 |
 | — clock C1–C12 (bezel 32, chapter **18**, rete, gears, hands, hub, plots, crown with an **8**-segment bow, backplate, the time-dust and shard-feed carriers, corona) | 173 | 68 | |
 | — armillary A1–A4 (meridian **28 / 18**, equator **22 / 14**, ecliptic **24**, 12 hours, 4 pins) | 90 | 32 | |
 | — moon M1, M3 (core + opaque face) | 2 | 2 | |
@@ -915,8 +919,8 @@ chapter-ring blocks, and the new FloorFx carrier by P5's rim-glint carrier.
 | — dais D1–D9 (base, floor, arms, core, **56-stud stage**, **FloorFx**, rim **24 / 16**, wheel, funnel) | 46 | 29 | |
 | — body carriers | 4 | 3 | |
 | Parts moved when far (Detail and ArmillaryDetail hidden) | **309** | 150 | |
-| ParticleEmitters | **19** instances (P1–P14 without P5; P11 is two, on the torso) — one slot spare | 12 | ≤ 20 / ≤ 12 |
-| Total Rate (particles/s) | ≈ **194** idle by day (+0.7 bokeh at night); travelling ≈ 182 with the speed trail (the smoke, moon dust and wisps cut back) | ≈ 56 (+6 while P12 runs) | ≤ 200 / ≤ 80 |
+| ParticleEmitters | **25** instances (pass 5.1: P1–P18 without P5; P11 is two on the torso; P6 and P15 are two each), 23 on by day | 12 on | ≤ 26 / ≤ 14 |
+| Total Rate (particles/s) | ≈ **304** idle by day, ≈ 770 alive (pass 5.1; travelling: the smoke, moon dust, wisps and the helix cut back) | ≈ 78, ≈ 165 alive | ≤ 310 / ≤ 80 |
 | Beams | 6 (+ 1 with `FAR_BEACON`, far only) | 2 | ≤ 6 / ≤ 3 (the beacon replaces the 2 detail beams, which are off when far) |
 | SurfaceGuis + BillboardGuis | 10 + 1 = 11 | 7 + 1 = 8 | ≤ 12 / ≤ 8 |
 | PointLights | 2 | 0 | ≤ 2 |
@@ -1020,6 +1024,13 @@ Reject the mesh if it is nil, has an empty `MeshId`, or any `Size` component < 0
 ---------------------------------------------------------------------------------------------------------------------------------
 
 ## 16. Textures
+
+> **Pass 5.1 (2026-10-16):** 23 te5 textures in three groups: `textures/te5/particles/` (shards, ash, twinkle, stardust,
+> mote, glint, bokeh, streak, spark: six flipbooks are 1024² Grid4x4), `textures/te5/smoke/` (billow and wisp, 1024²
+> Grid4x4 OneShot; mistbank, 512²) and `textures/te5/surfaces/` (the 11 surfaces; te5_stream is now 512×128). te5_smoke is
+> retired (billow, wisp and mistbank replace it). The module's tables (`TEX5`, `TEX5_LAYOUT`, `FALLBACK`) hold the pass 5.1
+> keys; the tables below describe pass 5 and are kept for history. Each manifest records the texture's key, fallback,
+> size, layout and mode.
 
 ### 16.1 Tables in the module
 

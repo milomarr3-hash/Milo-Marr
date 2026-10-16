@@ -1010,9 +1010,11 @@ function End.build(ctx)
 			-- STUDIO-VERIFY: SurfaceGui Face = Left on the face disc (the cylinder's -X end turns to the camera), not mirrored;
 			-- and the UICorner rounds the image (a SurfaceGui on a cylinder's end is drawn on its square face)
 			-- (pass 4's moon is a paler, softer image than te5_moon: drawn as brightly its maria would wash out into a white
-			-- plate, so it glows less)
+			-- plate, so it glows less. Pass 5.1's te5_moon is a rendered globe with real maria, rays and crater relief; at
+			-- night it is drawn at 2.0, just over the place's Bloom threshold: a soft glow that keeps the bright highland
+			-- craters from blowing out to white)
 			local m5 = isTe5("moon")
-			local fg, fe = surface(hosts.moonFace, Enum.NormalId.Left, hiCanvas, m5 and 1.25 or 0.75, m5 and 2.6 or 1.25, "moon", 0.6, 0.9)
+			local fg, fe = surface(hosts.moonFace, Enum.NormalId.Left, hiCanvas, m5 and 1.25 or 0.75, m5 and 2.0 or 1.25, "moon", 0.6, 0.9)
 			new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, fe[1])
 			table.insert(ghostGuis, fg)
 			if m5 then

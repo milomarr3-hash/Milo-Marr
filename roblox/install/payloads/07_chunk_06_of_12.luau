@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 07_chunk_06_of_12.luau | step 7: piece 6 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (154908 bytes, checksum 840125961).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (155147 bytes, checksum 484396720).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "07_chunk_06_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-154908-840125961-12-402748328"
-local NEW_LEN, NEW_SUM = 154908, 840125961
+local RUN = "TheEnd-155147-484396720-12-73384217"
+local NEW_LEN, NEW_SUM = 155147, 484396720
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 12
-local LENS = { 13303, 13296, 13287, 13167, 13232, 13273, 13188, 13300, 13244, 13299, 13292, 9027 }
-local SUMS = { 67409079, 948660274, 266404745, 816058228, 63700756, 500498415, 756191201, 562959745, 92959190, 314875523, 46584231, 495884184 }
+local LENS = { 13303, 13296, 13287, 13167, 13290, 13271, 13256, 13301, 13240, 13302, 13264, 9170 }
+local SUMS = { 67409079, 948660274, 266404745, 816058228, 379904796, 918623796, 659321254, 309794145, 464118196, 901135989, 725623781, 681290935 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,11 @@ local function chunkOk(h, i)
 end
 
 local K = 6
--- piece 6 of 12 of the new source (13273 bytes, checksum 500498415, long bracket level 0)
+-- piece 6 of 12 of the new source (13271 bytes, checksum 918623796, long bracket level 0)
 local DATA = [[
+		hosts.floor = carrier("GalaxyFloor", CORE, GG0, Vector3.new(29.6, 0.05, 29.6))
+		surface(hosts.floor, Enum.NormalId.Top, hiCanvas, 1.3, 2.4, "galaxyFloor", 4.0, 4.6)
+		if hi then
 			local arms = carrier("GalaxyArms", DETAIL, GG1, Vector3.new(21, 0.05, 21))
 			surface(arms, Enum.NormalId.Top, 1024, 1.4, 2.4, "galaxyArms", 4.2, 5.2)
 		end
@@ -277,9 +280,6 @@ local DATA = [[
 			p.Enabled = false
 			local sz = props.Size
 			if typeof(sz) == "NumberRange" then -- (a size range: a steady size with a random spread)
-				local v, e = (sz.Min + sz.Max) / 2, (sz.Max - sz.Min) / 2
-				props.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, v, e), NumberSequenceKeypoint.new(1, v, e) })
-			end
 ]]
 
 local function main()

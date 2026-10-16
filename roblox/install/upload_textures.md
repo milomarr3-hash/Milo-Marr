@@ -1,17 +1,20 @@
 # Uploading the te5 textures and filling TEX5
 
-Pass 5 has 18 new textures, all code-generated PNGs of 1024² or smaller:
+Pass 5.1 has 23 new textures, all code-generated PNGs of 1024² or smaller (pass 5 had 18; pass 5.1 rebuilt most of
+them at film quality and added the lit smoke, the twinkle, the stardust and the spark):
 
-- 7 particle textures in `textures/te5/particles/`: shards, smoke, mote, glint, bokeh, streak and ash. (te5_streak is a 256²
-  square, because particles are drawn square. Review round 2 made te5_ash a single 256² flake: the 1024² flipbook cost 5 MB
-  of texture memory for a flake of ~20 px. The two flipbooks, shards and smoke, are 1024², the size Roblox needs to animate
-  a flipbook.)
+- 9 particle textures in `textures/te5/particles/`: shards (a ray-traced steel blade tumbling, 1024² flipbook), ash (a
+  tumbling ember flake, 1024² flipbook), twinkle (a star that blooms and shrinks, 1024² flipbook), stardust (glitter
+  clusters, 1024² flipbook), mote, glint, bokeh, streak and spark (256² or smaller). `retired/te5_smoke.png` is **not**
+  uploaded: pass 5.1 no longer draws it (it is only kept for the generator's comparison sheets).
+- 3 smoke textures in `textures/te5/smoke/`: billow and wisp (lit volumetric smoke, 1024² flipbooks) and mistbank (512²).
 - 11 surface textures in `textures/te5/surfaces/`: dial inlay, sub-dial, accretion, galaxy floor/arms/core, engraving,
-  halo, stream, and (review round 1) the photographic **moon** face and the **star window** on the clock's movement plate.
-  The moon is an opaque face disc turned to the camera either way: with te5_moon on it, the photographic moon; until then
-  pass 4's moon, cropped to its disc. (Review round 2 dropped te5_hairspring: the spiral under the feet was invisible at
-  every framing. Review round 3 dropped te5_ribbon: the void's ink ribbon became the lensed band, which uses te5_stream.
-  Review round 3 also regenerated te5_smoke, a dense billow instead of a thin curl, and te5_engraving, now a 56-stud stage.)
+  halo, stream (now 512×128), the photographic **moon** face and the **star window** on the clock's movement plate. The
+  moon is an opaque face disc turned to the camera either way: with te5_moon on it, the rendered globe; until then pass
+  4's moon, cropped to its disc.
+
+Roblox only animates a particle flipbook whose texture is exactly 1024×1024: all six flipbooks above are (`patch_tex5.py`
+refuses to record or patch otherwise).
 
 **Upload te5_moon first** (review round 3): the moon is the first thing Milo looks at, and the photographic moon is much
 better than pass 4's pale moon on the face disc. The first batch below starts with it.
@@ -34,11 +37,13 @@ cd ~/Documents/Milo-Marr/textures/te5 && python3 -m http.server 8765 --bind 127.
 Then upload in batches of up to 5. The pass-4 uploads used 5 per call, and the big PNGs are about 1 MB each:
 
 ```
-upload_image  imagePaths: ["http://127.0.0.1:8765/surfaces/te5_moon.png", "http://127.0.0.1:8765/particles/te5_smoke.png",
-                           "http://127.0.0.1:8765/particles/te5_glint.png", "http://127.0.0.1:8765/surfaces/te5_engraving.png",
+upload_image  imagePaths: ["http://127.0.0.1:8765/surfaces/te5_moon.png", "http://127.0.0.1:8765/smoke/te5_billow.png",
+                           "http://127.0.0.1:8765/particles/te5_twinkle.png", "http://127.0.0.1:8765/surfaces/te5_engraving.png",
                            "http://127.0.0.1:8765/surfaces/te5_halo.png"]
-upload_image  imagePaths: [".../particles/te5_shards.png", ".../particles/te5_mote.png", ".../particles/te5_bokeh.png",
-                           ".../particles/te5_streak.png", ".../particles/te5_ash.png"]
+upload_image  imagePaths: [".../particles/te5_shards.png", ".../particles/te5_ash.png", ".../particles/te5_stardust.png",
+                           ".../smoke/te5_wisp.png", ".../smoke/te5_mistbank.png"]
+upload_image  imagePaths: [".../particles/te5_mote.png", ".../particles/te5_glint.png", ".../particles/te5_bokeh.png",
+                           ".../particles/te5_streak.png", ".../particles/te5_spark.png"]
 upload_image  imagePaths: [".../surfaces/te5_dial_inlay.png", ".../surfaces/te5_subdial.png", ".../surfaces/te5_accretion.png",
                            ".../surfaces/te5_galaxy_floor.png", ".../surfaces/te5_galaxy_arms.png"]
 upload_image  imagePaths: [".../surfaces/te5_galaxy_core.png", ".../surfaces/te5_stream.png", ".../surfaces/te5_star_window.png"]
@@ -47,7 +52,7 @@ upload_image  imagePaths: [".../surfaces/te5_galaxy_core.png", ".../surfaces/te5
 (`...` stands for `http://127.0.0.1:8765`. Always write the full URL.)
 
 Each call returns a JSON map like `{"http://127.0.0.1:8765/particles/te5_mote.png": "rbxassetid://123...", ...}`. Save
-**each result exactly as returned** to a file, for example `/tmp/te5_up1.json` to `/tmp/te5_up4.json`, and record them:
+**each result exactly as returned** to a file, for example `/tmp/te5_up1.json` to `/tmp/te5_up5.json`, and record them:
 
 ```sh
 cd ~/Documents/Milo-Marr
@@ -59,14 +64,14 @@ Then stop the web server (kill the background `http.server`).
 
 ## B. By hand with Studio's Asset Manager
 
-1. In Studio, open **View -> Asset Manager** and click **Bulk Import**. Pick all 18 PNGs from `textures/te5/particles/`
-   and `textures/te5/surfaces/`.
+1. In Studio, open **View -> Asset Manager** and click **Bulk Import**. Pick all 23 PNGs from `textures/te5/particles/`,
+   `textures/te5/smoke/` and `textures/te5/surfaces/` (not the `sheets/` or `retired/` folders).
 2. When they are done, open **Images** in the Asset Manager. Right-click each one, choose **Copy Asset ID**, and note
    which file it belongs to.
 3. Record them. Any spelling of a texture works: the file name, the name, or the texKey:
 
 ```sh
-python3 roblox/install/patch_tex5.py record te5_shards.png=rbxassetid://111 te5_smoke=222 mote=333 ...
+python3 roblox/install/patch_tex5.py record te5_shards.png=rbxassetid://111 te5_billow=222 mote=333 ...
 ```
 
 ## Then: fill TEX5, re-make the payloads, install

@@ -86,26 +86,38 @@ Must read by day (bright tropical islands, cyan sky) and by night.
   uploads. Milo's calls pending: the far beacon (on/off), `FRAME_TOP` 9.6 vs 22.4 (XII vs the whole watch in frame), and
   whether "neutral, a hair warm" silver is ok (CLAUDE.md's style line says only a faint *cool* tint).
 
-## Status (cloud, 2026-10-16)
+- Pass 5.1 in the cloud (2026-10-16, Milo: "improve the particle effects and texture tenfold ... Keep working hard on
+  it"): three texture agents rebuilt the textures at film quality (ray-traced tumbling steel shards, a tumbling ember flake,
+  a photographic glint, a twinkle flipbook, stardust glitter clusters, a spark fleck, a comet streak, a soft mote, a real
+  bokeh disc; ray-marched lit smoke billow / wisp / mistbank that replace te5_smoke; a rendered Moon globe with real maria,
+  ~26,000 craters and ray systems; an Interstellar-like accretion disc; a real spiral galaxy for the dais; a Milky-Way star
+  window; a braided energy stream). New particle systems: P15 a star halo (a tilted ring of twinkles and stardust 16-21
+  studs out, beyond the default camera), P16 a duality helix (a silver ribbon and an ink ribbon braiding up the body), P17
+  twinkles inside the dial, P18 sparks where the shards break off. Twinkles and stardust replace static glints; smoke kept
+  near upright (baked light). **23 te5 textures** to upload (te5_smoke retired to `textures/te5/particles/retired/`). Module
+  **155,147 bytes (checksum 484396720)**, 12 payload pieces. Every smoke/ember emitter takes its pass-4 settings back if
+  its te5 texture is missing or fails to load. Still not run in Studio.
 
-Pass 5 of THE END's equipped aura is **built and verified in the cloud only**. Review rounds 1-3 are finished, and a final
-verification pass re-ran every check below. **Nothing has run in Roblox Studio.**
+## Status (cloud, 2026-10-16, pass 5.1)
+
+Pass 5.1 of THE END's equipped aura (pass 5 + review rounds 1-3 + the film-quality texture and particle pass) is **built
+and verified in the cloud only**. **Nothing has run in Roblox Studio.**
 
 **What's built, and where**
-- Module: `roblox/ReplicatedStorage/AuraFX/TheEnd.lua`, **143,408 bytes, checksum 678854451** (2,630 lines). TEX5 is empty
+- Module: `roblox/ReplicatedStorage/AuraFX/TheEnd.lua`, **155,147 bytes, checksum 484396720**. TEX5 is empty
   until the upload, so the aura falls back to pass-4 textures. Live pass 4 for rollback and diffing:
   `TheEnd.pass4-live.lua` (35,000 bytes, checksum 489406639).
-- Budgets (high / low): 360 / 150 parts in one BulkMoveTo, 19 emitters (17 on by day) / 11, about 194 / 56 particles per
-  second, 6 / 2 beams, 11 / 8 GUIs, 2 / 0 PointLights, 1 Highlight. Registers: 33 spare in `End.build` at -O0, 67 at
-  -O1 and -O2.
-- Textures: 18 te5 PNGs (7 particles, 11 surfaces) in `textures/te5/`, with their generators and manifests.
-  `patch_tex5.py status`: 18 keys, 0 filled.
+- Budgets (high / low): 362 / 151 parts in one BulkMoveTo, 25 emitters (23 on by day) / 12 on, about 304 / 78 particles
+  per second (about 770 / 165 alive), 6 / 2 beams, 11 / 8 GUIs, 2 / 0 PointLights, 1 Highlight. Registers: 31 spare in
+  `End.build` at -O0, 67 at -O1 and -O2.
+- Textures: 23 te5 PNGs (9 particles, 3 smoke, 11 surfaces) in `textures/te5/`, with their generators, manifests and
+  contact sheets (`sheets/before_after*.png` show pass 5 vs pass 5.1). `patch_tex5.py status`: 23 keys, 0 filled.
 - Docs: `docs/the-end/README.md` (status page for Milo), `pass5-spec.md` (the design, synced to the build),
   `pass5-build-notes.md` (the build, review rounds 1-3, STUDIO-VERIFY items 1-50), `pass5-art-direction.md`, and 14 curated
   preview renders in `pass5-renders/`.
 - Install kit: `roblox/install/` (README, MILO_PROMPT, studio_checks, upload_textures, patch_tex5.py, make_payloads.py).
-  Payloads: `01_backup`, 11 pieces, `13_apply` (13 to run in order), plus `00_status` (read-only), `90_install_from_file`
-  (plan B) and `99_rollback`. Manifest runId `TheEnd-143408-678854451-11-550560669`.
+  Payloads: `01_backup`, 12 pieces, `14_apply` (14 to run in order), plus `00_status` (read-only), `90_install_from_file`
+  (plan B) and `99_rollback`.
 
 **Cloud tools** (see `tools/README.md`): `tools/check_aura.sh MODULE OUTDIR` (harness over 35 scenarios, then preview
 renders and day/night sheets); `tools/harness/run_aura.py` (mock Roblox runtime, lints, snapshots);
@@ -114,20 +126,17 @@ renders and day/night sheets); `tools/harness/run_aura.py` (mock Roblox runtime,
 installed system-wide, so build one per tools/harness/README.md); `roblox/install/test/run_tests.py`. To preview the
 post-upload te5 look, use a temp copy with `TEX5 = "pending:<key>"`. Never ship that.
 
-**Final verification results (2026-10-16, all headless)**
+**Final verification results (pass 5.1, 2026-10-16, all headless)**
 - `run_aura.py` (35 scenarios): 0 errors and 0 harness failures. 3 known warning kinds, all `translucent-layer` on the rim-only
   moon halo and the night corona (spec §7.3's allowed soft elements).
-- `tests/run_tests.py`: all passed, with luau-lsp included. `install/test/run_tests.py`: 25/25, typecheck included.
-- `make_payloads.py --check`: payloads match. `check_aura.sh`: no module errors, 14 renders. `typecheck.sh`: 0 diagnostics
-  in the module's own mode. `--strict --api-only` gives 41, all from the dynamic helper style (prop tables, nil-guarded
-  values), none of them real API mistakes. `npm --prefix tools/preview test`: passed.
+- `tests/run_tests.py`: all passed. `install/test/run_tests.py`: 25/25, typecheck included. `typecheck.sh`: 0 diagnostics.
+- `make_payloads.py --check`: payloads match (12 pieces). `check_aura.sh`: no module errors. Preview `npm test`: passed.
+  The three texture generators' `--check`: passed (108 particle, 29 smoke and 65 surface checks).
 
 **Pending**
-- Commit and push the working tree. The pushed checkpoint `e6ac8af` has an older module (141,659 bytes), and
-  MILO_PROMPT's stop rule will refuse it.
 - First Studio install and Play test with the fallback textures (`roblox/install/MILO_PROMPT.md`, `studio_checks.md`
   steps 1-2).
-- Measure `RIM_R` (studio check 14), then upload the 18 te5 textures (te5_moon first). Fill TEX5 with `patch_tex5.py`,
+- Measure `RIM_R` (studio check 14), then upload the 23 te5 textures (te5_moon first). Fill TEX5 with `patch_tex5.py`,
   re-make the payloads with `--label pass5tex` and install again.
 - STUDIO-VERIFY items 1-50: write the results in `docs/the-end/pass5-studio-results.md`, saying only what was really seen.
 - Milo's calls: the far beacon (on/off), `FRAME_TOP` 9.6 vs 22.4, and the "neutral, a hair warm" silver.

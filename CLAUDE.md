@@ -6,8 +6,9 @@ cloud sessions can't reach Studio, so they build code, textures and tools here f
 **Read `docs/memory/aura-rng.md` first** — it is the project memory (what the game is, Milo's exact direction, the aura
 framework contract, asset ids, hard-won lessons). Keep it up to date at the end of each session.
 
-Current focus: THE END's equipped aura, pass 5 — `docs/the-end/` (status page: `docs/the-end/README.md`),
-`roblox/ReplicatedStorage/AuraFX/`. Built and checked in the cloud; waiting for its first Studio test on Milo's Mac.
+Current focus: THE END's equipped aura, pass 5.1 (film-quality textures and particles) — `docs/the-end/` (status page:
+`docs/the-end/README.md`), `roblox/ReplicatedStorage/AuraFX/`, `textures/te5/`. Built and checked in the cloud; waiting for
+its first Studio test on Milo's Mac.
 
 Pipeline: `tools/check_aura.sh MODULE OUTDIR` (harness + preview renders) → `tools/harness/tests/run_tests.py` and
 `roblox/install/test/run_tests.py` → `roblox/install/make_payloads.py MODULE` (+ `--check`); details in `tools/README.md`.
