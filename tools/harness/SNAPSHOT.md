@@ -40,6 +40,7 @@ renamed or removed, and every extension is a new key.
 | `camera` | object | `cf`, `fov` (vertical degrees); *(ext)* `viewport` `[1920, 913]`, `cameraType`, `preset` (the `--camera` / `NAME@SPEC` override that placed it, absent otherwise: see README "Cameras") |
 | `wearer` | object | `cf` (HumanoidRootPart; NOT raised by the hover), `hover`, `glide` (0..1), `legLen`, `ground` (`[x,y,z]` hit under the wearer or `null`); *(ext)* `isLocal`, `rig` (`"R15"`/`"R6"`), `alpha` (fade-in) |
 | `characters` *(ext)* | array | every wearer's posed rig: `{ name, wearer, parts: [{ name, class, size, cf, color, transparency }] }`. The body floats: the harness applies `End.pose` (hover on the Root joint, idle/glide/breathe angles) to the Motor6Ds, so these CFrames are the visible pose. Draw the avatar from this. |
+| `world` *(ext)* | object | `groundY`: the top of the scenario's plaza (the floor to draw: a wearer on a seat has the seat top as `ground`, a slope moves the plaza) |
 | `parts`, `attachments`, `beams`, `guis`, `emitters`, `trails`, `lights`, `highlights`, `effects` | arrays | below |
 
 ## parts
@@ -62,7 +63,7 @@ use `worldCf`).
 ## beams
 
 `{ path, a0, a1, curve0, curve1, width0, width1, segments, faceCamera, texture, textureMode, textureLength, textureSpeed, color, transparency, lightEmission, lightInfluence, brightness, zOffset, enabled }`
-- `a0` / `a1` are attachment ids (or `null`).
+- `a0` / `a1` are attachment ids (or `null`). *(ext)* `localTransparencyModifier` (multiplies the opacity, as on parts).
 
 ## guis
 
@@ -76,13 +77,14 @@ use `worldCf`).
   *(ext)* `hostCf`: the host part's world CFrame (present even when the host is not in `parts`, e.g. a character part).
 - `images`: every ImageLabel/ImageButton inside: `{ image, color, transparency, rotation, size, position }` with
   `size`/`position` as `[scaleX, offsetX, scaleY, offsetY]`; *(ext)* `anchor` `[x, y]`, `visible`, `zIndex`,
-  `backgroundTransparency`, `backgroundColor`. *(ext)* `texts`: TextLabels `{ text, color, transparency, size, position, visible }`.
+  `backgroundTransparency`, `backgroundColor`, `rectOffset` / `rectSize` (ImageRectOffset / ImageRectSize in image pixels,
+  `[0, 0]` = the whole image), `corner` (a UICorner child's CornerRadius `[scale, offset]`, absent without one). *(ext)* `texts`: TextLabels `{ text, color, transparency, size, position, visible }`.
 
 ## emitters
 
 `{ path, hostId, hostAttachmentId, enabled, texture, rate, lifetime, speed, spreadAngle, emissionDirection, shape, shapeStyle, shapeInOut, shapePartial, size, transparency, color, lightEmission, lightInfluence, brightness, acceleration, drag, lockedToPart, rotation, rotSpeed, zOffset, orientation, flipbookLayout, flipbookMode, squash, timeScale }`
 - Exactly one of `hostId` (emits from the part's volume/surface per `shape*`) or `hostAttachmentId` (a point).
-- *(ext)* `hostCf` (the host part's or attachment's world CFrame), `hostSize` (the host part's size), `flipbookFramerate`, `flipbookStartRandom`, `velocityInheritance`.
+- *(ext)* `hostCf` (the host part's or attachment's world CFrame), `hostSize` (the host part's size), `flipbookFramerate`, `flipbookStartRandom`, `velocityInheritance`, `localTransparencyModifier` (multiplies every particle's opacity).
 - *(ext)* `hostHistory`: `[[t, px, py, pz, r00..r22, enabled01], ...]` - the host's world CFrame and the emitter's
   `Enabled`, sampled every 0.1 s over the last ~21 s, so a renderer can re-simulate particles that were born
   earlier at other positions (orbiting orbs, the moving wearer). Present when snapshots were requested.

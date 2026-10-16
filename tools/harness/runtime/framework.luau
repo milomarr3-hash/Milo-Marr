@@ -299,6 +299,21 @@ do
 		local cam = H.camera
 		local camCF = H.rawGet(cam, "CFrame")
 		local scriptable = H.rawGet(cam, "CameraType").Name == "Scriptable"
+		-- a screen grade (ColorCorrectionEffect under the camera) that stays on while a scripted camera (the roll cutscene)
+		-- holds the screen dims the cutscene: allowed only while it eases out in the first 0.6 s
+		if scriptable then
+			H.SCRIPTABLE_SINCE = H.SCRIPTABLE_SINCE or t
+			if t - H.SCRIPTABLE_SINCE > 0.6 then
+				for _, ch in ipairs(D[cam].children) do
+					if D[ch] and not D[ch].destroyed and D[ch].cls.isa.ColorCorrectionEffect then
+						H.recordWarning("grade-over-cutscene", "a ColorCorrectionEffect (" .. D[ch].name .. ") stays under the camera while a "
+							.. "Scriptable camera (e.g. the roll cutscene) holds the screen: it dims the cutscene")
+					end
+				end
+			end
+		else
+			H.SCRIPTABLE_SINCE = nil
+		end
 		for _, rec in ipairs(H.RECS) do
 			if rec.pendingBuild and rec.pendingBuild.done then
 				local out = rec.pendingBuild
@@ -331,7 +346,9 @@ do
 					if visible ~= rec.visible then H.setVisibleRec(rec, visible) end
 					if near ~= rec.near then H.setDetailRec(rec, near) end
 				end
-				if rec.fx and rec.visible then
+				-- (H.UPDATE_WHILE_HIDDEN: a framework that keeps calling update while the aura is hidden; the real one is not in
+				-- this repo, so both behaviours are tested: see the equip_in_cutscene scenarios)
+				if rec.fx and (rec.visible or H.UPDATE_WHILE_HIDDEN) then
 					local s = { cf = hrpCF, hover = rec.hover, glide = rec.g, t = t, now = H.epochNow(), legLen = legLen(rec),
 						ground = rec.ground, alpha = rec.alpha }
 					rec.lastS = s

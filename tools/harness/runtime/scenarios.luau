@@ -20,7 +20,9 @@ do
 	end
 	H.placeWearer = placeWearer
 	local camState = nil
-	local function setCamera(pos, look, smooth, dt)
+	-- (focus: the camera's Focus, Roblox's CameraSubject point = the LOCAL player's HumanoidRootPart + 1.5; by default the
+	-- point looked at, which is the same thing whenever the camera follows the local player)
+	local function setCamera(pos, look, smooth, dt, focus)
 		local target = CFrame.lookAt(pos, look)
 		if smooth and camState then
 			local a = 1 - exp(-(dt or H.DT) * smooth)
@@ -29,7 +31,7 @@ do
 		camState = target
 		local cd = D[H.camera]
 		cd.props.CFrame = target
-		cd.props.Focus = CFrame.new(look)
+		cd.props.Focus = CFrame.new(focus or look)
 		if cd.sig or cd.psig then H.propChanged(H.camera, cd, "CFrame") end
 	end
 	H.setCamera = setCamera
@@ -60,6 +62,9 @@ do
 		if not spec or not rec or D[rec.hrp] == nil then return end
 		local hcf = H.rawGet(rec.hrp, "CFrame")
 		local lk = hcf.LookVector
+		-- (the main wearer is another player: Roblox's Focus stays on the local player's character, not on the wearer)
+		local myFocus = nil
+		if not rec.isLocal and S.me and S.me.hrp and D[S.me.hrp] then myFocus = H.rawGet(S.me.hrp, "CFrame").Position + v3(0, 1.5, 0) end
 		local f = v3(lk.X, 0, lk.Z)
 		if f.Magnitude < 1e-6 then f = v3(0, 0, -1) end
 		f = f.Unit
@@ -67,14 +72,14 @@ do
 		if spec.kind == "subject" then
 			local focus = hcf.Position + v3(0, 1.5, 0)
 			local dir = (f * spec.f + r * spec.r + v3(0, spec.u, 0)).Unit
-			setCamera(focus + dir * spec.zoom, focus)
+			setCamera(focus + dir * spec.zoom, focus, nil, nil, myFocus)
 		else
 			local body = hcf.Position + v3(0, rec.hover or 0, 0)
 			local az, el = rad(spec.az), rad(spec.el)
 			local horiz = f * cos(az) + r * sin(az)
 			local dir = horiz * cos(el) + v3(0, sin(el), 0)
 			local target = body + v3(0, spec.ty, 0)
-			setCamera(target + dir * spec.d, target)
+			setCamera(target + dir * spec.d, target, nil, nil, myFocus)
 		end
 		if spec.fov then
 			local cd = D[H.camera]
@@ -179,7 +184,7 @@ do
 		function(S, t, dt)
 			placeWearer(S.me, v3(0, 3, 30), 0)
 			placeWearer(S.rec, v3(0, 3, 0), math.pi)
-			setCamera(v3(0, 9, 44), v3(0, 6, 0))
+			setCamera(v3(0, 9, 44), v3(0, 6, 0), nil, nil, v3(0, 4.5, 30))
 		end)
 
 	def("far", "Camera pulls back: 20 -> 150 studs (setDetail false past 110) -> 400 (setVisible false past 320) -> back to 20",
@@ -409,5 +414,70 @@ do
 			D[H.plaza].props.CFrame = CFrame.new(0, gy - 0.5, 0)
 			placeWearer(S.rec, S.pos, 0, md)
 			followCam(S.rec, 16, 6, dt)
+		end)
+	-------------------------------------------------------------------------------------- added in THE END pass-5 review round 2
+	-- (the roll cutscene with both framework behaviours, and other players standing beside a wearer)
+	-- the first frame the aura can be seen after the cutscene: if its assembly already ran while hidden, the void (which
+	-- condenses from a point in the first 1.2 s) is already full size
+	local function assemblyCheck(S, t)
+		if S.checked or t < 5.08 then return end
+		S.checked = true
+		local void = nil
+		H.forDescendants(H.container, function(c)
+			local d = D[c]
+			if not void and d.cls.isa.BasePart and d.name == "Void" then void = c end
+		end)
+		if void and H.rawGet(void, "Size").X > 7.5 then
+			H.recordWarning("assembly-unseen", "the equip assembly ran while the aura was hidden by the cutscene: the player first sees it already built")
+		end
+	end
+	local function cutscene(S, t, dt)
+		placeWearer(S.rec, v3(0, 3, 0), 0)
+		D[H.camera].props.CameraType = E("CameraType", t < 5 and "Scriptable" or "Custom")
+		followCam(S.rec, 16, 6, dt)
+		assemblyCheck(S, t)
+	end
+	def("equip_in_cutscene", "Equipped at 0.1 s while the roll cutscene holds a Scriptable camera (0-5 s); the framework KEEPS calling update while the aura is hidden",
+		{ duration = 16, clock = 14, steadyAfter = 12 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } H.UPDATE_WHILE_HIDDEN = true end,
+		cutscene)
+	def("equip_in_cutscene_paused", "As equip_in_cutscene, but the framework does not call update while the aura is hidden",
+		{ duration = 16, clock = 14, steadyAfter = 12 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } H.UPDATE_WHILE_HIDDEN = false end,
+		cutscene)
+	def("pair_side", "Local wearer idle, follow camera 16/6; another wearer stands 5 studs to your right (friends side by side)",
+		{ duration = 12, clock = 14 },
+		function(S)
+			S.rec = oneWearer(S)
+			local other = H.makePlayer("Player2", 1002)
+			local char, info = H.spawnCharacter(other, "R15", v3(5, 0, 0), 0)
+			S.rec2 = H.newRec(other, char, info, false)
+			placeWearer(S.rec2, v3(5, 3, 0), 0)
+			S.equipAt = { { rec = S.rec, t = 0.1 }, { rec = S.rec2, t = 0.1 } }
+		end,
+		function(S, t, dt)
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			placeWearer(S.rec2, v3(5, 3, 0), 0)
+			followCam(S.rec, 16, 6, dt)
+		end)
+	def("visit_close", "A player without the aura stands 9 studs in front of a wearer, then (t = 7..9) walks round to 5 studs at their side; follow camera",
+		{ duration = 14, clock = 14 },
+		function(S)
+			local lp = H.localPlayer
+			local myChar, myInfo = H.spawnCharacter(lp, "R15", v3(0, 0, -9), pi)
+			S.me = { hrp = myInfo.hrp, hum = myInfo.hum, info = myInfo, char = myChar }
+			placeWearer(S.me, v3(0, 3, -9), pi)
+			local other = H.makePlayer("Player2", 1002)
+			local char, info = H.spawnCharacter(other, "R15", v3(0, 0, 0), 0)
+			S.rec = H.newRec(other, char, info, false)
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			S.equipAt = { { rec = S.rec, t = 0.1 } }
+		end,
+		function(S, t, dt)
+			local u = math.clamp((t - 7) / 2, 0, 1)
+			local th, r = pi - u * pi / 2, 9 - 4 * u
+			placeWearer(S.me, v3(r * sin(th), 3, r * cos(th)), th, (u > 0 and u < 1) and v3(cos(th), 0, -sin(th)) or nil)
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			followCam(S.me, 16, 6, dt)
 		end)
 end

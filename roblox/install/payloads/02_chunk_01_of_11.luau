@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 02_chunk_01_of_10.luau | step 2: piece 1 of 10
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (123861 bytes, checksum 523677650).
+-- AuraRNG Studio install kit | 02_chunk_01_of_11.luau | step 2: piece 1 of 11
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "02_chunk_01_of_10.luau"
+local FILE = "02_chunk_01_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-123861-523677650-10-457228033"
-local NEW_LEN, NEW_SUM = 123861, 523677650
+local RUN = "TheEnd-141659-402664341-11-730820328"
+local NEW_LEN, NEW_SUM = 141659, 402664341
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 10
-local LENS = { 13381, 13376, 13386, 13381, 13350, 13333, 13298, 13314, 13338, 3704 }
-local SUMS = { 138302907, 144820895, 284418912, 946852927, 737433606, 204697128, 129328051, 22255047, 37178664, 110492221 }
+local N = 11
+local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
+local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,7 +68,7 @@ local function chunkOk(h, i)
 end
 
 local K = 1
--- piece 1 of 10 of the new source (13381 bytes, checksum 138302907, long bracket level 1)
+-- piece 1 of 11 of the new source (13243 bytes, checksum 563366530, long bracket level 1)
 local DATA = [=[
 --[[
 	AuraFX.TheEnd — 『 THE END 』 worn (1 in 1,000,000,000). Midnight of the universe, worn: black, white and silver only.
@@ -90,19 +90,20 @@ local DATA = [=[
 	                 inlaid white numerals and raised lume plots, an openwork star rete, a guilloché sub-dial, seven toothed
 	                 gears turning at meshed rates behind and in front of the dial (their teeth break the rim at 1:30, 4, 8
 	                 and 10:30), hands locked at twelve while the seconds hand sweeps, a crown and bow on top. Glints ride
-	                 the bezel, smoke curls off its rim (ink on the void side, silver on the moon side), metal shards break
-	                 off at eleven and fly into the void, and a corona rings it at night.
+	                 the bezel and a ring of time-dust turns round it with the hands, metal shards break off at eleven and
+	                 fly into the void, and a corona rings it at night.
 	  the armillary  three gimballed rings round the wearer — a precessing silver meridian, a dark equator band with twelve
 	                 lume hours, the ecliptic at 23.4° — joined by pins, with eight time shards riding the ecliptic.
-	  the balance    a solid cratered white moon and a pure-black void hang on an invisible beam on the viewer's left and
-	                 right and rock slowly like scales. The void has a white photon ring hugging its silhouette, a lensed arc
-	                 over the top, a white four-point heart with crackle veins, an opaque accretion disc nearly edge-on (its
-	                 near half crosses in front of the core) and matter spiralling into it. Dust snows off the moon; its own
-	                 key light rims the wearer at night.
+	  the balance    a moon (a photographic full moon on an opaque disc that turns to face you) and a pure-black void hang
+	                 on an invisible beam on the viewer's left and right and rock slowly like scales. The void has a hairline
+	                 photon ring hugging its silhouette and a soft horizon glow, a lensed arc over the top, a small brilliant
+	                 four-point heart, an opaque accretion disc tilted toward the viewer (its near half crosses in front of
+	                 the core), ink smoke boiling off it and matter spiralling into it. Dust and grey smoke drift off the
+	                 moon; its own key light rims the wearer at night.
 	  the streams    a silver stream arcs from the moon into one palm and an ink stream from the void into the other (the
-	                 palms drink them in), and an ink ribbon falls from the void onto the dais rim.
+	                 palms drink them in).
 	  the dais       a dark galaxy pool 30 studs across with white arms inside a raised fluted silver rim, two floating arm
-	                 layers turning against it, an engraved clock ring round it, a balance wheel with a hairspring swinging
+	                 layers turning against it, an engraved clock ring round it, a balance wheel swinging
 	                 under the feet with a vortex of streaks climbing into it, motes and black ash rising, time dripping off
 	                 the soles, ankle mist when standing on the ground. It stays put for jumps and floats under a flyer.
 	  the air        silver dust, glints, and big slow bokeh drifting between the camera and the wearer (three scales).
@@ -112,7 +113,7 @@ local DATA = [=[
 	meanwhile. After that everything turns, sways or drifts at a steady pace: no pulses, strobes or flicker, ever.
 	Day reads by value (dark steel, black void and dark pool against white lume, silver metal and an ink contour; one
 	Highlight keeps the metal neutral under the cyan sky); night glows softly through GUI Brightness above the Bloom threshold.
-	Past ~110 studs the particles stop and the fine detail is dropped; low quality builds 149 parts. Flags: CONFIG below (a
+	Past ~110 studs the particles stop and the fine detail is dropped; low quality builds 150 parts. Flags: CONFIG below (a
 	ModuleScript attribute with the same name and type overrides each one in Studio).
 	Spec: docs/the-end/pass5-spec.md. Build notes and decisions: docs/the-end/pass5-build-notes.md.
 	Textures: aura_work/tex4/make_theend_tex4.py (ids in aura_work/tex4/uploaded.md); aura_work/tex3/make_theend_tex3.py (ids in aura_work/tex3/uploaded.md) + the AuraCinema kit / _VFXLib (VFX Studio).
@@ -142,7 +143,7 @@ local TEX = {
 -- game) it falls back to a pass-4 texture (FALLBACK), so the aura always looks complete.
 local TEX5 = {
 	dialInlay = "", subdial = "", accretion = "", galaxyFloor = "", galaxyArms = "", galaxyCore = "", engraving = "",
-	halo = "", stream = "", ribbon = "", moon = "", starWindow = "",
+	halo = "", stream = "", moon = "", starWindow = "",
 	shards5 = "", smoke5 = "", mote = "", glint5 = "", bokeh = "", streak5 = "", ash5 = "",
 }
 -- (te5_ash is one 256² flake: random rotation and spin vary it, and it costs a quarter of a 1024² flipbook sheet)
@@ -150,10 +151,13 @@ local TEX5_LAYOUT = { shards5 = { "Grid4x4", "Loop" }, smoke5 = { "Grid4x4", "On
 local FALLBACK = { -- key -> { pass-4 TEX key, flipbook layout, mode }
 	dialInlay = { "dialOuter" }, subdial = { "dialInner" }, accretion = { "galaxy4" }, galaxyFloor = { "galaxy4" },
 	galaxyArms = { "galaxy4" }, galaxyCore = { "ornate" }, engraving = { "gring" }, halo = { "rim" },
-	stream = { "line" }, ribbon = { "line" }, moon = { "moon" }, starWindow = { "galaxy4" },
+	stream = { "line" }, moon = { "moon" }, starWindow = { "galaxy4" },
 	shards5 = { "ash", "None", "Loop" }, smoke5 = { "puff", "Grid4x4", "OneShot" }, mote = { "glow" }, glint5 = { "glint" },
 	bokeh = { "glow" }, streak5 = { "spark" }, ash5 = { "ash", "None", "Loop" },
 }
+-- (te4_moon is a 512² moon disc, radius 152 px, inside a glow ring. Drawn as the face of the moon's disc it is cropped to
+-- the moon itself and rounded, so no white ring or square corner shows round the face; te5_moon is drawn whole)
+local CROP = { moon = { Vector2.new(104, 104), Vector2.new(304, 304) } }
 local warned = {}
 local function warnOnce(key, msg)
 	if not warned[key] then
@@ -194,13 +198,20 @@ local function T(key)
 end
 local function isTe5(key) return not failed[key] and idOf(TEX5[key], key) ~= nil end
 -- every live image, beam and emitter that uses a te5 key, so a texture that fails to load can be swapped for its fallback;
--- fixUps[o] puts back what the build chose because the te5 texture was there (a colour, a brightness, a size)
+-- fixUps[o](o) puts back what the build chose because the te5 texture was there (a colour, a brightness, a size). (The
+-- hook gets the object as its argument: a weak-keyed entry whose value held its own key would never be collected)
 local texUsers = setmetatable({}, { __mode = "k" })
 local fixUps = setmetatable({}, { __mode = "k" })
+local usedKeys = {} -- (te5 keys some build on this client draws: only those are asked for)
 local function applyTex(o, key)
 	local id, layout, mode = T(key)
 	if o:IsA("ImageLabel") then
 		o.Image = id
+		local c = CROP[key]
+		if c then
+			local fb = not isTe5(key)
+			o.ImageRectOffset, o.ImageRectSize = fb and c[1] or Vector2.zero, fb and c[2] or Vector2.zero
+		end
 	elseif o:IsA("Beam") then
 		o.Texture = id
 	elseif o:IsA("ParticleEmitter") then
@@ -208,64 +219,55 @@ local function applyTex(o, key)
 		o.FlipbookLayout = Enum.ParticleFlipbookLayout[layout]
 		if layout ~= "None" then o.FlipbookMode = Enum.ParticleFlipbookMode[mode] end
 	end
-	if TEX5[key] then texUsers[o] = key end
-end
--- ask the engine for every filled-in te5 texture once (in the background: never blocks require or build). One that does
--- not load (wrong id, still in moderation, rejected) is reported and swapped for its pass-4 fallback everywhere. A slow
--- phone or a cold cache can time out: that id is asked for once more 20 s later before anything is swapped.
-do
-	local ids, keyOf, retried = {}, {}, {}
-	for k in pairs(TEX5) do
-		local id = idOf(TEX5[k], k)
-		if id and not string.match(id, "^pending:") then
-			table.insert(ids, id)
-			keyOf[id] = k
-		end
+	if TEX5[key] then
+		texUsers[o] = key
+		usedKeys[key] = true
 	end
-	local function onStatus(id, status)
-		local k = keyOf[id]
-		if not k or failed[k] or status == Enum.AssetFetchStatus.Success then return end
-		if status ~= Enum.AssetFetchStatus.Failure and not retried[k] then
-			retried[k] = true
-			task.delay(20, function()
-				pcall(function() game:GetService("ContentProvider"):PreloadAsync({ id }, onStatus) end)
-			end)
-			return
-		end
+end
+-- ask the engine for the te5 textures a build actually draws, once each (in the background: never blocks require or
+-- build; a low-quality build never asks for the six textures only high quality uses, so a phone does not hold them). One
+-- that does not load (wrong id, still in moderation, rejected) is reported and swapped for its pass-4 fallback everywhere,
+-- for every key that shares its id. A slow phone or a cold cache can time out: that id is asked for once more 20 s later
+-- before anything is swapped.
+local preloadUsed
+do
+	local asked, keysOf, retried, dead = {}, {}, {}, {}
+	local function failKey(k, id, status)
+		if failed[k] then return end
 		failed[k] = true
 		warn(string.format("TheEnd: te5 texture %s (%s) did not load (%s); using its pass-4 fallback", k, id, tostring(status)))
 		for o, ok in pairs(texUsers) do
 			if ok == k then
 				pcall(applyTex, o, k)
-				if fixUps[o] then pcall(fixUps[o]) end
+				if fixUps[o] then pcall(fixUps[o], o) end
 			end
 		end
 	end
-	if #ids > 0 then
-		task.spawn(function()
-			pcall(function() game:GetService("ContentProvider"):PreloadAsync(ids, onStatus) end)
-		end)
+	local function onStatus(id, status)
+		local ks = keysOf[id]
+		if not ks or status == Enum.AssetFetchStatus.Success then return end
+		if status ~= Enum.AssetFetchStatus.Failure and not retried[id] then
+			retried[id] = true
+			task.delay(20, function()
+				pcall(function() game:GetService("ContentProvider"):PreloadAsync({ id }, onStatus) end)
+			end)
+			return
+		end
+		dead[id] = status
+		for _, k in ipairs(ks) do failKey(k, id, status) end
 	end
-end
-
--- particle and beam colours (as pass 4) and a few more for pass 5
-local WHITE = Color3.fromRGB(248, 249, 255)
-local INK = Color3.fromRGB(5, 5, 8)
-local SMOKE = Color3.fromRGB(14, 14, 19)
-local MIST = Color3.fromRGB(205, 209, 220)
-local ASH = Color3.fromRGB(16, 16, 20)
-local RIBBON_INK = Color3.fromRGB(12, 12, 16)
--- solid parts: colour, material, reflectance and the sub-model they live in (the Highlight covers only "Silver").
--- The silvers are neutral: the cyan day sky already tints Metal blue, so a cool token read as baby-blue plastic.
-local MAT = {
-	SILVER = { Color3.fromRGB(184, 184, 185), Enum.Material.Metal, 0.08, "Silver" },
-	BRIGHT = { Color3.fromRGB(224, 224, 225), Enum.Material.Metal, 0.12, "Silver" },
-	STEEL = { Color3.fromRGB(44, 46, 51), Enum.Material.SmoothPlastic, 0, "Dark" },
-	DEEP = { Color3.fromRGB(30, 31, 35), Enum.Material.SmoothPlastic, 0, "Dark" },
-	BASE = { Color3.fromRGB(12, 12, 16), Enum.Material.SmoothPlastic, 0, "Dark" },
-	VOID = { Color3.fromRGB(0, 0, 0), Enum.Material.Neon, 0, "Dark" },
-	LUME = { Color3.fromRGB(240, 240, 242), Enum.Material.Neon, 0, "Lume" }, -- (neutral: Neon saturates any tint)
-	ARC = { Color3.fromRGB(210, 210, 212), Enum.Material.Neon, 0, "Lume" },
+	function preloadUsed()
+		local ids = {}
+		for k in pairs(usedKeys) do
+			local id = idOf(TEX5[k], k)
+			if id and not string.match(id, "^pending:") then
+				local ks = keysOf[id]
+				if not ks then
+					ks = {}
+					keysOf[id] = ks
+				end
+				if not table.find(ks, k) then table.insert(ks, k) end
+				if dead[id] then
 ]=]
 
 local function main()
@@ -310,7 +312,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "12_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "13_apply.luau"))
 end
 
 local ok, res = pcall(main)

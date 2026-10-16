@@ -14,12 +14,13 @@ not test anything in Studio, so you're the first to run it. Please:
    Edit mode. Run make_payloads.py first. Then send each payload with execute_luau (datamodel_type "Edit") as the file's
    exact text. Every result must start with OK before you go on; if not, follow the README's table. Never turn on
    HttpService, never publish, never delete anything in ServerStorage.AuraRNG_Backups.
-3. Test it once with the fallback textures (studio_checks.md steps 1-2). Then upload the 20 te5 textures
+3. Test it once with the fallback textures (studio_checks.md steps 1-2). Then upload the 19 te5 textures
    (roblox/install/upload_textures.md), record the ids, patch TEX5, re-make the payloads with --label pass5tex and
    install again.
 4. Test in Play with roblox/install/studio_checks.md: day (ClockTime 14) and night (0.5) from the "studio" camera, the
    reveal, owner view, movement, low quality, other players and the rest of the checklist. Show me small thumbnails of
-   the screenshots and tell me in plain words what you see and what changed.
+   the screenshots and tell me in plain words what you see and what changed. (At Roblox's default zoom the top of the
+   watch, the crown and bow, can sit above the screen: scroll out to about 30 studs to see the whole watch.)
 5. Check every STUDIO-VERIFY item and write what really happened, including anything broken, in
    docs/the-end/pass5-studio-results.md (template in studio_checks.md). Only report what you actually saw.
 6. Update docs/memory/aura-rng.md in the repo: what's installed now (bytes + checksum), the te5 texture ids, the

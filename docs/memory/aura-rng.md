@@ -68,6 +68,13 @@ Must read by day (bright tropical islands, cyan sky) and by night.
   void with an opaque accretion disc; galaxy dais bowl; purposeful particles; opacity rules; Highlight to kill the cyan sky
   tint).
 - Pass 5 continued in the cloud (2026-10-14): see `docs/the-end/` and `roblox/` for the build and its status.
+- Pass 5 review rounds 1 and 2 in the cloud (2026-10-14 to 16; four critics each, then fixers; round 2's first fixer was cut
+  off by a usage limit and a lead fixer finished it): opaque camera-facing moon face, neutral silvers, particles with opaque
+  cores up to 2 studs and a time-dust ring, an event-horizon glow, the default-zoom layout with XII in frame, first-person
+  look-follow, upright armillary, jump height spring, split ghosting of other players' auras (beams and particles too), dais
+  layer lift, far-detail fades, hide/show lifecycle that is safe whichever way the framework updates hidden auras, 32 harness
+  scenarios. Module 126,319 bytes (checksum 822800729), payloads regenerated. **Still not run in Studio**: next step is
+  Milo's Mac (`roblox/install/MILO_PROMPT.md`), first with the fallback textures, then with the 19 te5 uploads.
 
 ## Framework contract (from the pass-4 module)
 
@@ -97,6 +104,15 @@ Must read by day (bright tropical islands, cyan sky) and by night.
 - Textures are code-generated PNGs (python3 + numpy + PIL), max 1024×1024, uploaded from the Mac. Record every id.
 - Milo's Mac has 8 GB RAM and Studio is heavy — keep execute_luau payloads ≤ ~25 KB and yield in long loops.
 - Show Milo screenshots as thumbnails; explain changes in plain words (he's a young, very motivated game dev).
+- (Cloud review, unverified in Studio) A BillboardGui is drawn as a transparent object: a Highlight on parts behind it paints
+  over it. Faces that must stay whole (pass 5's moon) are opaque parts turned to the camera with a SurfaceGui.
+- (Cloud review) Don't rely on the framework pausing `update` while an aura is hidden: return first thing in `update`, so the
+  equip assembly and the screen grade wait for the player whatever the framework does.
+- Roblox draws at most 31 Highlights per client, shared by every aura: give the owner's aura one, others only while near and
+  on high quality. Beam and ParticleEmitter have a hidden `LocalTransparencyModifier` too (used to ghost another player's
+  aura).
+- Luau's register limit (200 per function) has half the headroom at -O0 that it has at -O1/-O2: check all three
+  (`tools/harness/register_headroom.py`).
 
 ## Texture ids in use (pass 4 TEX table)
 

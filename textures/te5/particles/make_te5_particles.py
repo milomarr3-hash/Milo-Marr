@@ -8,7 +8,7 @@
 #   te5_glint   (256^2)                    P5a/P5b glints riding the metal, P6b air glints
 #   te5_bokeh   (256^2)                    P6c big slow bokeh between the camera and the wearer
 #   te5_streak  (256^2)                    P9 funnel, P10a/b palm intake, P12 speed trail (VelocityParallel; the TOP leads)
-#   te5_ash     (1024^2, Grid2x2 Random)   P8b black ash flakes rising off the galaxy (Roblox animates flipbooks on 1024^2 only)
+#   te5_ash     (256^2)                    P8b black ash flakes rising off the galaxy (one flake: rotation and spin vary it)
 #
 # Only python3 + numpy + PIL (runs the same on Milo's Mac and in the cloud). Deterministic: every random source is
 # seeded, so a re-run gives byte-identical PNGs.
@@ -718,8 +718,9 @@ def make_smoke():
 
 
 # ====================================================================================================================
-# te5_ash  (1024^2, Grid2x2, Random): 4 charred flakes in 512-px cells, jagged 7-9-gons, silver highlight on the upper-left
-# edges (Roblox only animates flipbooks on 1024^2 textures: "Particle texture must be 1024 by 1024 to use flipbooks")
+# te5_ash  (256^2): one charred flake, a jagged 9-gon, silver highlight on the upper-left edges. (Review round 2: it was a
+# 1024^2 2x2 flipbook of 4 flakes, 5 MB of texture memory for a flake that never covers more than ~20 px; the emitter's
+# random rotation and tumble already make every particle look different, and a single image needs no flipbook mode)
 # ====================================================================================================================
 
 ASH_FLAKES = [  # (seed, main vertices, target extent of the cell)
@@ -798,10 +799,13 @@ def render_flake(seed, nv, extent, cell=512):
     return P.astype(F32), A.astype(F32)
 
 
+ASH_FLAKE = ASH_FLAKES[1]  # the 9-cornered one
+
+
 def make_ash():
-    cells = [render_flake(s, nv, ext) for s, nv, ext in ASH_FLAKES]
-    P, A = assemble(cells, 2, 2)
-    return finish("te5_ash", P, A, grid=(2, 2), dither=False, seed=17)
+    seed, nv, ext = ASH_FLAKE
+    P, A = render_flake(seed, nv, ext, cell=256)
+    return finish("te5_ash", P, A, grid=(1, 1), dither=False, seed=17)
 
 
 # ====================================================================================================================
@@ -853,12 +857,11 @@ MANIFEST = [
      "(alpha 1), ~4 px ink edges (RGB 15, alpha 0.9); the module draws it 2.2x the spark fallback's size. The "
      "TOP end leads (brightest); the tail fades over the lower 40 %. If streaks fly tail-first in Studio, flip the "
      "image vertically before upload (VelocityParallel orientation check)."),
-    ("te5_ash", "ash5", "ash", "1024x1024", "Grid2x2", "Random",
+    ("te5_ash", "ash5", "ash", "256x256", "None", None,
      "P8b black ash flakes rising off the galaxy",
-     "1024x1024 (Roblox only animates flipbooks on 1024^2 textures). Flipbook 2x2 Random: 4 charred flakes in 512 px "
-     "cells (7, 9, 8, 8 main corners with torn edges), extent 0.64-0.74 of the cell, "
-     ">= 12 % padding. Body RGB 14-22 alpha 1 with fibre grain and a soft fold; 1 px silver (190) highlight on the "
-     "upper-left edges."),
+     "One charred flake, 256x256 (no flipbook: the emitter's random Rotation and RotSpeed -90..90 make every particle a "
+     "different shape). 9 main corners with torn edges, extent 0.74, >= 12 % padding. Body RGB 14-22 alpha 1 with "
+     "fibre grain and a soft fold; 1 px silver (190) highlight on the upper-left edges."),
 ]
 
 
@@ -883,7 +886,7 @@ def write_manifest():
 # ====================================================================================================================
 
 SHEET_ORDER = ["te5_shards", "te5_smoke", "te5_mote", "te5_glint", "te5_bokeh", "te5_streak", "te5_ash"]
-GRIDS = {"te5_shards": 4, "te5_smoke": 4, "te5_ash": 2}
+GRIDS = {"te5_shards": 4, "te5_smoke": 4}
 
 
 def _font(sz):
@@ -1018,7 +1021,7 @@ def sheet_overview():
                 for j in range(1, g):
                     cp.rgb[oy:oy + th, ox + j * tw // g] = cp.rgb[oy:oy + th, ox + j * tw // g] * 0.6 + 0.2
                     cp.rgb[oy + j * th // g, ox:ox + tw] = cp.rgb[oy + j * th // g, ox:ox + tw] * 0.6 + 0.2
-            lay = {"te5_shards": "Grid4x4 Loop", "te5_smoke": "Grid4x4 OneShot", "te5_ash": "Grid2x2 Random"}.get(nm, "")
+            lay = {"te5_shards": "Grid4x4 Loop", "te5_smoke": "Grid4x4 OneShot"}.get(nm, "")
             labels.append((f"{nm}  {w}x{h}  {lay}", (cx, cy - 20)))
         out = cp.image()
         for t, xy in labels:
@@ -1030,7 +1033,7 @@ def sheet_overview():
 
 
 def sheet_frames():
-    """Every flipbook frame: shards 1:1 (central 160 px of each cell), smoke 1:2, ash 2:1, over both backgrounds."""
+    """Every flipbook frame: shards 1:1 (central 160 px of each cell), smoke 1:2; the ash flake at 4 rotations."""
     paths = []
     sh, sm, ah = load("te5_shards"), load("te5_smoke"), load("te5_ash")
     for bgname, bg in (("dark", BG_DARK), ("sky", BG_SKY)):
@@ -1055,13 +1058,12 @@ def sheet_frames():
             cp.put_plain(resize_premult(cell_of(sm, 4, k), 128, 128), x, yy)
             texts.append((f"{k}  a{SMOKE_PEAK[k]:.2f}", (x + 3, yy + 2)))
         y += 2 * 136
-        texts.append(("te5_ash: 4 flakes (Random), each 512 px cell shown at 256 px", (8, y + 6)))
+        texts.append(("te5_ash: one flake (256 px), shown at 4 of the particle's random rotations", (8, y + 6)))
         y += 30
         for k in range(4):
             x = 8 + k * 268
             cp.rgb[y:y + 256, x:x + 256] = np.asarray(bg, F32) / 255.0
-            c = cell_of(ah, 2, k)
-            cp.put_plain(resize_premult(c, 256, 256), x, y)
+            cp.put_plain(np.rot90(ah, k), x, y)
         out = cp.image()
         for t, xy in texts:
             label(out, t, xy, 13)
@@ -1214,7 +1216,7 @@ def ingame_panel(kind, night, w, h, seed):
     elif kind == "ash":
         ah = load("te5_ash")
         for _ in range(26):
-            cp.put(cell_of(ah, 2, int(rng.integers(0, 4))), rng.uniform(10, w - 10), rng.uniform(10, h - 10),
+            cp.put(ah, rng.uniform(10, w - 10), rng.uniform(10, h - 10),
                    rng.uniform(0.28, 0.42) * pps * 1.2, ASH, 0.05, 0.0, 1.0, rot=rng.uniform(0, 360))
         texts.append("P8b ash  .28-.42 studs (9-14 px)")
     return cp.image(), texts
@@ -1308,7 +1310,7 @@ def check():
             fails.append(msg)
 
     sizes = {"te5_shards": (1024, 1024), "te5_smoke": (1024, 1024), "te5_mote": (128, 128), "te5_glint": (256, 256),
-             "te5_bokeh": (256, 256), "te5_streak": (256, 256), "te5_ash": (1024, 1024)}
+             "te5_bokeh": (256, 256), "te5_streak": (256, 256), "te5_ash": (256, 256)}
     imgs = {}
     for nm, (w, h) in sizes.items():
         im = Image.open(os.path.join(OUT, nm + ".png"))
@@ -1451,8 +1453,7 @@ def check():
     a = imgs["te5_ash"]
     pad_ok, ext_ok, body_ok, hl_ok = True, True, True, True
     exts = []
-    for k in range(4):
-        c = cell_of(a, 2, k)
+    for c in (a,):
         A = c[..., 3]
         cs = A.shape[0]
         lim = int(round(0.12 * cs))
@@ -1467,10 +1468,10 @@ def check():
         inner = solid & np.roll(solid, 2, 0) & np.roll(solid, -2, 0) & np.roll(solid, 2, 1) & np.roll(solid, -2, 1)
         body_ok &= bool(c[..., 0][inner].min() >= 14 and c[..., 0][inner].max() <= 22)
         hl_ok &= int((c[..., 0] >= 150).sum()) > 20 * cs // 128
-    ok(pad_ok, "te5_ash: >= 12 % padding in all 4 cells")
+    ok(pad_ok, "te5_ash: >= 12 % padding")
     ok(ext_ok, "te5_ash: flakes span 0.6-0.8 of the cell -> " + " ".join(f"{e:.2f}" for e in exts))
     ok(body_ok, "te5_ash: body RGB 14-22 at alpha 1")
-    ok(hl_ok, "te5_ash: silver (190) edge highlight present on every flake")
+    ok(hl_ok, "te5_ash: silver (190) edge highlight present")
     return fails
 
 

@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 12_apply.luau | step 12: join, check, compile, write, read back
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (123861 bytes, checksum 523677650).
+-- AuraRNG Studio install kit | 13_apply.luau | step 13: join, check, compile, write, read back
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "12_apply.luau"
+local FILE = "13_apply.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-123861-523677650-10-457228033"
-local NEW_LEN, NEW_SUM = 123861, 523677650
+local RUN = "TheEnd-141659-402664341-11-730820328"
+local NEW_LEN, NEW_SUM = 141659, 402664341
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 10
-local LENS = { 13381, 13376, 13386, 13381, 13350, 13333, 13298, 13314, 13338, 3704 }
-local SUMS = { 138302907, 144820895, 284418912, 946852927, 737433606, 204697128, 129328051, 22255047, 37178664, 110492221 }
+local N = 11
+local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
+local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -159,6 +159,22 @@ local function writeAndCheck(m, new, old)
 		or "WARNING: the previous version could not be put back: run 99_rollback.luau.")
 end
 
+-- CONFIG overrides are attributes on the module (UPPER_CASE names). They survive an install and a rollback, and every
+-- build reads them, so a flip left over from an earlier Studio test would silently change the new version: list them.
+local function overrides(m)
+	local out = {}
+	local ok, attrs = pcall(function() return m:GetAttributes() end)
+	if ok and type(attrs) == "table" then
+		for k, v in pairs(attrs) do
+			if type(k) == "string" and string.match(k, "^[%u%d_]+$") then table.insert(out, k .. "=" .. tostring(v)) end
+		end
+	end
+	table.sort(out)
+	if #out == 0 then return "CONFIG overrides on the module: none" end
+	return "CONFIG overrides on the module: " .. table.concat(out, ", ")
+		.. " (not set by you this session? clear them: studio_checks.md S8 CLEAR_ALL)"
+end
+
 local function main()
 	if game:GetService("RunService"):IsRunning() then
 		return say("STOP", "Studio is in Play mode. Stop Play, then run this again in Edit mode. Nothing changed.")
@@ -192,7 +208,7 @@ local function main()
 	local cur = SES:GetEditorSource(m)
 	if cur == src then
 		h:Destroy()
-		return say("OK", string.format("already installed: %s is the new version (%d bytes, checksum %d). Temporary holder removed.", TARGET_NAME, NEW_LEN, NEW_SUM))
+		return say("OK", string.format("already installed: %s is the new version (%d bytes, checksum %d). Temporary holder removed. %s", TARGET_NAME, NEW_LEN, NEW_SUM, overrides(m)))
 	end
 	local b = backupWith(#cur, sum(cur))
 	if not b then
@@ -204,8 +220,8 @@ local function main()
 		return say("FAIL", why .. " The holder is kept, so this can be run again.")
 	end
 	h:Destroy()
-	return say("OK", string.format("installed: %s is now %d bytes, checksum %d (compiled, written, read back from the editor and checked). The previous version is saved as %s. Temporary holder removed. Next: test in Play (studio_checks.md).",
-		TARGET_NAME, NEW_LEN, NEW_SUM, b:GetFullName()))
+	return say("OK", string.format("installed: %s is now %d bytes, checksum %d (compiled, written, read back from the editor and checked). The previous version is saved as %s. Temporary holder removed. %s. Next: test in Play (studio_checks.md).",
+		TARGET_NAME, NEW_LEN, NEW_SUM, b:GetFullName(), overrides(m)))
 end
 
 local ok, res = pcall(main)

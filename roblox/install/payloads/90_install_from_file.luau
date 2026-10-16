@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 90_install_from_file.luau | plan B: install from a file picked in a dialog
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (123861 bytes, checksum 523677650).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "90_install_from_file.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-123861-523677650-10-457228033"
-local NEW_LEN, NEW_SUM = 123861, 523677650
+local RUN = "TheEnd-141659-402664341-11-730820328"
+local NEW_LEN, NEW_SUM = 141659, 402664341
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -137,6 +137,21 @@ local function writeAndCheck(m, new, old)
 end
 
 local LABEL = "pass5"
+-- CONFIG overrides are attributes on the module (UPPER_CASE names). They survive an install and a rollback, and every
+-- build reads them, so a flip left over from an earlier Studio test would silently change the new version: list them.
+local function overrides(m)
+	local out = {}
+	local ok, attrs = pcall(function() return m:GetAttributes() end)
+	if ok and type(attrs) == "table" then
+		for k, v in pairs(attrs) do
+			if type(k) == "string" and string.match(k, "^[%u%d_]+$") then table.insert(out, k .. "=" .. tostring(v)) end
+		end
+	end
+	table.sort(out)
+	if #out == 0 then return "CONFIG overrides on the module: none" end
+	return "CONFIG overrides on the module: " .. table.concat(out, ", ")
+		.. " (not set by you this session? clear them: studio_checks.md S8 CLEAR_ALL)"
+end
 
 local function main()
 	if game:GetService("RunService"):IsRunning() then
@@ -152,7 +167,7 @@ local function main()
 
 	local cur = SES:GetEditorSource(m)
 	if #cur == NEW_LEN and sum(cur) == NEW_SUM then
-		return say("OK", "already installed: " .. TARGET_NAME .. " is the new version. Nothing to do.")
+		return say("OK", "already installed: " .. TARGET_NAME .. " is the new version. Nothing to do. " .. overrides(m))
 	end
 	-- 1) back up what is live now (once)
 	local b = backupWith(#cur, sum(cur))
@@ -189,8 +204,8 @@ local function main()
 	if not done then
 		return say("FAIL", why)
 	end
-	return say("OK", string.format("installed from %s: %s is now %d bytes, checksum %d (compiled, written, read back and checked). The previous version is saved as %s.",
-		tostring(file.Name), TARGET_NAME, NEW_LEN, NEW_SUM, b:GetFullName()))
+	return say("OK", string.format("installed from %s: %s is now %d bytes, checksum %d (compiled, written, read back and checked). The previous version is saved as %s. %s.",
+		tostring(file.Name), TARGET_NAME, NEW_LEN, NEW_SUM, b:GetFullName(), overrides(m)))
 end
 
 local ok, res = pcall(main)

@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 09_chunk_08_of_10.luau | step 9: piece 8 of 10
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (123861 bytes, checksum 523677650).
+-- AuraRNG Studio install kit | 10_chunk_09_of_11.luau | step 10: piece 9 of 11
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "09_chunk_08_of_10.luau"
+local FILE = "10_chunk_09_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-123861-523677650-10-457228033"
-local NEW_LEN, NEW_SUM = 123861, 523677650
+local RUN = "TheEnd-141659-402664341-11-730820328"
+local NEW_LEN, NEW_SUM = 141659, 402664341
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 10
-local LENS = { 13381, 13376, 13386, 13381, 13350, 13333, 13298, 13314, 13338, 3704 }
-local SUMS = { 138302907, 144820895, 284418912, 946852927, 737433606, 204697128, 129328051, 22255047, 37178664, 110492221 }
+local N = 11
+local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
+local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -67,99 +67,23 @@ local function chunkOk(h, i)
 	return v ~= nil and v:IsA("StringValue") and #v.Value == LENS[i] and sum(v.Value) == SUMS[i]
 end
 
-local K = 8
--- piece 8 of 10 of the new source (13314 bytes, checksum 22255047, long bracket level 0)
+local K = 9
+-- piece 9 of 11 of the new source (13287 bytes, checksum 132410676, long bracket level 0)
 local DATA = [[
-			-- (after the assembly the night values are written straight away; during it the fades pick them up)
-			local a = alphaW
-			if haloEntry then
-				local tr = 1 - (1 - haloEntry[2]) * a
-				if tr ~= haloEntry[5] then
-					haloIm.ImageTransparency = tr
-					haloEntry[5] = tr
-				end
-			end
-			if coronaEntry then
-				local tr = 1 - (1 - coronaEntry[2]) * a
-				if tr ~= coronaEntry[5] then
-					coronaEntry[1].ImageTransparency = tr
-					coronaEntry[5] = tr
+		-- (a Highlight paints a see-through part at full strength, whatever its LocalTransparencyModifier: while the rings
+		-- fade or ghost they leave the silver tone, two parent writes each way, so no grey outlined silhouette stays behind)
+		local out = m > 0
+		if out ~= st.ringsOut then
+			st.ringsOut = out
+			for h = ARM, ARMD do
+				for _, hp in ipairs(holders[h]) do
+					if hp[2] == mats.Silver or hp[2] == hosts.noTone then
+						hp[2] = out and hosts.noTone or mats.Silver
+						if hp[1].Parent then hp[1].Parent = hp[2] end
+					end
 				end
 			end
 		end
-		toneLevels(0)
-		refreshLights()
-	end
-	-- the fades: every part, image, beam and light goes from invisible to its rest value in its own window (times the
-	-- framework's fade-in alpha); a value is written only when it moved enough, and snapped exactly at the ends (no blinking)
-	local function fadeAll(a, asm, thr)
-		for _, i in ipairs(solids) do
-			local f = a
-			if asm then
-				local u = (age - PF0[i]) / (PF1[i] - PF0[i])
-				f *= u <= 0 and 0 or u >= 1 and 1 or u * u * (3 - 2 * u)
-			end
-			local tr = 1 - f
-			local cur = PCUR[i]
-			if tr ~= cur and (abs(tr - cur) >= thr or tr <= 0 or tr >= 1) then
-				PP[i].Transparency = tr
-				PCUR[i] = tr
-			end
-		end
-		for _, e in ipairs(images) do
-			local f = a
-			if asm then f *= smooth((age - e[3]) / (e[4] - e[3])) end
-			local tr = 1 - (1 - e[2]) * f
-			if tr ~= e[5] and (abs(tr - e[5]) >= thr or f <= 0 or f >= 1) then
-				e[1].ImageTransparency = tr
-				e[5] = tr
-			end
-		end
-		local fb = a
-		if asm then fb *= smooth((age - 4.6) / 0.8) end
-		beamSteps(fb)
-		local kf, wf = a, a
-		if asm then kf, wf = a * smooth((age - 0.6) / 1.0), a * smooth((age - 4.6) / 1.0) end
-		if abs(kf - st.kf) >= thr or abs(wf - st.wf) >= thr or ((kf <= 0 or kf >= 1) and kf ~= st.kf) or ((wf <= 0 or wf >= 1) and wf ~= st.wf) then
-			st.kf, st.wf = kf, wf
-			lightLevels()
-		end
-		-- (the silver tone comes in only once every silver part is solid: a Highlight paints a part that is still fading
-		-- in at full strength, which would make the rising dais rim pop)
-		st.hlA = asm and a * smooth((age - 5.65) / 0.7) or a
-		toneLevels(thr)
-	end
-	-- another wearer's aura between you and your camera: its clock and orbs fade to a ghost in 3 steps (one burst of
-	-- LocalTransparencyModifier writes per step, none while it holds) with their smoke, glints and streams, and its GUIs
-	-- and silver tone switch off meanwhile
-	local function setGhost(q)
-		st.ghostQ = q
-		local m = 0.75 * q
-		for _, p in ipairs(ghostParts) do p.LocalTransparencyModifier = m end
-		if st.fxLtm then
-			for _, e in ipairs(emitters) do
-				if e[6] then e[1].LocalTransparencyModifier = m end
-			end
-			for _, b in ipairs(beams) do
-				if not b[9] then b[1].LocalTransparencyModifier = m end
-			end
-		end
-		local off = q >= 0.5
-		if off ~= st.ghostGui then
-			st.ghostGui = off
-			for _, g in ipairs(ghostGuis) do g.Enabled = not off end
-			toneOn()
-			if corona then corona.Enabled = nq > 0.05 and not off end
-			if not st.fxLtm then
-				refreshEmitters()
-				refreshBeams()
-			end
-		end
-	end
-	-- the rings' see-through: their own ghost (another wearer's rings in your way) or the near-camera fade, whichever is more
-	local function writeRings()
-		local m = max(0.75 * st.armGQ, st.armQ)
-		for _, p in ipairs(ringParts) do p.LocalTransparencyModifier = m end
 	end
 	local function segDist(p, a, ab, len2) -- distance from point p to the segment a -> a + ab
 		local t = clamp((p - a):Dot(ab) / len2, 0, 1)
@@ -171,6 +95,9 @@ local DATA = [[
 		-- (hidden, e.g. under the roll cutscene's camera, or too far away: nothing advances, so the assembly and the grade
 		-- wait for the player, whether or not the framework keeps calling update)
 		if destroyed or not visible then return end
+		-- (a physics fling can hand us one NaN position: skip that frame instead of poisoning every spring for good)
+		local p0 = s.cf.Position
+		if p0.X ~= p0.X or p0.Y ~= p0.Y or p0.Z ~= p0.Z or s.hover ~= s.hover then return end
 		if remote and not near then
 			-- another player's aura past ~110 studs (about 40 px tall) runs every other frame, with both frames' time: the
 			-- springs and spins stay exact and it costs half
@@ -208,10 +135,16 @@ local DATA = [[
 			setGroups()
 		end
 		-- the wearer's own grade starts with the first frame they can see (never over a scripted camera, e.g. a cutscene)
-		if st.gradeWanted and not st.gradeStarted then
+		if st.gradeWanted and not st.gradeStarted and age < 4.5 then -- (not when the assembly is nearly over)
 			st.gradeStarted = true
 			local camG = workspace.CurrentCamera
-			if camG and camG.CameraType == Enum.CameraType.Scriptable then
+			-- (not for a character that has just spawned or respawned: a reset rebuilds the aura on the new character, which
+			-- is not an equip. Decided here rather than at build, when every CharacterAdded handler has run; and with a
+			-- 12 s window, as the framework may build only once the avatar has loaded)
+			local sa = spawnedAt[char]
+			if (sa and st.builtAt - sa < 12) or (ownGone and ownGoneChar[1] ~= char and st.builtAt - ownGone < 15) then
+				st.gradeWanted = false
+			elseif camG and camG.CameraType == Enum.CameraType.Scriptable then
 				st.gradeStarted = false
 			elseif camG then
 				if liveGrade and liveGrade.Parent then
@@ -220,6 +153,7 @@ local DATA = [[
 					grade = new("ColorCorrectionEffect", { Name = "TheEndReveal" }, camG)
 					liveGrade = grade
 				end
+				gradeOwner = st
 				gradeToken += 1
 				gradeTo(GRADE_ON, 1.2)
 			end
@@ -233,6 +167,8 @@ local DATA = [[
 		-- so a jump is not a flight), and whether they sit
 		local lastO = st.lastO
 		st.lastO = O
+		-- (a teleport, to another island or a lobby pad: everything starts where it belongs instead of springing across)
+		if lastO and ((O - lastO).Magnitude >= 30 or abs(O.Y - lastO.Y) > 8) then snap = true end
 		if lastO then
 			local dO = O - lastO
 			if grounded then dO = Vector3.new(dO.X, 0, dO.Z) end
@@ -265,8 +201,11 @@ local DATA = [[
 		local cam = workspace.CurrentCamera
 		local camPos = lastCamPos
 		if cam then
-			camPos = cam.CFrame.Position
-			lastCamPos = camPos
+			local cp = cam.CFrame.Position
+			if cp.X == cp.X and cp.Y == cp.Y and cp.Z == cp.Z then
+				camPos = cp
+				lastCamPos = cp
+			end
 		end
 		local v = O - camPos
 		local dh = sqrt(v.X * v.X + v.Z * v.Z)
@@ -278,7 +217,22 @@ local DATA = [[
 		local czq = math.floor(cz * 20 + 0.5) / 20
 		if czq ~= st.czq then
 			st.czq = czq
-			toneLevels(0) -- (the ink outline eases off close up)
+			toneLevels(0) -- (close up the ink outline eases off and the silver fill strengthens)
+			-- (the floor's twinkles: one size step at a time, each a band past its threshold, so a camera resting near one
+			-- never flips them back and forth)
+			local mi = st.moteI
+			while mi < 5 and czq >= MOTE_T[mi] + 0.05 do mi += 1 end
+			while mi > 1 and czq <= MOTE_T[mi - 1] - 0.05 do mi -= 1 end
+			if mi ~= st.moteI then
+				st.moteI = mi
+				em.motes.Size = hosts.moteSizes[mi]
+			end
+			if hosts.lensTop then
+				-- (the lensed band slims as the camera comes close: at the default zoom a full-width band reads as a crescent)
+				local k = 1 - 0.45 * czq
+				hosts.lensTop.Width0, hosts.lensTop.Width1 = 1.5 * k, 1.5 * k
+				hosts.lensBot.Width0, hosts.lensBot.Width1 = 0.8 * k, 0.8 * k
+			end
 		end
 		if haloEntry then
 			-- (the white ball's soft halo fades out as the camera comes close, where the leaning dial plane would cut it)
@@ -345,10 +299,42 @@ local DATA = [[
 		else
 			target = lastGroundY
 		end
+		if target ~= target then target = daisY or O.Y - 3 end
 		if snap then daisY = nil end
 		if daisY then daisY += (target - daisY) * (1 - exp(-(target < daisY and 30 or 8) * dt)) else daisY = target end
 		local dY = daisY + st.layer
+		-- on a slope (a hillside, a beach, a ramp) the pool lies along the ground: a plane through three rays round the
+		-- wearer, every 0.2 s while standing on it, accepted only when it is a clean slope through the ground under the
+		-- wearer (stairs, cliff edges, other players: it stays level). It tilts over smoothly; flying or seated it is level
+		if isGrounded and not seated then
+			st.gpT -= dt
+			if st.gpT <= 0 then
+				st.gpT = 0.2
+				local nT = Vector3.yAxis
+				local gp = hosts.gp
+				local h1 = workspace:Raycast(Vector3.new(O.X + 9 * sin(yawW), dY + 4, O.Z + 9 * cos(yawW)), DOWN9, gp)
+				local h2 = h1 and workspace:Raycast(Vector3.new(O.X + 9 * sin(yawW + 2.0944), dY + 4, O.Z + 9 * cos(yawW + 2.0944)), DOWN9, gp)
+				local h3 = h2 and workspace:Raycast(Vector3.new(O.X + 9 * sin(yawW + 4.1888), dY + 4, O.Z + 9 * cos(yawW + 4.1888)), DOWN9, gp)
+				if h3 then
+					local p1 = h1.Position
+					local nn = (h2.Position - p1):Cross(h3.Position - p1)
+					if nn.Magnitude > 1e-3 then
+						nn = nn.Unit
+						if nn.Y < 0 then nn = -nn end
+						if nn.Y >= 0.94 and abs((gnd - p1):Dot(nn)) < 0.6 then nT = nn end -- (at most 20°, through the ground underfoot)
+					end
+				end
+				st.gnT = nT
+			end
+		else
+			st.gnT = Vector3.yAxis
+		end
+		local gn = snap and st.gnT or st.gn + (st.gnT - st.gn) * (1 - exp(-4 * dt))
+		gn = gn.Magnitude > 1e-3 and gn.Unit or Vector3.yAxis
+		st.gn = gn
+		local slopeT = gn.Y < 0.99996 and sqrt(1 - gn.Y * gn.Y) / gn.Y or 0 -- (tan of the tilt; under 0.5° it stays level)
 		local Gd = CFrame.new(O.X, dY, O.Z)
+		if slopeT > 0 then Gd *= CFrame.fromAxisAngle(Vector3.yAxis:Cross(gn).Unit, math.acos(gn.Y)) end
 		-- the height the clock and the balance ride: a heavy spring, so a jump (or a step) does not throw a 28-stud watch
 		-- up and down with the body; it catches up fast when flying or sitting
 		if snap or not st.kY then
@@ -370,35 +356,13 @@ local DATA = [[
 		local Hc = CONFIG.CLOCK_HEIGHT - 0.5 * g - 3 * cz + 16 * fp - 3 * sitT
 		local Dc = CONFIG.CLOCK_DIST + 2 * g + (remote and CLOSE.distRemote or CLOSE.dist) * cz + 6 * fp - 2 * sitT
 		local tilt = rad(clamp(CONFIG.CLOCK_TILT + 14 * g + 4 * st.speedT + CLOSE.tilt * cz - 32 * fp, -10, 50))
-		local minHc = dY + 1.2 - st.kY + 14.2 * cos(tilt) + 1.44 * sin(tilt)
+		-- (its lowest point is the bezel's back edge when it leans back, its front edge when it leans forward; on a slope
+		-- the ground under it is higher or lower by the slope's rise along the view)
+		local vl = V.LookVector
+		local rise = slopeT > 0 and -(gn.X * vl.X + gn.Z * vl.Z) / gn.Y or 0
+		local minHc = dY + rise * Dc + 1.2 - st.kY + 14.2 * cos(tilt) + (tilt >= 0 and 1.44 or 1.12) * abs(sin(tilt))
 		if Hc < minHc then Hc = minHc end
-		local K = Vk * CFrame.new(0, Hc, -Dc) * CFrame.Angles(0, rad(9 + 5 * sin(TAU * t / 16)), 0) * CFrame.Angles(-tilt, 0, 0)
-		GCF[GK] = K
-
-		-- 2. the clockwork: gears (meshed rates from the server clock), hands, crown
-		for _, gd in ipairs(gearData) do
-			local x, y, z = gd.cx, gd.cy, gd.cz
-			if asm then
-				-- spin up fast and wind down to the running pace (an integrated extra angle, so nothing jumps)
-				gd.extra = (gd.extra + rad((gd.sign * 300 - gd.rate) * exp(-4 * max(0, age - gd.a0))) * dt) % TAU
-				local u = (age - gd.a0) / (gd.a1 - gd.a0)
-				if u < 1 then
-					local kk = 1 - easeOutBack(u)
-					x, y, z = x + (gd.sx - x) * kk, y + (gd.sy - y) * kk, z + (gd.sz - z) * kk
-				end
-			end
-			GCF[gd.grp] = K * CFrame.new(x, y, z) * CFrame.Angles(0, 0, -((rad(gd.rate) * now + gd.extra) % TAU))
-		end
-		local th, tm, ts = 0, 0, rad(6 * (now % 60))
-		local crownY = 0
-		if asm then
-			local kk = 1 - easeOutBack((age - 3.6) / 1.2)
-			th, tm, ts = -rad(330) * kk, -rad(1050) * kk, ts - rad(720) * kk
-			crownY = 6 * (1 - easeOutBack((age - 4.2) / 0.6))
-		end
-		GCF[GHOUR] = K * CFrame.Angles(0, 0, -th) * CFrame.new(0, 0, 0.85)
-		GCF[GMIN] = K * CFrame.Angles(0, 0, -tm) * CFrame.new(0, 0, 1.15)
-		GCF[GSEC] = K * CFrame.Angles(0, 0, -ts) * CFrame.new(0, 0, 1.42)
+		-- the owner's camera: the clock steps back along the view until FRAME_TOP above its hub (the XII numeral: the hands
 ]]
 
 local function main()
@@ -443,7 +407,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "12_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "13_apply.luau"))
 end
 
 local ok, res = pcall(main)

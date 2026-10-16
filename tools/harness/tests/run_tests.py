@@ -238,7 +238,7 @@ def main():
         print("skip typecheck (set LUAU_LSP to a luau-lsp binary to include it)")
     cur = os.path.join(REPO, "roblox", "ReplicatedStorage", "AuraFX", "TheEnd.lua")
     if os.path.exists(cur) and (not a.k or a.k in "registers"):
-        p = subprocess.run([sys.executable, os.path.join(HARNESS, "register_headroom.py"), cur, "--spare", "16"], capture_output=True, text=True)
+        p = subprocess.run([sys.executable, os.path.join(HARNESS, "register_headroom.py"), cur, "--spare", "16", "--opt", "0,1,2"], capture_output=True, text=True)
         if p.returncode == 0:
             print("ok   registers: " + p.stdout.strip())
         else:

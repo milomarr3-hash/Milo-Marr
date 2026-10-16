@@ -110,7 +110,9 @@ export class Preview {
 		this.env.tone = opts.tone || 'filmic';
 		const clock = opts.clock != null ? opts.clock : (snapshot.clockTime ?? 14);
 		const { body } = wearerFrame(snapshot);
-		const groundY = snapshot.wearer && snapshot.wearer.ground ? snapshot.wearer.ground[1] : 0;
+		// the plaza's top as recorded by the harness (a wearer on a seat has the seat top as "ground": the floor stays put)
+		const groundY = snapshot.world && snapshot.world.groundY != null ? snapshot.world.groundY
+			: snapshot.wearer && snapshot.wearer.ground ? snapshot.wearer.ground[1] : 0;
 		const st = this.env.apply({ mode: opts.env || 'auto', clockTime: clock, focus: body, groundY, props: opts.props !== false });
 		this.envState = st;
 		this.scene.environment = this.env.envMap;

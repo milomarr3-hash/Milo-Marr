@@ -92,6 +92,14 @@ What was changed to get there (all in this folder unless noted):
   ~(109, 164, 58) here, ~(142, 196, 69) in the capture, though the ground in that spot is different scenery).
 - **The ground smoke and the galaxy floor** read darker here than in Studio, where the floor near the feet is a whiter haze.
 
+- **The floor under a seated wearer** is the plaza top the harness records (`world.groundY`), not the seat top the wearer's
+  ground ray hits (review round 2: seated renders used to draw the floor at the seat and hide the dais under it).
+- **Another player's aura from a preset camera** (`remote_wearer@VIEW`): the camera's Focus stays on the local player's
+  character, as in Roblox, so `GHOST_REMOTE` reacts to what is really between the camera and the local player.
+- **Cropped and rounded images** (`ImageRectOffset` / `ImageRectSize`, a `UICorner` on an ImageLabel, used by pass 5's
+  moon face before te5 is uploaded) and **`LocalTransparencyModifier` on beams and particles** (another wearer's aura
+  ghosting) are drawn as Roblox's API describes them; neither has been compared with Studio.
+
 ## Don't trust
 
 - **Stand-in textures.** Only `textures/te4/*` are the real images. Everything from the AuraCinema kit, VFX Studio and the pass-1/2

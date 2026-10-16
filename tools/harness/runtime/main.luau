@@ -205,6 +205,8 @@ do
 		local S = { name = name }
 		for k, v in pairs(sc.cfg) do S[k] = v end
 		H.CONFIG.quality = H.CONFIG.forceQuality or S.quality or "high"
+		-- (a scenario whose aura starts hidden counts its steady state from later: its assembly starts when it is shown)
+		if S.steadyAfter and not H.CONFIG.steadyAfterCli then H.CONFIG.steadyAfter = S.steadyAfter end
 		H.TIME_BASE = S.timeBase or 120
 		math.randomseed(H.CONFIG.seed or 1)
 		local seedState = H.CONFIG.seed or 1

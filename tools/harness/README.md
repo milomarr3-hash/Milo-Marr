@@ -11,7 +11,7 @@ It is a strong filter, not a replacement for Studio: see [What it can't tell you
 ## Quick start
 
 ```sh
-# all 28 scenarios, report + snapshots in tools/harness/out/<module>/
+# all 32 scenarios, report + snapshots in tools/harness/out/<module>/
 python3 tools/harness/run_aura.py roblox/ReplicatedStorage/AuraFX/TheEnd.pass4-live.lua
 
 # a few scenarios, custom output, extra snapshot frames (frames, or t= seconds)
@@ -94,6 +94,9 @@ end of every scenario the aura is destroyed and the harness keeps running 1.5 s 
 | `seated` | the wearer sits on a Seat (`Humanoid.Sit`, `SeatPart`): the ground ray hits the seat top |
 | `small_avatar` | a short R15 (HipHeight 1.4), idle then walking |
 | `downhill` | walking while the ground drops 6 studs/s (the plaza part moves down) |
+| `equip_in_cutscene`, `equip_in_cutscene_paused` | equipped while the roll cutscene's Scriptable camera holds the screen (0-5 s); the first keeps calling `update` while the aura is hidden, the second does not (the real framework is not in this repo, so both are tested): the assembly and the screen grade must wait for the player |
+| `pair_side` | another wearer stands 5 studs to your side (friends side by side: nothing of theirs is in your way) |
+| `visit_close` | a player without the aura stands in front of a wearer, then walks round to their side |
 
 The world: a plaza part at y = 0 (the only thing rays hit), the camera, `Lighting` with the place's Bloom
 (Intensity 1, Size 24, Threshold 2), players `Player1` (local) ... with R15 characters built like Roblox's
@@ -129,7 +132,7 @@ The mock's classes, members, types, enums, read-only flags and defaults come fro
 | code | meaning |
 |---|---|
 | `gui-writes-per-frame` | a GUI property written on most steady frames (stalls Roblox; write only on change) |
-| `part-writes-per-frame`, `many-writes-per-frame` | per-frame appearance writes on many parts / very busy properties |
+| `part-writes-per-frame`, `many-writes-per-frame` | appearance writes on many parts on most steady frames (bursts on events, e.g. the 3 steps of a ghost fade, are not flagged) / very busy properties |
 | `instances-per-frame` | `Instance.new`/`Clone` inside update or callbacks after the build |
 | `particle-budget`, `emitter-heavy` | estimated live particles (Rate x Lifetime) over budget (4000 high / 1500 low per wearer; 800 per emitter) |
 | `lifetime-clamp`, `range`, `segments`, `light-range`, `size-clamp`, `canvas`, `rate` | values Roblox clamps or caps (Lifetime 0..20, LightEmission 0..1, Beam segments 1..1000, light range 60, part size 0.001..2048, huge canvases) |
@@ -138,6 +141,7 @@ The mock's classes, members, types, enums, read-only flags and defaults come fro
 | `translucent-layer` | (THE END rules) an element over 6 studs at a uniform transparency of 0.3..0.8: the pass-5 opacity rule against ghostly stacked planes |
 | `billboard-cut` | a solid camera-facing sprite (ImageTransparency < 0.3, inner half of its quad) crosses a SurfaceGui plane, which cuts it in Roblox (the pass-4 "white wedge" on the moon) |
 | `flicker` | brightness/transparency reversing 3+ times in a second, or on/off 4+ times (no flashes or strobes) |
+| `grade-over-cutscene`, `assembly-unseen` | a ColorCorrectionEffect under the camera more than 0.6 s into a Scriptable-camera period (it dims the roll cutscene); the void already full size on the first frame after the cutscene (the equip assembly played while hidden; `equip_in_cutscene*` only) |
 | `view-blocked` | from the default follow camera, solid aura parts (or opaque SurfaceGui planes) cover the wearer's head in > 40% of samples |
 | `leak-instances`, `leak-connections`, `leak-renderstep`, `leak-tweens` | after `destroy()`: instances the aura made still in the game (e.g. on the character or camera), connections still live, bindings or tweens still running |
 | `weld-anchors-character`, `weld-mass` | an anchored aura part jointed to the character (anchors the player) / non-massless parts added to it |

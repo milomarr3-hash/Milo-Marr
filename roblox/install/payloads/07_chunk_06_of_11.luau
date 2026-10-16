@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 06_chunk_05_of_10.luau | step 6: piece 5 of 10
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (123861 bytes, checksum 523677650).
+-- AuraRNG Studio install kit | 07_chunk_06_of_11.luau | step 7: piece 6 of 11
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "06_chunk_05_of_10.luau"
+local FILE = "07_chunk_06_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-123861-523677650-10-457228033"
-local NEW_LEN, NEW_SUM = 123861, 523677650
+local RUN = "TheEnd-141659-402664341-11-730820328"
+local NEW_LEN, NEW_SUM = 141659, 402664341
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 10
-local LENS = { 13381, 13376, 13386, 13381, 13350, 13333, 13298, 13314, 13338, 3704 }
-local SUMS = { 138302907, 144820895, 284418912, 946852927, 737433606, 204697128, 129328051, 22255047, 37178664, 110492221 }
+local N = 11
+local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
+local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -67,123 +67,9 @@ local function chunkOk(h, i)
 	return v ~= nil and v:IsA("StringValue") and #v.Value == LENS[i] and sum(v.Value) == SUMS[i]
 end
 
-local K = 5
--- piece 5 of 10 of the new source (13350 bytes, checksum 737433606, long bracket level 0)
+local K = 6
+-- piece 6 of 11 of the new source (13281 bytes, checksum 861752101, long bracket level 0)
 local DATA = [[
-		applyTex(haloIm, "halo")
-		haloEntry = { haloIm, 0.65, 1.4, 2.2, 1 }
-		table.insert(images, haloEntry)
-		table.insert(brights, { halo, 1.0, 1.6 })
-		table.insert(ghostGuis, halo)
-	end
-	-- the moon's key light (high quality only: on phones' voxel lighting a moving light steps in 4-stud blocks).
-	-- STUDIO-VERIFY: a PointLight on an attachment of a part moved by BulkMoveTo follows it every frame
-	local keyLight = hi and new("PointLight", { Name = "Key", Range = 26, Color = Color3.fromRGB(230, 232, 240), Brightness = 0, Shadows = false,
-		Enabled = false }, new("Attachment", { Name = "KeyLight", Position = Vector3.new(0, 4.5, -5.5) }, moon))
-
-	-- the void: a pure-black Neon ball. STUDIO-VERIFY: Neon black renders pure black under the place's Bloom
-	local void
-	local voidSize = Vector3.new(8, 8, 8)
-	do
-		local filmVoid = film("FILM_VOID", "SmoothSphere", true)
-		if filmVoid then
-			local sz = fitSphere(filmVoid, 8)
-			local k = sz and filmSolid(filmVoid, sz, "Void", "VOID", CORE, GVOID, IDENT)
-			if k then
-				void = PP[k]
-				voidSize = sz
-				fadeWin(k, 0, 0.4)
-			end
-		end
-	end
-	if not void then
-		void = PP[solid("Void", "VOID", CORE, GVOID, "Ball", Vector3.new(8, 8, 8), IDENT)]
-		fadeWin(NP, 0, 0.4)
-	end
-	void.CastShadow = CONFIG.SHADOWS and hi
-	hosts.voidOut = new("Attachment", { Name = "StreamOut", CFrame = CFrame.new(0, 0, -4.05) * CFrame.Angles(0, 0, rad(90)) }, void)
-	hosts.ribbonOut = new("Attachment", { Name = "RibbonOut", CFrame = CFrame.new(0, -4.05, 0) * CFrame.Angles(0, rad(-90), 0) }, void)
-	do
-		-- the accretion disc: opaque white-hot streaks with black dust lanes, tilted 24° toward the viewer, its near half in
-		-- front of the core. (Top face only: the disc always tilts toward the viewer, so its underside is never seen.)
-		local accretion = carrier("Accretion", CORE, GACC, Vector3.new(13, 0.05, 13))
-		table.insert(ghostGuis, (surface(accretion, Enum.NormalId.Top, hiCanvas, 1.6, 2.4, "accretion", 0.3, 1.1)))
-		hosts.swirl = carrier("VoidSwirl", CORE, GSWIRL, Vector3.new(13, 0.3, 13))
-		-- the event horizon's glow: one emitter on the silhouette plane (camera-facing, like the photon ring) keeps three
-		-- soft rings alive at once, overlapping into a steady glow that hugs the black edge (no pulse; never a billboard,
-		-- which the accretion plane would cut)
-		hosts.horizon = hi and carrier("Horizon", CORE, GPF, Vector3.new(0.2, 0.2, 0.2))
-		-- the photon ring: a lume hairline that always hugs the black silhouette as the camera sees it (from any distance)
-		local N = low and 12 or 24
-		for i = 0, N - 1 do
-			local th = (i + 0.5) * 360 / N
-			local k = solid("PhotonRing", "LUME", CORE, GPF, "Block", Vector3.new(low and 2.25 or 1.14, 0.13, 0.12), IDENT)
-			PROT[k], PRR[k], PRS[k] = CFrame.Angles(0, 0, -rad(th)), 0.18, 11
-			PS[k], PM0[k], PM1[k] = true, 0.25 + 0.6 * i / N, 0.85 + 0.6 * i / N
-			fadeWin(k, 0.25 + 0.6 * i / N, 0.45 + 0.6 * i / N)
-		end
-		-- the lensed arc: the far side of the disc bent up over the top of the shadow
-		if hi then
-			for i = 0, 5 do
-				local th = -75 + (i + 0.5) * 150 / 6
-				local k = solid("LensedArc", "ARC", DETAIL, GPF, "Block", Vector3.new(2.05, 0.16, 0.10), IDENT)
-				PROT[k], PRR[k], PRSO[k] = CFrame.Angles(0, 0, -rad(th)), 0.6, 3
-				PS[k], PM0[k], PM1[k] = true, 0.7, 1.4
-				fadeWin(k, 0.7, 0.9)
-			end
-		end
-		-- the heart: a small brilliant four-point star just in front of the core (a pinpoint of light, not a sticker).
-		-- STUDIO-VERIFY: Roblox wedge orientation (right angle at -Y, +Z); if the spikes come out hollow: attribute WEDGE_SWAP
-		local hb = solid("Heart", "LUME", CORE, GHF, "Ball", Vector3.new(0.70, 0.70, 0.70), IDENT)
-		fadeWin(hb, 0.9, 1.1)
-		local function grow(i, L)
-			motion(i, CFrame.new(L.Position * 0.05) * L.Rotation, 0.9, 0.6)
-			fadeWin(i, 0.9, 1.1)
-		end
-		local wa = CONFIG.WEDGE_SWAP and -90 or 90
-		for _, sp in ipairs({ { 0, 1.6 }, { 180, 1.6 }, { 90, 1.1 }, { 270, 1.1 } }) do
-			if hi or sp[1] % 180 == 0 then
-				local S = CFrame.Angles(0, 0, -rad(sp[1]))
-				local h = sp[2]
-				local La = S * CFrame.new(-0.16, h / 2, 0) * CFrame.Angles(0, rad(wa), 0)
-				local Lb = S * CFrame.new(0.16, h / 2, 0) * CFrame.Angles(0, rad(-wa), 0)
-				grow(solid("Spike", "LUME", CORE, GHF, "Wedge", Vector3.new(0.08, h, 0.32), La), La)
-				grow(solid("Spike", "LUME", CORE, GHF, "Wedge", Vector3.new(0.08, h, 0.32), Lb), Lb)
-			end
-		end
-	end
-
-	---------------------------------------------------------------- THE DAIS: a dark galaxy pool in a raised silver rim
-	local base = solid("DaisBase", "BASE", CORE, GDAIS, "Cylinder", Vector3.new(0.12, 29.6, 29.6), CFrame.new(0, 0.06, 0) * VERT)
-	fadeWin(base, 4.0, 4.4)
-	hosts.base = PP[base]
-	local wheelHub
-	do
-		-- STUDIO-VERIFY: Top-face canvas orientation (up = +Z); the arms must trail the spin (floor turns clockwise from above;
-		-- if they lead: attribute GALAXY_DIR = -1). The floor and core images come in with the base disc (no bare grey lid).
-		hosts.floor = carrier("GalaxyFloor", CORE, GG0, Vector3.new(29.6, 0.05, 29.6))
-		surface(hosts.floor, Enum.NormalId.Top, hiCanvas, 1.3, 2.4, "galaxyFloor", 4.0, 4.6)
-		if hi then
-			local arms = carrier("GalaxyArms", DETAIL, GG1, Vector3.new(21, 0.05, 21))
-			surface(arms, Enum.NormalId.Top, 1024, 1.4, 2.4, "galaxyArms", 4.2, 5.2)
-		end
-		local core = carrier("GalaxyCore", CORE, GG2, Vector3.new(12, 0.05, 12))
-		surface(core, Enum.NormalId.Top, midCanvas, 1.5, 2.6, "galaxyCore", 4.0, 4.6)
-		if hi then
-			local eng = carrier("Engraving", DETAIL, GENG, Vector3.new(40, 0.05, 40))
-			surface(eng, Enum.NormalId.Top, 1024, 1.2, 2.0, "engraving", 4.2, 5.2)
-		end
-		-- the rim: fluted blocks (bright silver and satin) rising in a wave round the pool on equip
-		local NR = low and 16 or 28
-		for i = 0, NR - 1 do
-			local th = i * 360 / NR
-			local h = i % 2 == 0 and 0.90 or 0.96
-			local k = solid("DaisRim", i % 2 == 0 and "SILVER" or "SATIN", CORE, GDAIS, "Block",
-				Vector3.new(2 * 15.55 * math.tan(rad(180 / NR)) + 0.02, h, 0.80), CFrame.Angles(0, rad(th), 0) * CFrame.new(0, h / 2, -15.15))
-			local a = 4.0 + 0.8 * i / NR
-			motion(k, CFrame.Angles(0, rad(th), 0) * CFrame.new(0, h / 2 - 1.2, -15.15), a, 0.45)
-			fadeWin(k, a, a + 0.15)
-		end
 		-- the balance wheel under the feet (the watch's heartbeat: a slow smooth swing, no ticking)
 		local NW = low and 8 or 12
 		for i = 0, NW - 1 do
@@ -199,14 +85,17 @@ local DATA = [[
 		wheelHub = PP[solid("WheelHub", "BRIGHT", CORE, GWHEEL, "Cylinder", Vector3.new(0.5, 0.7, 0.7), VERT)]
 		fadeWin(NP, 4.6, 4.9)
 		hosts.funnel = hi and carrier("Funnel", CORE, GFUNNEL, Vector3.new(11, 0.4, 11))
-		local ribbonEnd = hi and carrier("RibbonEnd", CORE, GRIBEND, Vector3.new(0.4, 0.4, 0.4))
-		hosts.ribbonIn = ribbonEnd and new("Attachment", { Name = "RibbonIn" }, ribbonEnd)
 		if CONFIG.FAR_BEACON then
-			-- (the base disc is a cylinder standing upright: its local +X is world up. The column starts above the bow, so it
-			-- never crosses the dial, and climbs to 280 studs)
-			hosts.beacon0 = new("Attachment", { Name = "BeaconFoot", Position = Vector3.new(38, 0, 0) }, hosts.base)
-			hosts.beacon1 = new("Attachment", { Name = "BeaconTop", Position = Vector3.new(280, 0, 0) }, hosts.base)
+			-- (the wheel's hub is a cylinder standing upright and stays level on a slope: its local +X is world up. The column
+			-- starts above the bow, so it never crosses the dial, and climbs to 280 studs)
+			hosts.beacon0 = new("Attachment", { Name = "BeaconFoot", Position = Vector3.new(37, 0, 0) }, wheelHub)
+			hosts.beacon1 = new("Attachment", { Name = "BeaconTop", Position = Vector3.new(279, 0, 0) }, wheelHub)
 		end
+		-- the slope rays (below) see only the ground: never an aura (anyone's) or the wearer, never a non-collidable part
+		hosts.gp = RaycastParams.new()
+		hosts.gp.FilterType = Enum.RaycastFilterType.Exclude
+		hosts.gp.FilterDescendantsInstances = ctx.container and { ctx.container, char, root } or { char, root }
+		hosts.gp.RespectCanCollide = true
 	end
 
 	---------------------------------------------------------------- THE AIR and the palm intake carriers
@@ -227,9 +116,9 @@ local DATA = [[
 			OutlineColor = Color3.fromRGB(10, 10, 14), OutlineTransparency = 1, DepthMode = Enum.HighlightDepthMode.Occluded }, mats.Silver)
 	end
 
-	---------------------------------------------------------------- THE CHARACTER: palms and soles
+	---------------------------------------------------------------- THE CHARACTER: palms (and the body wrap's emitters, below)
 	local charStuff = {}
-	local palmR, palmL, soleL, soleR
+	local palmR, palmL
 	do
 		local function limb(r15, r6) return char:FindFirstChild(r15) or char:FindFirstChild(r6) end
 		local function palm(hand, name, grip)
@@ -245,15 +134,6 @@ local DATA = [[
 		end
 		palmR = palm(limb("RightHand", "Right Arm"), "TheEndPalmR", "RightGripAttachment")
 		palmL = palm(limb("LeftHand", "Left Arm"), "TheEndPalmL", "LeftGripAttachment")
-		local function sole(foot, name)
-			if not (foot and foot:IsA("BasePart")) then return nil end
-			local pos = (foot.Name == "LeftFoot" or foot.Name == "RightFoot") and Vector3.new(0, -foot.Size.Y / 2, 0) or Vector3.new(0, -1, 0)
-			local a = new("Attachment", { Name = name, Position = pos }, foot)
-			table.insert(charStuff, a)
-			return a
-		end
-		soleL = sole(limb("LeftFoot", "Left Leg"), "TheEndSoleL")
-		soleR = sole(limb("RightFoot", "Right Leg"), "TheEndSoleR")
 	end
 	-- (no hands: the streams end on the intake carriers, placed beside the wearer)
 	local moonCarA = new("Attachment", { Name = "Palm" }, hosts.palmMoon)
@@ -306,7 +186,103 @@ local DATA = [[
 		end
 		local WRAP, STRETCH = Enum.TextureMode.Wrap, Enum.TextureMode.Stretch
 		local moonA0, voidA0 = palmFor(-assign, moonCarA), palmFor(assign, voidCarA)
-		-- STUDIO-VERIFY: Beam TextureSpeed direction: the streams must flow from the orb INTO the palm and the ribbon must flow
+		-- STUDIO-VERIFY: Beam TextureSpeed direction: the streams must flow from the orb INTO the palm (all four are built
+		-- source -> destination, so they share one sign; if they run backwards: attribute FLOW_SIGN = -1). The lensed band
+		-- shares the sign: it drifts slowly left to right over the top (either way reads)
+		local trCore = { { 0, 0.15 }, { 0.12, 0.05 }, { 0.88, 0.05 }, { 1, 0.30 } }
+		sb = {
+			beam("MoonCore", hosts.moonOut, moonA0, "stream", WRAP, 5, 0.8, 1.4, 0.30, 4.0, 0, WHITE, 0, 0.45, 1.6, 2.4, trCore),
+			hi and beam("MoonFlow", hosts.moonOut, moonA0, "streak", WRAP, 7, 1.6, 0.5, 0.15, 4.3, 0, WHITE, 0.3, 0.9, 2.0, 2.6,
+				{ { 0, 0.4 }, { 0.15, 0.2 }, { 0.85, 0.2 }, { 1, 0.6 } }, true),
+			beam("VoidCore", hosts.voidOut, voidA0, "stream", WRAP, 5, 0.7, 1.6, 0.35, 3.0, 0, Color3.fromRGB(18, 18, 24), 0, 0, 1.0, 1.0, trCore),
+			hi and beam("VoidCrackle", hosts.voidOut, voidA0, "line", STRETCH, 1, 0, 0.14, 0.10, 2.6, 0, WHITE, 0.2, 0.8, 1.8, 2.4,
+				{ { 0, 0.3 }, { 0.1, 0.1 }, { 0.9, 0.1 }, { 1, 0.5 } }, true),
+		}
+		if hosts.horizon then
+			-- the lensed disc (the black hole's signature): the far side of the accretion disc, bent by the void's gravity, a
+			-- bright band arching over the top of the shadow and a thinner one under it. Both hang on the camera-facing
+			-- horizon carrier, so they hug the silhouette from every side; slimmer when the camera is close
+			local function lens(name, sg, w, br)
+				local a0 = new("Attachment", { Name = name .. "0", CFrame = CFrame.fromMatrix(Vector3.new(-4.45, 0, 0), Vector3.new(0, sg, 0), Vector3.new(-sg, 0, 0)) }, hosts.horizon)
+				local a1 = new("Attachment", { Name = name .. "1", CFrame = CFrame.fromMatrix(Vector3.new(4.45, 0, 0), Vector3.new(0, -sg, 0), Vector3.new(sg, 0, 0)) }, hosts.horizon)
+				return beam(name, a0, a1, "stream", WRAP, 6, 0.4, w, w, 6.0, 6.0, WHITE, 0.2, 0.8, br, br + 1.0,
+					{ { 0, 1 }, { 0.15, 0.05 }, { 0.85, 0.05 }, { 1, 1 } })
+			end
+			hosts.lensTop = lens("LensTop", 1, 1.5, 2.0)
+			hosts.lensBot = lens("LensBottom", -1, 0.8, 1.8)
+		end
+		if hosts.beacon0 then
+			-- (FAR_BEACON) a steady column seen only from far away: solid ink on the day sky, white at night, soft at the top.
+			-- No texture (a solid band reads at 300 studs; a textured line thinned to a hairline). No pulse.
+			hosts.beaconBeam = beam("Spire", hosts.beacon0, hosts.beacon1, nil, STRETCH, 1, 0, 8, 3, 0, 0, INK, 0, 1, 1, 2,
+				{ { 0, 0.1 }, { 0.6, 0.15 }, { 1, 1 } }, false, true)
+		end
+		-- (entry [10]: one of the four palm streams, switched off in first person; [11]: the Enabled last written; [12]: when
+		-- it fades in on equip: the lens with the void's heart, the streams once the dais is down)
+		for _, b in ipairs(beams) do
+			b[10] = b[1] == sb[1] or b[1] == sb[2] or b[1] == sb[3] or b[1] == sb[4]
+			b[11] = b[1].Enabled
+			b[12] = (b[1] == hosts.lensTop or b[1] == hosts.lensBot) and 0.9 or 4.6
+		end
+	end
+
+	---------------------------------------------------------------- THE PARTICLES: every system has a job and a path
+	local emitters = {} -- { emitter, on time, kind, live, written Enabled }
+	local emitNight = {} -- { emitter, LE day, LE night, Br day, Br night }
+	local em = {} -- the emitters that change after the build: bokeh (rate by night), smoke (thins out while moving)
+	do
+		local function pe(parent, key, tOn, props, le, br, kind)
+			local p = Instance.new("ParticleEmitter")
+			applyTex(p, key)
+			p.LightInfluence = 0
+			p.VelocityInheritance = 0
+			p.Color = ColorSequence.new(WHITE)
+			p.Speed = n(0)
+			p.Rotation = n(0)
+			p.RotSpeed = n(0)
+			p.Enabled = false
+			local sz = props.Size
+			if typeof(sz) == "NumberRange" then -- (a size range: a steady size with a random spread)
+				local v, e = (sz.Min + sz.Max) / 2, (sz.Max - sz.Min) / 2
+				props.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, v, e), NumberSequenceKeypoint.new(1, v, e) })
+			end
+			for k, v in pairs(props) do p[k] = v end
+			p.LightEmission = le and le[1] or 0
+			p.Brightness = br and br[1] or 1
+			if le or br then table.insert(emitNight, { p, le and le[1] or 0, le and le[2] or 0, br and br[1] or 1, br and br[2] or 1 }) end
+			p.Parent = parent
+			table.insert(emitters, { p, tOn, kind, false, false })
+			return p
+		end
+		local function rate(h, l) return low and l or h end
+		local SPHERE, CYL, DISCSHAPE, BOX = Enum.ParticleEmitterShape.Sphere, Enum.ParticleEmitterShape.Cylinder, Enum.ParticleEmitterShape.Disc,
+			Enum.ParticleEmitterShape.Box
+		local SURFACE, VOLUME = Enum.ParticleEmitterShapeStyle.Surface, Enum.ParticleEmitterShapeStyle.Volume
+		local INWARD, OUTWARD = Enum.ParticleEmitterShapeInOut.Inward, Enum.ParticleEmitterShapeInOut.Outward
+		local VPAR = Enum.ParticleOrientation.VelocityParallel
+		local N_ = Enum.NormalId
+		-- (white particles glow just above the Bloom threshold by day: small steady glints read as light, not as grey specks.
+		-- They grow, hold and shrink: never a flash)
+		local WHITE_LE, WHITE_BR = { 0.3, 0.9 }, { 2.4, 3.0 }
+		-- the streak texture: te5_streak is a thin capsule in a square cell, so it is drawn bigger than the fallback speck;
+		-- STREAK_FLIP turns streaks that fly tail-first round (STUDIO-VERIFY: VelocityParallel puts the image's TOP forward)
+		local stS = isTe5("streak5") and 2.2 or 1
+		-- (a te5 texture that fails to load in the game: its emitter goes back to the size made for the fallback)
+		local function sizeFix(p, scale, pts)
+			if scale ~= 1 then fixUps[p] = function(o) o.Size = seq(pts) end end
+			return p
+		end
+		local stRot = CONFIG.STREAK_FLIP and n(180) or n(0)
+		-- (SWIRL_POINTS: if Roblox's Cylinder emitters spray over their flat caps, the swirl and the vortex fall back to one
+		-- point emitter on the rim aimed at the axis; the host's spin still curls each particle's path into a spiral arm)
+		local function rimPoint(host, r)
+			return new("Attachment", { Name = "SwirlPoint", CFrame = CFrame.lookAt(Vector3.new(r, 0, 0), Vector3.zero) }, host)
+		end
+		-- P1: matter spirals in along the accretion disc and vanishes into the black core (straight inward motion inside a
+		-- spinning host becomes a spiral). STUDIO-VERIFY: Cylinder + Surface + Inward emits on the curved side toward the
+		-- axis (if not: attribute SWIRL_POINTS), and LockedToPart particles ride a host moved by BulkMoveTo
+		local p1 = { Rate = rate(28, 12), Lifetime = n(1.1, 1.3), Speed = n(2.2, 2.6), Size = seq({ { 0, 1.5 }, { 1, 0.35 } }),
+			Transparency = seq({ { 0, 1 }, { 0.15, 0.05 }, { 0.8, 0.05 }, { 1, 0.4 } }),
 ]]
 
 local function main()
@@ -351,7 +327,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "12_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "13_apply.luau"))
 end
 
 local ok, res = pcall(main)

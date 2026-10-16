@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 03_chunk_02_of_10.luau | step 3: piece 2 of 10
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (123861 bytes, checksum 523677650).
+-- AuraRNG Studio install kit | 03_chunk_02_of_11.luau | step 3: piece 2 of 11
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "03_chunk_02_of_10.luau"
+local FILE = "03_chunk_02_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-123861-523677650-10-457228033"
-local NEW_LEN, NEW_SUM = 123861, 523677650
+local RUN = "TheEnd-141659-402664341-11-730820328"
+local NEW_LEN, NEW_SUM = 141659, 402664341
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 10
-local LENS = { 13381, 13376, 13386, 13381, 13350, 13333, 13298, 13314, 13338, 3704 }
-local SUMS = { 138302907, 144820895, 284418912, 946852927, 737433606, 204697128, 129328051, 22255047, 37178664, 110492221 }
+local N = 11
+local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
+local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,12 +68,45 @@ local function chunkOk(h, i)
 end
 
 local K = 2
--- piece 2 of 10 of the new source (13376 bytes, checksum 144820895, long bracket level 0)
+-- piece 2 of 11 of the new source (13273 bytes, checksum 792637773, long bracket level 0)
 local DATA = [[
+					failKey(k, id, dead[id]) -- (another key with this id already failed to load)
+				elseif not asked[id] then
+					asked[id] = true
+					table.insert(ids, id)
+				end
+			end
+		end
+		if #ids > 0 then
+			task.spawn(function()
+				pcall(function() game:GetService("ContentProvider"):PreloadAsync(ids, onStatus) end)
+			end)
+		end
+	end
+end
+
+-- particle and beam colours (as pass 4) and a few more for pass 5
+local WHITE = Color3.fromRGB(248, 249, 255)
+local INK = Color3.fromRGB(5, 5, 8)
+local SMOKE = Color3.fromRGB(14, 14, 19)
+local MIST = Color3.fromRGB(205, 209, 220)
+local ASH = Color3.fromRGB(16, 16, 20)
+-- solid parts: colour, material, reflectance and the sub-model they live in (the Highlight covers only "Silver").
+-- The silvers are neutral, a hair warm: the cyan day sky already tints Metal blue (a cool token read as baby-blue
+-- plastic), and at night, with no sky tint, they read plain grey-silver.
+local MAT = {
+	SILVER = { Color3.fromRGB(186, 184, 183), Enum.Material.Metal, 0.08, "Silver" },
+	BRIGHT = { Color3.fromRGB(226, 224, 223), Enum.Material.Metal, 0.12, "Silver" },
+	STEEL = { Color3.fromRGB(44, 46, 51), Enum.Material.SmoothPlastic, 0, "Dark" },
+	DEEP = { Color3.fromRGB(30, 31, 35), Enum.Material.SmoothPlastic, 0, "Dark" },
+	BASE = { Color3.fromRGB(12, 12, 16), Enum.Material.SmoothPlastic, 0, "Dark" },
+	VOID = { Color3.fromRGB(0, 0, 0), Enum.Material.Neon, 0, "Dark" },
+	LUME = { Color3.fromRGB(240, 240, 242), Enum.Material.Neon, 0, "Lume" }, -- (neutral: Neon saturates any tint)
+	ARC = { Color3.fromRGB(210, 210, 212), Enum.Material.Neon, 0, "Lume" },
 	MOON = { Color3.fromRGB(234, 236, 240), Enum.Material.SmoothPlastic, 0, "Silver" }, -- (the film-mesh moon only)
 	-- a darker satin silver for every other flute (bezel, dais rim) and the equator band: metal reads as metal when it has
 	-- light and dark structure, not one flat value
-	SATIN = { Color3.fromRGB(142, 142, 143), Enum.Material.Metal, 0.08, "Silver" },
+	SATIN = { Color3.fromRGB(143, 141, 140), Enum.Material.Metal, 0.08, "Silver" },
 	-- the moon: a grey core (it carries the dust, smoke, stream and key light, and casts the shadow) behind an opaque face
 	-- disc that always turns to the camera. Both stay outside the Highlight (no ink ring, nothing painted over the face)
 	MOONCORE = { Color3.fromRGB(184, 186, 192), Enum.Material.SmoothPlastic, 0, "Dark" },
@@ -90,6 +123,10 @@ local DEFAULTS = {
 	YAW_SPRING = 6.5, -- how fast the clock swings round when the camera moves (rad/s; 95 % in 0.73 s)
 	YAW_LAG_MAX = 22, -- the most (degrees) the clock and the orbs may trail a fast camera swing (a flick never throws them into the lens)
 	ZOOM_FAR = 30, ZOOM_NEAR = 14, -- camera distances (studs) over which the layout eases into its close-camera form (Roblox's default zoom is 12.5)
+	-- the owner's clock steps back along the view until this point of the watch (studs above its hub) is inside the top of
+	-- the frame, at any zoom and camera tilt: 9.6 = the XII numeral (the hands at midnight), 22.4 = the whole watch with
+	-- its bow (smaller at the default zoom), 0 = off
+	FRAME_TOP = 9.6,
 	FIRST_PERSON_LIFT = true, -- in first person the owner's clock rises into the sky, out of the level view
 	HIGHLIGHT = true, HIGHLIGHT_LOW = true, -- the silver-tone Highlight (keeps the metal neutral under the cyan sky)
 	HIGHLIGHT_FILL = 0.65, HIGHLIGHT_OUTLINE = 0.35, -- its day FillTransparency / OutlineTransparency (night: 0.80 / 0.70)
@@ -102,8 +139,12 @@ local DEFAULTS = {
 	NEAR_BOKEH_HIDE = 18, NEAR_BOKEH_SHOW = 20, -- the big bokeh discs only drift by in showcase framings
 	GHOST_REMOTE = true, -- another wearer's clock, rings and orbs turn see-through while they stand between you and your camera
 	FAR_BEACON = false, -- (needs Milo's OK) a thin steady spire over the wearer that only far-away players see
+	-- where the ring of the pass-2 "rim" texture peaks, as a fraction of the image's half-width (measure it on the Mac:
+	-- studio_checks.md). Until te5_halo is uploaded the night corona, the void's horizon glow and the moon halo use "rim",
+	-- and they are scaled so its ring lands where te5_halo's does (0.73)
+	RIM_R = 0.86,
 	-- Studio checks that are one attribute flip each (see roblox/install/studio_checks.md):
-	FLOW_SIGN = 1, -- -1 if the streams flow out of the palms (and the ribbon up into the void)
+	FLOW_SIGN = 1, -- -1 if the streams flow out of the palms (and the void's lensed band runs against the accretion disc)
 	ACC_DIR = 1, -- -1 if the accretion streaks (and the void swirl) lead their spin instead of trailing it
 	FUNNEL_DIR = 1, -- -1 if the floor vortex winds against the galaxy arms
 	GALAXY_DIR = 1, -- -1 if the galaxy floor's arms lead their spin instead of trailing it
@@ -118,7 +159,7 @@ local RANGES = {
 	CLOCK_DIST = { 4, 20 }, CLOCK_HEIGHT = { 6, 16 }, CLOCK_TILT = { -10, 30 }, YAW_SPRING = { 1, 30 }, YAW_LAG_MAX = { 5, 120 },
 	ZOOM_FAR = { 10, 120 }, ZOOM_NEAR = { 0, 110 }, HIGHLIGHT_FILL = { 0, 1 }, HIGHLIGHT_OUTLINE = { 0, 1 }, AIR_ON = { 7.5, 60 },
 	AIR_OFF = { 7, 59 }, NEAR_ARM_HIDE = { 0, 40 }, NEAR_ARM_SHOW = { 0.5, 41 }, NEAR_BOKEH_HIDE = { 0, 60 },
-	NEAR_BOKEH_SHOW = { 0.5, 61 }, NIGHT_INTERVAL = { 0.25, 10 },
+	NEAR_BOKEH_SHOW = { 0.5, 61 }, NIGHT_INTERVAL = { 0.25, 10 }, FRAME_TOP = { 0, 24 }, RIM_R = { 0.5, 0.98 },
 }
 local SIGNS = { FLOW_SIGN = true, ACC_DIR = true, FUNNEL_DIR = true, GALAXY_DIR = true }
 local CONFIG = {}
@@ -185,7 +226,7 @@ End.pose = {
 }
 
 local rad, sin, cos, exp, sqrt, abs, atan2 = math.rad, math.sin, math.cos, math.exp, math.sqrt, math.abs, math.atan2
-local min, max, clamp, pi = math.min, math.max, math.clamp, math.pi
+local min, max, clamp, pi, asin, tan = math.min, math.max, math.clamp, math.pi, math.asin, math.tan
 local TAU = 2 * pi
 local IDENT = CFrame.new()
 local DISC = CFrame.Angles(0, rad(90), 0) -- a cylinder lying with its axis along z (a disc facing the viewer)
@@ -197,8 +238,9 @@ local FLAT = CFrame.new(0, 0.95, 0) * CFrame.Angles(rad(90), 0, 0) -- the rings 
 local ASM_END = 6.5
 -- the close-camera form (cz = 1 at Roblox's 12.5-stud default zoom, 0 from 30 studs out): the owner's clock stands this
 -- much further back (other players' clocks less, so a passing wearer's clock does not slide far away) and leans back a
--- little more; the orbs come in, down and toward the camera, so the dial with its hands at XII and both orbs are on screen
-local CLOSE = { dist = 32, distRemote = 16, tilt = 24, arm = 1.0, orbY = 5, orbZ = 10.5 }
+-- little more; the orbs come down and move back and a little out, so at the default zoom the moon is about the dial's
+-- size beside it (not a huge disc under the HUD) and the theme reads first
+local CLOSE = { dist = 32, distRemote = 16, tilt = 24, arm = -2, orbY = 5, orbZ = 18 }
 
 local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
@@ -213,90 +255,24 @@ if Players.LocalPlayer then
 	Players.LocalPlayer.CharacterAdded:Connect(mark)
 end
 
--- the wearer's equip grade lives here (one per client), so a quick re-equip takes it over instead of stacking a second one
-local liveGrade, liveGradeTween, gradeToken = nil, nil, 0
+-- the wearer's equip grade lives here (one per client), so a quick re-equip takes it over instead of stacking a second one;
+-- gradeOwner is the build that took it last (only that one eases it out)
+local liveGrade, liveGradeTween, gradeToken, gradeOwner = nil, nil, 0, nil
+-- when this client's own THE END was last taken away, and from which character (a respawn rebuilds it on a new character
+-- within seconds: that is not an equip, so no grade)
+local ownGone, ownGoneChar = nil, setmetatable({}, { __mode = "v" }) -- (weak: an old character is never kept alive)
+-- where this client's own clock hub is (the owner's build writes it every frame): another wearer's clock and orbs step
+-- back behind it instead of standing in front of your own clock
+local ownerHub = nil
 local GRADE_ON = { Saturation = -0.75, Brightness = -0.1, Contrast = 0.15, TintColor = Color3.fromRGB(232, 238, 255) }
 local GRADE_OFF = { Saturation = 0, Brightness = 0, Contrast = 0, TintColor = Color3.new(1, 1, 1) }
 -- where the time shards leave the bezel on equip (K angles), and the bezel point at eleven the metal shards break off from
 local SHARD_A = {}
 for i = 0, 7 do SHARD_A[i] = math.rad(300 + 20 * i) end
 local FEED_PT = Vector3.new(-10.72, 9.00, 0)
-
-local function new(class, props, parent)
-	local o = Instance.new(class)
-	for k, v in pairs(props) do o[k] = v end
-	if parent then o.Parent = parent end
-	return o
-end
-local function seq(points)
-	local kp = {}
-	for _, p in ipairs(points) do table.insert(kp, NumberSequenceKeypoint.new(p[1], p[2], p[3] or 0)) end
-	return NumberSequence.new(kp)
-end
-local function n(a, b) return NumberRange.new(a, b or a) end
-local function wrapPi(a) return (a + pi) % TAU - pi end
-local function smooth(u)
-	if u <= 0 then return 0 elseif u >= 1 then return 1 end
-	return u * u * (3 - 2 * u)
-end
--- eases in with a small overshoot (~6 %) and locks exactly at 1, like a part snapping into its seat
-local function easeOutBack(u)
-	if u <= 0 then return 0 elseif u >= 1 then return 1 end
-	local v = u - 1
-	return 1 + 2.25 * v * v * v + 1.25 * v * v
-end
--- position eased with overshoot (k may go a little below 0), rotation blended without overshoot
-local function lerpCF(a, b, k)
-	return CFrame.new(a.Position + (b.Position - a.Position) * k) * a.Rotation:Lerp(b.Rotation, clamp(k, 0, 1))
-end
-local function ss(a, b, x)
-	local u = clamp((x - a) / (b - a), 0, 1)
-	return u * u * (3 - 2 * u)
-end
--- 0 by day, 1 by night (dusk 17:30-19:00, dawn 05:00-06:30), in steps of 0.05
-local function nightStep()
-	local ct = Lighting.ClockTime
-	return math.floor(max(ss(17.5, 19, ct), 1 - ss(5, 6.5, ct)) * 20 + 0.5) / 20
-end
-
--- the gears: where they sit on the clock (x, y, z), tip and root diameters, teeth bars, thickness, tooth width, web, spokes,
--- turning speed (°/s, all clients agree through the server clock), and whether low quality builds it
-local GEARS = {
-	{ "GA", 8.839, 8.839, -2.00, 9.0, 8.0, 8, 0.50, 0.785, true, true, -4.0, true },
-	{ "GB", 11.172, -6.450, -1.85, 6.0, 5.2, 6, 0.45, 0.681, true, false, 9.0, false },
-	{ "GC", -10.912, -6.300, -2.10, 7.0, 6.1, 6, 0.45, 0.798, true, true, -6.0, false },
-	{ "GD", -8.768, 8.768, -1.90, 8.0, 7.1, 7, 0.50, 0.797, true, false, 4.6, false },
-	{ "GE", 0, 0, -0.95, 7.6, 6.8, 8, 0.40, 0.668, true, true, 6.0, true },
-	{ "GH", 5.196, -3.000, 0.58, 3.6, 3.0, 4, 0.24, 0.589, false, false, -12.0, false },
-	{ "GI", -5.196, -3.000, 0.58, 3.6, 3.0, 4, 0.24, 0.589, false, false, -12.0, false },
-}
--- the film's own meshes (only looked up when the FILM_* flags ask for them; any failure keeps the procedural part)
-local function meshOf(o)
-	if not o then return nil end
-	if o:IsA("MeshPart") then return o end
-	return o:FindFirstChildWhichIsA("MeshPart", true)
-end
-local function filmKit()
-	local te, obl
-	pcall(function()
-		local cinema = ReplicatedStorage:FindFirstChild("AuraCinema")
-		local assets = cinema and cinema:FindFirstChild("Assets")
-		te = assets and assets:FindFirstChild("TheEnd")
-		obl = (te and te:FindFirstChild("Oblivion")) or (assets and (assets:FindFirstChild("Oblivion") or assets:FindFirstChild("Oblivion", true)))
-	end)
-	return te, obl
-end
-local function goodMesh(m)
-	if not m then return false end
-	local ok, good = pcall(function()
-		local s = m.Size
-		return m.MeshId ~= "" and s.X >= 0.01 and s.Y >= 0.01 and s.Z >= 0.01
-	end)
-	return ok and good == true
-end
--- a right-handed rotation that sends the mesh's local axes to the clock axes picked for them
-local function axesTo(img)
-	if img[1]:Cross(img[2]):Dot(img[3]) < 0 then img[2] = -img[2] end
+-- the camera closeness (in 0.05 steps) at which the floor's twinkles step down a size (each step under 20 %)
+local MOTE_T = { 0.3, 0.45, 0.6, 0.75 }
+local DOWN9 = Vector3.new(0, -9, 0) -- (the dais's slope rays)
 ]]
 
 local function main()
@@ -341,7 +317,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "12_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "13_apply.luau"))
 end
 
 local ok, res = pcall(main)

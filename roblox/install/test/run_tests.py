@@ -977,7 +977,7 @@ task.spawn(function()
 end)
 """
 	fails = []
-	for quality, rig, is_local, parts in (("low", "clone", "false", 149), ("high", "r6", "true", 360)):
+	for quality, rig, is_local, parts in (("low", "clone", "false", 150), ("high", "r6", "true", 360)):
 		d = os.path.join(tempfile.mkdtemp(dir=TMP), "h")
 		os.makedirs(d)
 		text = (body + "\n-- test: studio_checks.md snippets driven inside the harness\n"
@@ -1003,7 +1003,8 @@ end)
 			"INSPECT": rf"^TheEnd_TheEndBench1: {parts} parts.*clock on the far side: true, moon left: true, void right: true \| grade: "
 					   + ("on" if is_local == "true" else "none"),
 			"INSPECTME": r"^TheEnd_Player1: 360 parts.*clock on the far side: true, moon left: true, void right: true",
-			"HIGHLIGHT": r"^TheEndTone OFF on 2 aura\(s\)",
+			# (review round 2: on low quality only the owner's aura has a Highlight, so the low remote stand-in has none)
+			"HIGHLIGHT": r"^TheEndTone OFF on %d aura\(s\)" % (2 if quality == "high" else 1),
 			"STOP": r"^removed 1 stand-in\(s\)$",
 			"LEFT": r"^0$",
 		}
@@ -1063,10 +1064,10 @@ TEX5_FIXTURE = """-- stand-in module with the pass-5 spec's TEX5 block (spec sec
 local TEX = { glow = "rbxassetid://88172507927269" }
 local TEX5 = { -- te5 uploads (textures/te5/); "" until uploaded from the Mac
 	dialInlay = "", subdial = "", accretion = "", galaxyFloor = "", galaxyArms = "", galaxyCore = "", engraving = "",
-	halo = "", hairspring = "", stream = "", ribbon = "",
+	halo = "", stream = "", ribbon = "", moon = "", starWindow = "",
 	shards5 = "", smoke5 = "", mote = "", glint5 = "", bokeh = "", streak5 = "", ash5 = "",
 }
-local TEX5_LAYOUT = { shards5 = { "Grid4x4", "Loop" }, smoke5 = { "Grid4x4", "OneShot" }, ash5 = { "Grid2x2", "Random" } }
+local TEX5_LAYOUT = { shards5 = { "Grid4x4", "Loop" }, smoke5 = { "Grid4x4", "OneShot" } }
 local note = "mote = \\"\\" in a string is not TEX5" -- mote = "" in a comment is not TEX5 either
 return { TEX = TEX, TEX5 = TEX5, TEX5_LAYOUT = TEX5_LAYOUT, note = note }
 """

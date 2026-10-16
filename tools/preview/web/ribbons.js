@@ -91,7 +91,7 @@ export function buildBeams(snapshot, ctx) {
 		const uAt = (i) => (mode === 'Stretch' ? ts[i] * len : arc[i] / len) - speed * (snapshot.t || 0);
 		const colors = ts.map((t) => {
 			const c = srgb(colSeq(b.color, t)).multiplyScalar(k);
-			return [c.r, c.g, c.b, 1 - numSeq(b.transparency, t)[0]];
+			return [c.r, c.g, c.b, (1 - numSeq(b.transparency, t)[0]) * (1 - (b.localTransparencyModifier || 0))];
 		});
 		const tex = b.texture ? ctx.tex(b.texture, 'repeatU') : null;
 		const mat = ribbonMaterial(tex, b.lightEmission);

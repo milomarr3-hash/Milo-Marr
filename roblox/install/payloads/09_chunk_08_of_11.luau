@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 08_chunk_07_of_10.luau | step 8: piece 7 of 10
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (123861 bytes, checksum 523677650).
+-- AuraRNG Studio install kit | 09_chunk_08_of_11.luau | step 9: piece 8 of 11
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "08_chunk_07_of_10.luau"
+local FILE = "09_chunk_08_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-123861-523677650-10-457228033"
-local NEW_LEN, NEW_SUM = 123861, 523677650
+local RUN = "TheEnd-141659-402664341-11-730820328"
+local NEW_LEN, NEW_SUM = 141659, 402664341
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 10
-local LENS = { 13381, 13376, 13386, 13381, 13350, 13333, 13298, 13314, 13338, 3704 }
-local SUMS = { 138302907, 144820895, 284418912, 946852927, 737433606, 204697128, 129328051, 22255047, 37178664, 110492221 }
+local N = 11
+local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
+local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -67,65 +67,9 @@ local function chunkOk(h, i)
 	return v ~= nil and v:IsA("StringValue") and #v.Value == LENS[i] and sum(v.Value) == SUMS[i]
 end
 
-local K = 7
--- piece 7 of 10 of the new source (13298 bytes, checksum 129328051, long bracket level 1)
+local K = 8
+-- piece 8 of 11 of the new source (13249 bytes, checksum 158431880, long bracket level 1)
 local DATA = [=[
-			-- (te5_ash is one charred flake; its random rotation and tumble make every particle a different shape)
-			pe(hosts.floor, "ash5", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.15, EmissionDirection = N_.Top, Rate = 8,
-				Lifetime = n(3, 4.5), Speed = n(0.8, 2.0), Acceleration = Vector3.new(0, 0.3, 0), Drag = 0.4, Size = n(0.4, 0.6),
-				Transparency = seq({ { 0, 1 }, { 0.15, 0.05 }, { 0.75, 0.2 }, { 1, 1 } }), Color = ColorSequence.new(ASH), Rotation = n(0, 360),
-				RotSpeed = n(-90, 90) })
-			-- P9: a vortex funnel: streaks spiral inward and climb into the balance wheel
-			local p9 = { Rate = 16, Lifetime = n(1.7, 2.0), Speed = n(2.8, 3.2), Acceleration = Vector3.new(0, 1.0, 0),
-				Size = seq({ { 0, 0.42 * stS }, { 1, 0.1 * stS } }), Transparency = seq({ { 0, 1 }, { 0.12, 0.05 }, { 0.85, 0.1 }, { 1, 1 } }),
-				LockedToPart = true, Orientation = VPAR, Rotation = stRot }
-			if CONFIG.SWIRL_POINTS then
-				p9.EmissionDirection, p9.SpreadAngle = N_.Front, Vector2.new(0, 10)
-				sizeFix(pe(rimPoint(hosts.funnel, 5.3), "streak5", 4.8, p9, WHITE_LE, WHITE_BR), stS, { { 0, 0.42 }, { 1, 0.1 } })
-			else
-				p9.Shape, p9.ShapeStyle, p9.ShapeInOut, p9.EmissionDirection = CYL, SURFACE, INWARD, N_.Top
-				sizeFix(pe(hosts.funnel, "streak5", 4.8, p9, WHITE_LE, WHITE_BR), stS, { { 0, 0.42 }, { 1, 0.1 } })
-			end
-		end
-		-- P10: the palms drink the streams: silver streaks converge into one palm, ink streaks into the other (locked to the
-		-- palm, so they still converge on it while the wearer walks). STUDIO-VERIFY: Sphere + Surface + Inward converges on
-		-- the centre (fallback: Outward with a negative Speed)
-		local function intake(host, color, le, br)
-			sizeFix(pe(host, "streak5", 5.2, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = INWARD, Rate = rate(14, 6), Lifetime = n(0.85, 0.95),
-				Speed = n(1.35, 1.45), Size = seq({ { 0, 0.3 * stS }, { 1, 0.05 * stS } }), Transparency = seq({ { 0, 1 }, { 0.25, 0.05 }, { 1, 0.2 } }),
-				Color = ColorSequence.new(color), ZOffset = 0.2, Orientation = VPAR, Rotation = stRot, LockedToPart = true }, le, br),
-				stS, { { 0, 0.3 }, { 1, 0.05 } })
-		end
-		intake(hosts.palmMoon, WHITE, WHITE_LE, WHITE_BR)
-		intake(hosts.palmVoid, INK, nil, nil)
-		-- P11: time drips off each sole onto the balance wheel below
-		for _, a in ipairs({ soleL, soleR }) do
-			if a then
-				pe(a, "mote", 5.2, { EmissionDirection = N_.Bottom, Rate = rate(4, 2), Lifetime = n(0.6, 0.8), Speed = n(0.1, 0.3),
-					SpreadAngle = Vector2.new(8, 8), Acceleration = Vector3.new(0, -5, 0), Size = seq({ { 0, 0.18 }, { 1, 0.08 } }),
-					Transparency = seq({ { 0, 0.1 }, { 0.8, 0.2 }, { 1, 1 } }) }, WHITE_LE, WHITE_BR, "foot")
-			end
-		end
-		-- P12: while the wearer flies or runs fast, silver streaks stream out behind the body (off when slow)
-		sizeFix(pe(hosts.trail, "streak5", 5.2, { EmissionDirection = N_.Back, Rate = rate(14, 6), Lifetime = n(0.45, 0.6), Speed = n(4, 6),
-			SpreadAngle = Vector2.new(10, 10), Size = seq({ { 0, 0.5 * stS }, { 1, 0.1 * stS } }),
-			Transparency = seq({ { 0, 0.2 }, { 0.6, 0.3 }, { 1, 1 } }), Color = ColorSequence.new(Color3.fromRGB(226, 230, 240)),
-			Orientation = VPAR, Rotation = stRot }, WHITE_LE, WHITE_BR, "speed"), stS, { { 0, 0.5 }, { 1, 0.1 } })
-		-- which emitters belong to the parts that turn see-through while another wearer's aura is in your way (their smoke,
-		-- swirl, dust, shards, glints, horizon and palm streaks must not stay solid across your character)
-		local ghostHost = { [moon] = true, [void] = true }
-		for _, h in ipairs({ "swirl", "rimGlint", "shardFeed", "horizon", "timeDust", "palmMoon", "palmVoid" }) do
-			if hosts[h] then ghostHost[hosts[h]] = true end
-		end
-		for _, e in ipairs(emitters) do
-			local par = e[1].Parent
-			if par and par:IsA("Attachment") then par = par.Parent end
-			e[6] = ghostHost[par] == true
-		end
-	end
-	table.sort(emitters, function(a, b) return a[2] < b[2] end)
-
-	-- lights: the moon's key light (above) and the wheel's underlight on the feet (night only, high quality)
 	local wheelLight = hi and new("PointLight", { Name = "Underlight", Range = 12, Color = Color3.fromRGB(230, 234, 246), Brightness = 0,
 		Shadows = false, Enabled = false }, wheelHub)
 
@@ -164,23 +108,28 @@ local DATA = [=[
 	end)
 	-- this wearer's dais sits a hair above (or below) the others', so two pools side by side never share a plane (Roblox
 	-- z-fights coplanar faces as a crawling shimmer). The layer surfaces repeat every 0.055 studs (engraving, base,
-	-- floor), so the three lifts are a third of that apart: the owner 0, other players 0.018 or 0.037.
+	-- floor), so the three lifts are a third of that apart: your own pool on top (0.037), other players 0 or 0.018, so where
+	-- two pools overlap yours is the one you see.
 	do
 		local uid = 0
 		pcall(function()
 			local plr = Players:GetPlayerFromCharacter(char)
 			uid = plr and plr.UserId or #char.Name
 		end)
-		st.layer = ctx.isLocal and 0 or 0.0183 * (1 + uid % 2)
+		st.layer = ctx.isLocal and 0.0366 or 0.0183 * (uid % 2)
 	end
 
 	---------------------------------------------------------------- the wearer's own screen grade (real equips only)
 	-- It starts with the first frame the player can actually see (not while the roll cutscene still holds the camera), eases
 	-- back when the assembly ends, and never snaps: hiding or unequipping eases it out too.
 	local grade
-	st.gradeWanted = CONFIG.GRADE and ctx.isLocal and os.clock() - (spawnedAt[char] or 0) > 4
+	st.gradeWanted, st.builtAt = CONFIG.GRADE and ctx.isLocal, os.clock()
 	local function gradeTo(target, dur, thenDestroy)
 		if not grade then return end
+		if gradeOwner ~= st then
+			grade = nil -- (another build took the grade over since: it is theirs to ease out)
+			return
+		end
 		if liveGradeTween then liveGradeTween:Cancel() end
 		liveGradeTween = TweenService:Create(grade, TweenInfo.new(dur, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), target)
 		liveGradeTween:Play()
@@ -191,7 +140,7 @@ local DATA = [=[
 			task.delay(dur + 0.05, function()
 				if gradeToken == tok and liveGrade == g then
 					g:Destroy()
-					liveGrade, liveGradeTween = nil, nil
+					liveGrade, liveGradeTween, gradeOwner = nil, nil, nil
 				end
 			end)
 		end
@@ -219,7 +168,8 @@ local DATA = [=[
 			local kind = e[3]
 			if kind == "ground" then want = want and grounded
 			elseif kind == "bokeh" then want = want and not bokehNear
-			elseif kind == "foot" then want = want and visible and st.footOk and not st.seated -- (they live on the character)
+			elseif kind == "body" then want = want and visible and st.footOk and not st.fpOn -- (they live on the character)
+			elseif kind == "nearcam" then want = want and not st.fpOn -- (the funnel and palm streaks: right under the lens)
 			elseif kind == "speed" then want = want and st.speedOn end
 			if e[6] and st.ghostGui and not st.fxLtm then want = false end -- (a ghosted aura without emitter LTM: smoke off)
 			if want ~= e[5] then
@@ -243,12 +193,15 @@ local DATA = [=[
 			end
 		end
 	end
-	-- the beam fade steps: each beam's Transparency is one of its 21 precomputed sequences (no allocation)
-	local function beamSteps(fb)
-		st.fb = fb
+	-- the beam fade steps: each beam's Transparency is one of its 21 precomputed sequences (no allocation); fa is the
+	-- framework's fade, and while the aura assembles each beam fades in over 0.8 s from its own time
+	local function beamSteps(fa)
+		st.fb = fa
 		local lod = st.lod
+		local asm = age < ASM_END
 		for _, b in ipairs(beams) do
-			local f = fb
+			local f = fa
+			if asm then f *= smooth((age - b[12]) / 0.8) end
 			if b[8] then f *= lod elseif b[9] then f *= 1 - lod end
 			local q = clamp(math.floor(f * 20 + 0.5), 0, 20)
 			if q ~= b[3] then
@@ -300,7 +253,9 @@ local DATA = [=[
 	-- the Highlight's fill and outline strength (1 - transparency) at night factor q. The ink outline is for the bright sky
 	-- at a distance: close up (Roblox's default zoom) the metal fills the view and reads by its own shading, so the outline
 	-- eases off (czq: the camera-closeness factor in 0.05 steps)
-	local function hlFill(q) return (1 - CONFIG.HIGHLIGHT_FILL) * (1 - q) + 0.20 * q end
+	-- (by day the close camera sees the rings and bezel against the cyan sky and grass, which lift green as much as blue:
+	-- the fill strengthens close up, in the same zoom steps, so the silver stays neutral)
+	local function hlFill(q) return min(1, (1 - CONFIG.HIGHLIGHT_FILL) * (1 + 0.45 * st.czq)) * (1 - q) + 0.20 * q end
 	local function hlOut(q) return (1 - CONFIG.HIGHLIGHT_OUTLINE) * (1 - 0.6 * st.czq) * (1 - q) + 0.30 * q end
 	-- the Highlight follows its fade (st.hlA: assembly x alpha), the night, the camera closeness and, for another player's
 	-- aura, the far-detail fade; fill and outline are each written only when they moved (snapped exactly at the ends)
@@ -323,7 +278,7 @@ local DATA = [=[
 	-- frees one of the client's 31 Highlights and its outline pass)
 	local function toneOn()
 		if tone then
-			local on = not st.ghostGui and (ctx.isLocal or st.lod > 0)
+			local on = st.ghostQ <= 0 and (ctx.isLocal or st.lod > 0) -- (off from the first ghost step: it would paint the ghost solid)
 			if tone.Enabled ~= on then tone.Enabled = on end
 		end
 	end
@@ -355,6 +310,94 @@ local DATA = [=[
 			corona.Enabled = q > 0.05 and not st.ghostGui
 		end
 		if settled then
+			-- (after the assembly the night values are written straight away; during it the fades pick them up)
+			local a = alphaW
+			if haloEntry then
+				local tr = 1 - (1 - haloEntry[2]) * a
+				if tr ~= haloEntry[5] then
+					haloIm.ImageTransparency = tr
+					haloEntry[5] = tr
+				end
+			end
+			if coronaEntry then
+				local tr = 1 - (1 - coronaEntry[2]) * a
+				if tr ~= coronaEntry[5] then
+					coronaEntry[1].ImageTransparency = tr
+					coronaEntry[5] = tr
+				end
+			end
+		end
+		toneLevels(0)
+		refreshLights()
+	end
+	-- the fades: every part, image, beam and light goes from invisible to its rest value in its own window (times the
+	-- framework's fade-in alpha); a value is written only when it moved enough, and snapped exactly at the ends (no blinking)
+	local function fadeAll(a, asm, thr)
+		for _, i in ipairs(solids) do
+			local f = a
+			if asm then
+				local u = (age - PF0[i]) / (PF1[i] - PF0[i])
+				f *= u <= 0 and 0 or u >= 1 and 1 or u * u * (3 - 2 * u)
+			end
+			local tr = 1 - f
+			local cur = PCUR[i]
+			if tr ~= cur and (abs(tr - cur) >= thr or tr <= 0 or tr >= 1) then
+				PP[i].Transparency = tr
+				PCUR[i] = tr
+			end
+		end
+		for _, e in ipairs(images) do
+			local f = a
+			if asm then f *= smooth((age - e[3]) / (e[4] - e[3])) end
+			local tr = 1 - (1 - e[2]) * f
+			if tr ~= e[5] and (abs(tr - e[5]) >= thr or f <= 0 or f >= 1) then
+				e[1].ImageTransparency = tr
+				e[5] = tr
+			end
+		end
+		beamSteps(a)
+		local kf, wf = a, a
+		if asm then kf, wf = a * smooth((age - 0.6) / 1.0), a * smooth((age - 4.6) / 1.0) end
+		if abs(kf - st.kf) >= thr or abs(wf - st.wf) >= thr or ((kf <= 0 or kf >= 1) and kf ~= st.kf) or ((wf <= 0 or wf >= 1) and wf ~= st.wf) then
+			st.kf, st.wf = kf, wf
+			lightLevels()
+		end
+		-- (the silver tone comes in only once every silver part is solid: a Highlight paints a part that is still fading
+		-- in at full strength, which would make the rising dais rim pop)
+		st.hlA = asm and a * smooth((age - 5.65) / 0.7) or a
+		toneLevels(thr)
+	end
+	-- another wearer's aura between you and your camera: its clock and orbs fade to a ghost in 3 steps (one burst of
+	-- LocalTransparencyModifier writes per step, none while it holds) with their smoke, glints and streams, and its GUIs
+	-- and silver tone switch off meanwhile
+	local function setGhost(q)
+		st.ghostQ = q
+		local m = 0.75 * q
+		for _, p in ipairs(ghostParts) do p.LocalTransparencyModifier = m end
+		if st.fxLtm then
+			for _, e in ipairs(emitters) do
+				if e[6] then e[1].LocalTransparencyModifier = m end
+			end
+			for _, b in ipairs(beams) do
+				if not b[9] then b[1].LocalTransparencyModifier = m end
+			end
+		end
+		toneOn()
+		local off = q >= 0.5
+		if off ~= st.ghostGui then
+			st.ghostGui = off
+			for _, g in ipairs(ghostGuis) do g.Enabled = not off end
+			if corona then corona.Enabled = nq > 0.05 and not off end
+			if not st.fxLtm then
+				refreshEmitters()
+				refreshBeams()
+			end
+		end
+	end
+	-- the rings' see-through: their own ghost (another wearer's rings in your way) or the near-camera fade, whichever is more
+	local function writeRings()
+		local m = max(0.75 * st.armGQ, st.armQ)
+		for _, p in ipairs(ringParts) do p.LocalTransparencyModifier = m end
 ]=]
 
 local function main()
@@ -399,7 +442,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "12_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "13_apply.luau"))
 end
 
 local ok, res = pcall(main)

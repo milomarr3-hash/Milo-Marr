@@ -221,7 +221,7 @@ export function buildEmitters(snapshot, ctx, opts = {}) {
 				const g = Math.pow(2, Math.max(-3, Math.min(3, q)));
 				sx = sz / g; sy = sz * g;
 			}
-			const alpha = 1 - Math.min(Math.max(numSeqR(e.transparency, f, rT), 0), 1);
+			const alpha = (1 - Math.min(Math.max(numSeqR(e.transparency, f, rT), 0), 1)) * (1 - Math.min(Math.max(e.localTransparencyModifier || 0, 0), 1));
 			if (alpha <= 0.002 || sz <= 1e-4) continue;
 			const c = srgb(colSeq(e.color, f)).multiplyScalar(kBright);
 			const rot = ((ra + (rb - ra) * rnd()) + (rsa + (rsb - rsa) * rnd()) * age) * Math.PI / 180;

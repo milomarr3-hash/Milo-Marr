@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # THE END (1 in 1,000,000,000) -- equipped aura, pass 5 "The Last Clock" -- texture group "surfaces".
 #
-# Spec: docs/the-end/pass5-spec.md, section 16.2 (group "surfaces"). 13 textures:
+# Spec: docs/the-end/pass5-spec.md, section 16.2 (group "surfaces"). 12 textures:
 #   te5_dial_inlay  te5_subdial  te5_accretion  te5_galaxy_floor  te5_galaxy_arms  te5_galaxy_core
-#   te5_engraving   te5_halo     te5_hairspring te5_stream        te5_ribbon
+#   te5_engraving   te5_halo     te5_stream           te5_ribbon
 #   te5_moon        te5_star_window  (added in review round 1: docs/the-end/pass5-build-notes.md)
 #
 # Only python3 + numpy + PIL (runs the same on Milo's Mac and in the cloud). Deterministic: every random source is
@@ -15,7 +15,7 @@
 #
 # How the images are made (film-quality rules from the spec):
 #   * Everything is rendered at 2x (SS) and box-filtered down, in PREMULTIPLIED alpha, so anti-aliased edges are exact.
-#   * Line art (dial, sub-dial, engraving, hairspring) is drawn from exact signed-distance fields (circles, boxes, convex
+#   * Line art (dial, sub-dial, engraving) is drawn from exact signed-distance fields (circles, boxes, convex
 #     polygons, the spiral), so every stroke has a true 1 px anti-aliased edge and its ink outline follows it exactly.
 #   * After downsampling the colour is un-premultiplied and BLED into the fully transparent pixels (pull-push fill), so
 #     Roblox's bilinear filtering and mip-maps never mix black into an edge: no dark or light fringes.
@@ -570,43 +570,9 @@ def make_engraving():
 
 
 # --------------------------------------------------------------------------------------------------------------------
-# 9. te5_hairspring  (512^2, Archimedean spiral r = 0.12 + 0.8*theta/(2*pi*9) over 9 turns)
+# 9. (te5_hairspring was dropped in review round 2: the 3.8-stud spiral under the feet was invisible at every framing, and
+# its GUI went to the moon's face. Its generator is in the git history.)
 # --------------------------------------------------------------------------------------------------------------------
-
-def make_hairspring():
-    n = 512; cv = Canvas(n)
-    turns, r0, span = 9, 0.12, 0.8
-    b = span / (2 * math.pi * turns)
-    rho = cv.r_px / cv.k
-    phi = np.mod(np.arctan2(cv.ys[:, None], cv.xs[None, :]), 2 * math.pi)
-    tmax = 2 * math.pi * turns
-    best = np.full(rho.shape, np.inf, F32)
-    for k in range(turns + 1):
-        tk = phi + 2 * math.pi * k
-        rk = r0 + b * tk
-        dk = np.where(tk <= tmax, np.abs(rho - rk), np.inf)
-        best = np.minimum(best, dk)
-    cosa = 1.0 / np.sqrt(1.0 + (b / np.maximum(rho, 0.05)) ** 2)     # spiral pitch correction -> true distance
-    sd = best * cosa * cv.k - SS * 3.0 / 2
-    L = Layer(cv, pad_out=3.0)
-    # round caps at both spiral ends
-    for tt in (0.0, tmax):
-        rr = r0 + b * tt
-        L.disc((rr * math.cos(tt), rr * math.sin(tt)), 1.5 / (n / 2.0))
-    L.field(sd)
-    L.ring(0.10, 4.0)                                                 # collet
-    L.disc(((r0 + b * tmax) * math.cos(tmax), (r0 + b * tmax) * math.sin(tmax)), 0.025)   # terminal stud
-    # the inner end is pinned into the collet: the coil eases in from the collet's rim over 0.7 rad before the spiral
-    # starts (a smooth curve, no tab)
-    pts = []
-    for i in range(15):
-        a = -0.7 + 0.7 * i / 14.0
-        rr = 0.1075 + (r0 - 0.1075) * float(sstep(-0.7, 0.0, a))
-        pts.append((rr * math.cos(a), rr * math.sin(a)))
-    L.polyline(pts, 3.0)
-    P, A = inked(L, fill=250, ink_out=1.5, ink=(10, 10, 14), ink_a=0.9)
-    return finish("te5_hairspring", P, A)
-
 
 # --------------------------------------------------------------------------------------------------------------------
 # procedural discs: shared polar grid (r units, +y up, theta CCW from +x) at SS resolution
@@ -1303,11 +1269,11 @@ def label(im, text, xy, sz=15, fill=(235, 235, 240)):
 
 
 SHEET_ORDER = ["te5_dial_inlay", "te5_subdial", "te5_accretion", "te5_galaxy_floor", "te5_galaxy_arms", "te5_galaxy_core",
-               "te5_engraving", "te5_halo", "te5_hairspring", "te5_stream", "te5_ribbon", "te5_moon", "te5_star_window"]
+               "te5_engraving", "te5_halo", "te5_stream", "te5_ribbon", "te5_moon", "te5_star_window"]
 
 
 def sheet_overview():
-    """All 13 textures over the dark and the sky background (tiles 400 px; beams tiled 2x along U)."""
+    """All 12 textures over the dark and the sky background (tiles 400 px; beams tiled 2x along U)."""
     tile, pad, cols = 400, 14, 4
     rows = math.ceil(len(SHEET_ORDER) / cols)
     paths = []
@@ -1341,7 +1307,7 @@ def sheet_zoom():
     """1:1 / 2:1 detail crops (the pixels themselves) over both backgrounds."""
     crops = [("te5_dial_inlay", (400, 0, 624, 150), 2), ("te5_dial_inlay", (700, 760, 900, 930), 2),
              ("te5_subdial", (128, 0, 384, 200), 2), ("te5_engraving", (420, 0, 604, 120), 3),
-             ("te5_hairspring", (256, 160, 512, 352), 2), ("te5_accretion", (600, 40, 1000, 300), 1),
+             ("te5_accretion", (600, 40, 1000, 300), 1),
              ("te5_galaxy_floor", (380, 380, 780, 640), 1), ("te5_galaxy_arms", (100, 300, 500, 560), 1),
              ("te5_galaxy_core", (160, 160, 352, 352), 2), ("te5_halo", (256, 0, 512, 256), 1),
              ("te5_stream", (0, 0, 256, 64), 3), ("te5_ribbon", (0, 0, 256, 128), 2),
@@ -1406,12 +1372,12 @@ def _ground_quad(cx, cy, R, elev_deg, W, H, persp=0.18):
 
 def insitu_dais(t=3.0):
     """The dais stack at in-game scale: engraving (40) on the plaza, dark base (29.6) + te5_galaxy_floor, the floating
-    arms (21, +0.42) and core (12, +0.66) at their relative spins after t seconds, silver rim (31.1), the balance wheel
-    hairspring (3.8). Top-down and from a 32-degree camera, by day and by night."""
+    arms (21, +0.42) and core (12, +0.66) at their relative spins after t seconds, silver rim (31.1). Top-down and from a
+    32-degree camera, by day and by night."""
     S = 13.0                                   # px per stud
     out = []
     eng = load("te5_engraving"); flo = load("te5_galaxy_floor"); arm = load("te5_galaxy_arms")
-    cor = load("te5_galaxy_core"); hs = load("te5_hairspring")
+    cor = load("te5_galaxy_core")
     for mode in ("day", "night"):
         for view in ("top", "persp"):
             W, H = 600, 600 if view == "top" else 380
@@ -1426,8 +1392,7 @@ def insitu_dais(t=3.0):
                                              (flo, 29.6, -6.0, 1.3 if day else 2.4, 0.15),
                                              (None, 31.1, 0, 0, 0.9),
                                              (arm, 21.0, 9.0, 1.4 if day else 2.4, 0.42),
-                                             (cor, 12.0, -16.0, 1.5 if day else 2.6, 0.66),
-                                             (hs, 3.8, 40.0, 1.4 if day else 2.2, 2.27)]:
+                                             (cor, 12.0, -16.0, 1.5 if day else 2.6, 0.66)]:
                 R = dia / 2 * S
                 if img is None and dia == 29.6:          # D1 base disc
                     src = np.zeros((256, 256, 4), F32); yy, xx = np.mgrid[0:256, 0:256]
@@ -1609,9 +1574,6 @@ MANIFEST = [
      "Rim-only halo: moon halo billboard (13 studs) and night bezel corona (C10, 40 studs)",
      "White; alpha 0 below r 0.66, 0.95 at 0.74, 0.35 at 0.82, 0.10 at 0.90, 0 at 1.0 (monotone cubic, dithered). "
      "Tint with ImageColor3 (236,240,248)."),
-    ("te5_hairspring", "hairspring", "swirl", "512x512",
-     "Hairspring spiral on the balance wheel under the feet (D8)",
-     "9-turn Archimedean spiral r 0.12 -> 0.92 that eases out of the collet (r 0.10), terminal stud at the outer end."),
     ("te5_stream", "stream", "line", "256x64",
      "Palm stream beams B1 (silver) and B3 (ink, via Beam Color)",
      "Beam texture: image x runs ALONG the beam (seamless every 256 px, TextureMode Wrap), y across. White core with 6 "
@@ -1662,7 +1624,7 @@ def check():
             fails.append(msg)
     sizes = {"te5_dial_inlay": (1024, 1024), "te5_subdial": (512, 512), "te5_accretion": (1024, 1024),
              "te5_galaxy_floor": (1024, 1024), "te5_galaxy_arms": (1024, 1024), "te5_galaxy_core": (512, 512),
-             "te5_engraving": (1024, 1024), "te5_halo": (512, 512), "te5_hairspring": (512, 512),
+             "te5_engraving": (1024, 1024), "te5_halo": (512, 512),
              "te5_stream": (256, 64), "te5_ribbon": (256, 128), "te5_moon": (1024, 1024), "te5_star_window": (1024, 1024)}
     for nm, (w, h) in sizes.items():
         im = Image.open(os.path.join(OUT, nm + ".png"))
@@ -1738,7 +1700,6 @@ job("te5_galaxy_arms", make_galaxy_arms)
 job("te5_galaxy_core", make_galaxy_core)
 job("te5_engraving", make_engraving)
 job("te5_halo", make_halo)
-job("te5_hairspring", make_hairspring)
 job("te5_stream", make_stream)
 job("te5_ribbon", make_ribbon)
 job("te5_moon", make_moon)

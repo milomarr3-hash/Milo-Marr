@@ -96,18 +96,6 @@
   "uploadedId": null
  },
  {
-  "name": "te5_hairspring",
-  "file": "te5_hairspring.png",
-  "repoPath": "textures/te5/surfaces/te5_hairspring.png",
-  "texKey": "hairspring",
-  "fallbackTexKey": "swirl",
-  "size": "512x512",
-  "layout": "None",
-  "purpose": "Hairspring spiral on the balance wheel under the feet (D8)",
-  "notes": "9-turn Archimedean spiral r 0.12 -> 0.92 that eases out of the collet (r 0.10), terminal stud at the outer end.",
-  "uploadedId": null
- },
- {
   "name": "te5_stream",
   "file": "te5_stream.png",
   "repoPath": "textures/te5/surfaces/te5_stream.png",

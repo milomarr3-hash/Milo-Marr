@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 11_chunk_10_of_10.luau | step 11: piece 10 of 10
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (123861 bytes, checksum 523677650).
+-- AuraRNG Studio install kit | 12_chunk_11_of_11.luau | step 12: piece 11 of 11
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "11_chunk_10_of_10.luau"
+local FILE = "12_chunk_11_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-123861-523677650-10-457228033"
-local NEW_LEN, NEW_SUM = 123861, 523677650
+local RUN = "TheEnd-141659-402664341-11-730820328"
+local NEW_LEN, NEW_SUM = 141659, 402664341
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 10
-local LENS = { 13381, 13376, 13386, 13381, 13350, 13333, 13298, 13314, 13338, 3704 }
-local SUMS = { 138302907, 144820895, 284418912, 946852927, 737433606, 204697128, 129328051, 22255047, 37178664, 110492221 }
+local N = 11
+local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
+local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -67,9 +67,133 @@ local function chunkOk(h, i)
 	return v ~= nil and v:IsA("StringValue") and #v.Value == LENS[i] and sum(v.Value) == SUMS[i]
 end
 
-local K = 10
--- piece 10 of 10 of the new source (3704 bytes, checksum 110492221, long bracket level 0)
-local DATA = [[
+local K = 11
+-- piece 11 of 11 of the new source (9052 bytes, checksum 397877975, long bracket level 1)
+local DATA = [=[
+				end
+			end
+			acf[j] = GCF[PG[i]] * L
+		end
+		workspace:BulkMoveTo(actParts, acf, Enum.BulkMoveMode.FireCFrameChanged)
+
+		-- 8. event writes only
+		if flip or st.repoint then
+			st.repoint = false
+			sb[1].Attachment1 = mA
+			if sb[2] then sb[2].Attachment1 = mA end
+			sb[3].Attachment1 = vA
+			if sb[4] then sb[4].Attachment1 = vA end
+		end
+		if on ~= alphaOn then
+			alphaOn = on
+			refreshEmitters()
+			refreshLights()
+		end
+		if asm then
+			-- the void condenses out of a point (Size writes on this one part, during the assembly only)
+			local d = 0.6 + 7.4 * easeOutBack(age / 1.2)
+			if abs(d - voidD) >= 0.01 or (d == 8 and voidD ~= 8) then
+				voidD = d
+				void.Size = voidSize * (d / 8)
+			end
+			fadeAll(a, true, 0.03)
+			alphaW = a
+			-- the emitters switch on in turn as their part of the machine locks in
+			local e = emitters[nextEmit]
+			if e and age >= e[2] then
+				while e and age >= e[2] do
+					e[4] = true
+					nextEmit += 1
+					e = emitters[nextEmit]
+				end
+				refreshEmitters()
+				refreshLights()
+			end
+		elseif not settled or a ~= alphaW then
+			-- the assembly has ended (snap everything to rest) or the framework is fading the aura out (or back in)
+			if not settled then
+				settled = true
+				if voidD ~= 8 then
+					voidD = 8
+					void.Size = voidSize
+				end
+				for _, e in ipairs(emitters) do e[4] = true end
+				nextEmit = #emitters + 1
+				refreshEmitters()
+				refreshLights()
+				fadeAll(a, false, 0.03)
+			else
+				fadeAll(a, false, 0.04)
+			end
+			alphaW = a
+		end
+		if isGrounded ~= grounded then
+			grounded = isGrounded
+			refreshEmitters()
+		end
+		-- the body's wisps and sparks come back a second after the aura is shown again (a quick hide/show never blinks them)
+		if not st.footOk and os.clock() - st.shownAt >= 1.1 then
+			st.footOk = true
+			refreshEmitters()
+		end
+		-- walking or flying: the void's ink smoke thins out and dies young, the moon's smoke and the body's wisps stop and
+		-- the moon dust halves, so no smog patches hang along the path (the body's sparks and the speed trail stream out
+		-- behind instead)
+		local slow = (st.smokeSlow and (g > 0.3 or st.speedOn)) or g > 0.6 or st.speedOn
+		if slow ~= st.smokeSlow then
+			st.smokeSlow = slow
+			em.smoke.Rate = slow and (low and 1 or 1.5) or (low and 4 or 10)
+			em.smoke.Lifetime = slow and n(1.0, 1.4) or n(3.5, 4.5)
+			if em.smokeMoon then em.smokeMoon.Rate = slow and 0 or 5 end
+			em.dust.Rate = (low and 5 or 10) * (slow and 0.5 or 1)
+			if em.wisps then em.wisps.Rate = slow and 0 or (low and 3 or 7) end
+		end
+		if remote and cam and ownerHub then
+			-- another wearer's clock or orbs in front of your own clock (a friend beside or behind you): theirs step back
+			-- along your view (a spring) until they stand 12 studs behind your clock, smaller and still solid. Tested at
+			-- where they would stand without stepping back, and held 1.5 s, so they never swing back and forth
+			local ab = ownerHub - camPos
+			local len2 = ab:Dot(ab)
+			local y0 = st.yieldD
+			local Kp0, nz = K.Position - vl * y0, K.LookVector
+			local hit = false
+			if len2 > 1 then
+				local d0, d1 = (camPos - Kp0):Dot(nz), (ownerHub - Kp0):Dot(nz)
+				if d0 * d1 < 0 then hit = (camPos + ab * (d0 / (d0 - d1)) - Kp0).Magnitude < 14.5 end
+				hit = hit or segDist(moonC - vl * y0, camPos, ab, len2) < 5.5 or segDist(voidC - vl * y0, camPos, ab, len2) < 7.0
+			end
+			if hit then
+				st.yieldHold = 1.5
+				st.yieldT = clamp((ownerHub - Kp0):Dot(vl) + 12, 0, 48)
+			elseif st.yieldHold > 0 then
+				st.yieldHold -= dt
+				if st.yieldHold <= 0 then st.yieldT = 0 end
+			end
+			st.yieldD = snap and st.yieldT or st.yieldD + (st.yieldT - st.yieldD) * (1 - exp(-3 * dt))
+		end
+		if remote and st.ghostRemote and cam then
+			-- someone else's aura between you and your camera: test the segment from the camera to your own focus against
+			-- their clock disc and their orbs (those ghost together, with their GUIs, smoke and streams; enter at once, leave
+			-- after 1.2 s clear) and, separately, against their rings (only the rings ghost: a friend standing beside the
+			-- wearer looks through the rings, never through the clock; 0.6 s)
+			local head = cam.Focus.Position
+			local ab = head - camPos
+			local len2 = ab:Dot(ab)
+			local occ, occA = false, false
+			if len2 > 1 then
+				local Kp, nz = K.Position, K.LookVector
+				local d0, d1 = (camPos - Kp):Dot(nz), (head - Kp):Dot(nz)
+				if d0 * d1 < 0 then occ = (camPos + ab * (d0 / (d0 - d1)) - Kp).Magnitude < 14.5 end
+				occ = occ or segDist(moonC, camPos, ab, len2) < 5.5 or segDist(voidC, camPos, ab, len2) < 7.0
+				occA = segDist(A0p, camPos, ab, len2) < 6.5
+			end
+			if occ then st.ghostHold = 1.2 elseif st.ghostHold > 0 then st.ghostHold -= dt end
+			local tgt = st.ghostHold > 0 and 1 or 0
+			if st.ghost ~= tgt then
+				st.ghost = tgt > st.ghost and min(1, st.ghost + 5 * dt) or max(0, st.ghost - 5 * dt)
+				local q = math.floor(st.ghost * 3 + 0.5) / 3
+				if q ~= st.ghostQ then setGhost(q) end
+			end
 			if occA then st.armHold = 0.6 elseif st.armHold > 0 then st.armHold -= dt end
 			local tgtA = st.armHold > 0 and 1 or 0
 			if st.armG ~= tgtA then
@@ -115,7 +239,7 @@ local DATA = [[
 		visible = on
 		if on then
 			-- (parented again by the next update, together with that frame's positions; after a long hide it fades back in
-			-- instead of popping, and the foot drips wait a second)
+			-- instead of popping, and the body's wisps and sparks wait a second)
 			st.pendingRoot = true
 			st.shownAt = os.clock()
 			st.lastO = nil -- (the distance walked while hidden is not a speed)
@@ -127,6 +251,7 @@ local DATA = [[
 			root.Parent = nil
 			st.pendingRoot = false
 			st.hiddenAt = os.clock()
+			if not remote then ownerHub = nil end -- (other wearers no longer step back for a clock you cannot see)
 			st.footOk = false
 			if grade then
 				-- (never left on top of a cutscene or a hidden aura)
@@ -150,6 +275,10 @@ local DATA = [[
 		if destroyed then return end
 		destroyed = true
 		if grade then gradeTo(GRADE_OFF, 0.8, true) end -- (the screen eases back instead of snapping)
+		if ctx.isLocal then
+			ownGone, ownGoneChar[1] = os.clock(), char -- (a respawn's rebuild within seconds is not an equip: no grade)
+			ownerHub = nil
+		end
 		for h = 1, 4 do
 			for _, hp in ipairs(holders[h]) do hp[1]:Destroy() end -- (also the groups hidden by far LOD or the near rule)
 		end
@@ -164,6 +293,7 @@ local DATA = [[
 
 	applyNight(nightStep())
 	root.Parent = ctx.container
+	preloadUsed() -- (the te5 textures this build draws, asked for once each, in the background)
 	if CONFIG.DEBUG then
 		local nb, ng = 0, 0
 		for _, d in ipairs(root:GetDescendants()) do
@@ -175,7 +305,7 @@ local DATA = [[
 end
 
 return End
-]]
+]=]
 
 local function main()
 	if game:GetService("RunService"):IsRunning() then
@@ -219,7 +349,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "12_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "13_apply.luau"))
 end
 
 local ok, res = pcall(main)

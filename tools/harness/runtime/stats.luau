@@ -464,6 +464,17 @@ do
 		return out
 	end
 	local function u2Arr(u) if not u then return { 0, 0, 0, 0 } end return { u.X.Scale, u.X.Offset, u.Y.Scale, u.Y.Offset } end
+	local function v2Arr(v) if not v then return { 0, 0 } end return { v.X, v.Y } end
+	-- a UICorner inside a GuiObject: its CornerRadius as [scale, offset] (nil: square corners)
+	local function cornerOf(c)
+		for _, ch in ipairs(D[c].children or {}) do
+			if D[ch] and D[ch].cls.isa.UICorner then
+				local r = H.rawGet(ch, "CornerRadius")
+				return { r.Scale, r.Offset }
+			end
+		end
+		return nil
+	end
 	local NULL = H.NULL
 	local function nn(v) if v == nil then return NULL end return v end
 	local function en(v) return v and v.Name or NULL end
@@ -499,6 +510,11 @@ do
 				cameraType = en(g(H.camera, "CameraType")), preset = H.CONFIG.cameraName }),
 			parts = {}, attachments = {}, beams = {}, guis = {}, emitters = {}, trails = {}, lights = {}, highlights = {}, effects = {},
 		}
+		-- the plaza's top (the scenario's ground: a seat or a slope does not move it), so the renderer draws the floor there
+		if H.plaza and D[H.plaza] and not D[H.plaza].destroyed then
+			local pc, ps = g(H.plaza, "CFrame"), g(H.plaza, "Size")
+			snap.world = H.obj({ groundY = pc.Position.Y + ps.Y / 2 })
+		end
 		if rec then
 			local s = rec.lastS
 			snap.wearer = H.obj({ cf = cfArr(g(rec.hrp, "CFrame")), hover = rec.hover, glide = rec.g, legLen = s and s.legLen or 3,
@@ -562,7 +578,8 @@ do
 					segments = g(p, "Segments"), faceCamera = g(p, "FaceCamera"), texture = g(p, "Texture"), textureMode = en(g(p, "TextureMode")),
 					textureLength = g(p, "TextureLength"), textureSpeed = g(p, "TextureSpeed"), color = cseqArr(g(p, "Color")),
 					transparency = nseqArr(g(p, "Transparency")), lightEmission = g(p, "LightEmission"), lightInfluence = g(p, "LightInfluence"),
-					brightness = g(p, "Brightness"), zOffset = g(p, "ZOffset"), enabled = g(p, "Enabled") })
+					brightness = g(p, "Brightness"), zOffset = g(p, "ZOffset"), enabled = g(p, "Enabled"),
+					localTransparencyModifier = g(p, "LocalTransparencyModifier") })
 			elseif isa.SurfaceGui or isa.BillboardGui then
 				local host = pr.Adornee or d.parent
 				local hostAtt = nil
@@ -575,7 +592,8 @@ do
 						images[#images + 1] = H.obj({ image = g(c, "Image"), color = rgb(g(c, "ImageColor3")), transparency = g(c, "ImageTransparency"),
 							rotation = g(c, "Rotation"), size = u2Arr(g(c, "Size")), position = u2Arr(g(c, "Position")),
 							anchor = { g(c, "AnchorPoint").X, g(c, "AnchorPoint").Y }, visible = g(c, "Visible"), zIndex = g(c, "ZIndex"),
-							backgroundTransparency = g(c, "BackgroundTransparency"), backgroundColor = rgb(g(c, "BackgroundColor3")) })
+							backgroundTransparency = g(c, "BackgroundTransparency"), backgroundColor = rgb(g(c, "BackgroundColor3")),
+							rectOffset = v2Arr(g(c, "ImageRectOffset")), rectSize = v2Arr(g(c, "ImageRectSize")), corner = cornerOf(c) })
 					elseif cd.cls.isa.TextLabel then
 						texts[#texts + 1] = H.obj({ text = g(c, "Text"), color = rgb(g(c, "TextColor3")), transparency = g(c, "TextTransparency"),
 							size = u2Arr(g(c, "Size")), position = u2Arr(g(c, "Position")), visible = g(c, "Visible") })
@@ -610,6 +628,7 @@ do
 				local pd = par and D[par]
 				local e = { path = H.fullName(p), hostId = (pd and pd.cls.isa.BasePart) and pd.id or NULL,
 					hostAttachmentId = (pd and pd.cls.isa.Attachment) and pd.id or NULL, enabled = g(p, "Enabled"), texture = g(p, "Texture"),
+					localTransparencyModifier = g(p, "LocalTransparencyModifier"),
 					rate = g(p, "Rate"), lifetime = { g(p, "Lifetime").Min, g(p, "Lifetime").Max }, speed = { g(p, "Speed").Min, g(p, "Speed").Max },
 					spreadAngle = { g(p, "SpreadAngle").X, g(p, "SpreadAngle").Y }, emissionDirection = en(g(p, "EmissionDirection")),
 					shape = en(g(p, "Shape")), shapeStyle = en(g(p, "ShapeStyle")), shapeInOut = en(g(p, "ShapeInOut")), shapePartial = g(p, "ShapePartial"),

@@ -79,11 +79,10 @@
   "repoPath": "textures/te5/particles/te5_ash.png",
   "texKey": "ash5",
   "fallbackTexKey": "ash",
-  "size": "1024x1024",
-  "layout": "Grid2x2",
-  "flipbookMode": "Random",
+  "size": "256x256",
+  "layout": "None",
   "purpose": "P8b black ash flakes rising off the galaxy",
-  "notes": "1024x1024 (Roblox only animates flipbooks on 1024^2 textures). Flipbook 2x2 Random: 4 charred flakes in 512 px cells (7, 9, 8, 8 main corners with torn edges), extent 0.64-0.74 of the cell, >= 12 % padding. Body RGB 14-22 alpha 1 with fibre grain and a soft fold; 1 px silver (190) highlight on the upper-left edges.",
+  "notes": "One charred flake, 256x256 (no flipbook: the emitter's random Rotation and RotSpeed -90..90 make every particle a different shape). 9 main corners with torn edges, extent 0.74, >= 12 % padding. Body RGB 14-22 alpha 1 with fibre grain and a soft fold; 1 px silver (190) highlight on the upper-left edges.",
   "uploadedId": null
  }
 ]

@@ -354,6 +354,22 @@ return res
 """
 
 STATUS_MAIN = """
+-- CONFIG overrides are attributes on the module (UPPER_CASE names). They survive an install and a rollback, and every
+-- build reads them, so a flip left over from an earlier Studio test would silently change the new version: list them.
+local function overrides(m)
+	local out = {}
+	local ok, attrs = pcall(function() return m:GetAttributes() end)
+	if ok and type(attrs) == "table" then
+		for k, v in pairs(attrs) do
+			if type(k) == "string" and string.match(k, "^[%u%d_]+$") then table.insert(out, k .. "=" .. tostring(v)) end
+		end
+	end
+	table.sort(out)
+	if #out == 0 then return "CONFIG overrides on the module: none" end
+	return "CONFIG overrides on the module: " .. table.concat(out, ", ")
+		.. " (not set by you this session? clear them: studio_checks.md S8 CLEAR_ALL)"
+end
+
 local function main()
 	local lines = {}
 	table.insert(lines, game:GetService("RunService"):IsRunning() and "mode PLAY (stop Play before installing)" or "mode Edit")
@@ -362,6 +378,7 @@ local function main()
 		local src = SES:GetEditorSource(m)
 		local cs = sum(src)
 		table.insert(lines, string.format("%s is %d bytes, checksum %d = %s", TARGET_NAME, #src, cs, describe(#src, cs)))
+		table.insert(lines, overrides(m))
 	else
 		table.insert(lines, TARGET_NAME .. " NOT FOUND")
 	end
@@ -510,6 +527,22 @@ end
 """
 
 APPLY_MAIN = """
+-- CONFIG overrides are attributes on the module (UPPER_CASE names). They survive an install and a rollback, and every
+-- build reads them, so a flip left over from an earlier Studio test would silently change the new version: list them.
+local function overrides(m)
+	local out = {}
+	local ok, attrs = pcall(function() return m:GetAttributes() end)
+	if ok and type(attrs) == "table" then
+		for k, v in pairs(attrs) do
+			if type(k) == "string" and string.match(k, "^[%u%d_]+$") then table.insert(out, k .. "=" .. tostring(v)) end
+		end
+	end
+	table.sort(out)
+	if #out == 0 then return "CONFIG overrides on the module: none" end
+	return "CONFIG overrides on the module: " .. table.concat(out, ", ")
+		.. " (not set by you this session? clear them: studio_checks.md S8 CLEAR_ALL)"
+end
+
 local function main()
 @@GUARDS@@
 	local h = holder()
@@ -533,7 +566,7 @@ local function main()
 	local cur = SES:GetEditorSource(m)
 	if cur == src then
 		h:Destroy()
-		return say("OK", string.format("already installed: %s is the new version (%d bytes, checksum %d). Temporary holder removed.", TARGET_NAME, NEW_LEN, NEW_SUM))
+		return say("OK", string.format("already installed: %s is the new version (%d bytes, checksum %d). Temporary holder removed. %s", TARGET_NAME, NEW_LEN, NEW_SUM, overrides(m)))
 	end
 	local b = backupWith(#cur, sum(cur))
 	if not b then
@@ -545,19 +578,34 @@ local function main()
 		return say("FAIL", why .. " The holder is kept, so this can be run again.")
 	end
 	h:Destroy()
-	return say("OK", string.format("installed: %s is now %d bytes, checksum %d (compiled, written, read back from the editor and checked). The previous version is saved as %s. Temporary holder removed. Next: test in Play (studio_checks.md).",
-		TARGET_NAME, NEW_LEN, NEW_SUM, b:GetFullName()))
+	return say("OK", string.format("installed: %s is now %d bytes, checksum %d (compiled, written, read back from the editor and checked). The previous version is saved as %s. Temporary holder removed. %s. Next: test in Play (studio_checks.md).",
+		TARGET_NAME, NEW_LEN, NEW_SUM, b:GetFullName(), overrides(m)))
 end
 """
 
 FROMFILE_MAIN = """
 local LABEL = @@LABEL_Q@@
+-- CONFIG overrides are attributes on the module (UPPER_CASE names). They survive an install and a rollback, and every
+-- build reads them, so a flip left over from an earlier Studio test would silently change the new version: list them.
+local function overrides(m)
+	local out = {}
+	local ok, attrs = pcall(function() return m:GetAttributes() end)
+	if ok and type(attrs) == "table" then
+		for k, v in pairs(attrs) do
+			if type(k) == "string" and string.match(k, "^[%u%d_]+$") then table.insert(out, k .. "=" .. tostring(v)) end
+		end
+	end
+	table.sort(out)
+	if #out == 0 then return "CONFIG overrides on the module: none" end
+	return "CONFIG overrides on the module: " .. table.concat(out, ", ")
+		.. " (not set by you this session? clear them: studio_checks.md S8 CLEAR_ALL)"
+end
 
 local function main()
 @@GUARDS@@
 	local cur = SES:GetEditorSource(m)
 	if #cur == NEW_LEN and sum(cur) == NEW_SUM then
-		return say("OK", "already installed: " .. TARGET_NAME .. " is the new version. Nothing to do.")
+		return say("OK", "already installed: " .. TARGET_NAME .. " is the new version. Nothing to do. " .. overrides(m))
 	end
 	-- 1) back up what is live now (once)
 	local b = backupWith(#cur, sum(cur))
@@ -594,8 +642,8 @@ local function main()
 	if not done then
 		return say("FAIL", why)
 	end
-	return say("OK", string.format("installed from %s: %s is now %d bytes, checksum %d (compiled, written, read back and checked). The previous version is saved as %s.",
-		tostring(file.Name), TARGET_NAME, NEW_LEN, NEW_SUM, b:GetFullName()))
+	return say("OK", string.format("installed from %s: %s is now %d bytes, checksum %d (compiled, written, read back and checked). The previous version is saved as %s. %s.",
+		tostring(file.Name), TARGET_NAME, NEW_LEN, NEW_SUM, b:GetFullName(), overrides(m)))
 end
 """
 

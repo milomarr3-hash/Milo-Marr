@@ -1,14 +1,16 @@
 # Uploading the te5 textures and filling TEX5
 
-Pass 5 has 20 new textures, all code-generated PNGs of 1024² or smaller:
+Pass 5 has 19 new textures, all code-generated PNGs of 1024² or smaller:
 
-- 7 particle textures in `textures/te5/particles/`: shards, smoke, mote, glint, bokeh, streak and ash. (Review round 1
-  re-exported two of them: te5_ash is now 1024² - Roblox only animates flipbooks on 1024² textures - and te5_streak is a
-  256² square, because particles are drawn square.)
-- 13 surface textures in `textures/te5/surfaces/`: dial inlay, sub-dial, accretion, galaxy floor/arms/core, engraving,
-  halo, hairspring, stream, ribbon, and (review round 1) the photographic **moon** face and the **star window** on the
-  clock's movement plate. With te5_moon uploaded the module swaps the white ball + craters + halo for the photographic
-  face; until then it keeps the geometry moon.
+- 7 particle textures in `textures/te5/particles/`: shards, smoke, mote, glint, bokeh, streak and ash. (te5_streak is a 256²
+  square, because particles are drawn square. Review round 2 made te5_ash a single 256² flake: the 1024² flipbook cost 5 MB
+  of texture memory for a flake of ~20 px. The two flipbooks, shards and smoke, are 1024², the size Roblox needs to animate
+  a flipbook.)
+- 12 surface textures in `textures/te5/surfaces/`: dial inlay, sub-dial, accretion, galaxy floor/arms/core, engraving,
+  halo, stream, ribbon, and (review round 1) the photographic **moon** face and the **star window** on the clock's
+  movement plate. The moon is an opaque face disc turned to the camera either way: with te5_moon on it, the photographic
+  moon; until then pass 4's moon, cropped to its disc. (Review round 2 dropped te5_hairspring: the spiral under the feet
+  was invisible at every framing.)
 
 Their `manifest.json` files list each one's `texKey` (its key in the module's `TEX5` table) and `uploadedId` (still
 `null`). Until a key has an id, the aura uses that texture's pass-4 fallback. So upload them **after** the first install
@@ -35,7 +37,7 @@ upload_image  imagePaths: [".../particles/te5_streak.png", ".../particles/te5_as
                            ".../surfaces/te5_dial_inlay.png", ".../surfaces/te5_subdial.png", ".../surfaces/te5_accretion.png"]
 upload_image  imagePaths: [".../surfaces/te5_galaxy_floor.png", ".../surfaces/te5_galaxy_arms.png",
                            ".../surfaces/te5_galaxy_core.png", ".../surfaces/te5_engraving.png", ".../surfaces/te5_halo.png"]
-upload_image  imagePaths: [".../surfaces/te5_hairspring.png", ".../surfaces/te5_stream.png", ".../surfaces/te5_ribbon.png",
+upload_image  imagePaths: [".../surfaces/te5_stream.png", ".../surfaces/te5_ribbon.png",
                            ".../surfaces/te5_moon.png", ".../surfaces/te5_star_window.png"]
 ```
 
@@ -54,7 +56,7 @@ Then stop the web server (kill the background `http.server`).
 
 ## B. By hand with Studio's Asset Manager
 
-1. In Studio, open **View -> Asset Manager** and click **Bulk Import**. Pick all 20 PNGs from `textures/te5/particles/`
+1. In Studio, open **View -> Asset Manager** and click **Bulk Import**. Pick all 19 PNGs from `textures/te5/particles/`
    and `textures/te5/surfaces/`.
 2. When they are done, open **Images** in the Asset Manager. Right-click each one, choose **Copy Asset ID**, and note
    which file it belongs to.

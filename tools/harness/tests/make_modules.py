@@ -86,6 +86,10 @@ MODULES = {
                                  '\t\tim.Size = UDim2.fromScale(1, 1)\n\t\tim.BackgroundTransparency = 1\n'
                                  '\t\tim.Image = "rbxassetid://88172507927269"\n\t\tim.Parent = g\n\t\timages[i] = im\n\tend',
                            update="\t\tfor i, im in ipairs(images) do im.ImageTransparency = 0.3 + 0.2 * math.sin(s.t + i) end"),
+    "bad_part_writes": dict(header="-- EXPECT warning[part-writes-per-frame]: Part.Transparency",
+                            title="fades 8 parts by writing Transparency every frame (instead of event steps)",
+                            build='\tlocal fades = {}\n\tfor i = 1, 8 do\n\t\tlocal p = part:Clone()\n\t\tp.Parent = folder\n\t\tfades[i] = p\n\tend',
+                            update="\t\tfor i, p in ipairs(fades) do p.Transparency = 0.3 + 0.2 * math.sin(s.t + i) end"),
     "bad_flicker": dict(header="-- EXPECT warning[flicker]: PointLight.Brightness",
                         title="a light that strobes",
                         build='\tlocal light = Instance.new("PointLight")\n\tlight.Parent = part\n\tlocal n = 0',

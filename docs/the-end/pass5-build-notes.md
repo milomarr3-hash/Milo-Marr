@@ -7,9 +7,10 @@ confirm is marked `-- STUDIO-VERIFY:` in the code and listed at the end of this 
 
 Renders for Milo: `docs/the-end/pass5-renders/` (see the list at the end).
 
-**Review round 1** (the last section of this page) changed many of the numbers in the sections above (budgets, decisions 5, 6,
-14, 15, the particle tuning, the known weaknesses). Those sections are kept as the record of the first build; where they
-disagree, the review-round-1 section and the spec (`pass5-spec.md`, updated to the built numbers) are current.
+**Review round 1** and **review round 2** (the last two sections of this page) changed many of the numbers in the sections
+above (budgets, decisions 5, 6, 14, 15, the particle tuning, the known weaknesses). Those sections are kept as the record of the
+first build; where they disagree, the review sections (round 2 last) and the spec (`pass5-spec.md`, updated to the built
+numbers) are current.
 
 ## What was built
 
@@ -148,7 +149,7 @@ that the module uses until te5 is uploaded.
 | `11_te5_night_front34.jpg` | After te5 upload: night, front 3/4 |
 | `12_te5_clock_closeup_night.jpg` | After te5 upload: the same close-up at night (star window, moon face, accretion) |
 | `13_pass4_vs_pass5_day.jpg` | The real pass-4 Studio screenshot next to the pass-5 preview from the same camera |
-| `14_contact_sheet.jpg` | All of the above on one page |
+| `14_contact_sheet.jpg` | All of the above on one page; since review round 2 also Roblox's default 12.5-stud zoom (fallback and te5) and first person |
 
 ## Review round 1
 
@@ -331,3 +332,244 @@ Roblox's default 12.5-stud zoom by default (`subject:-1,0,0.35,12.5`). The pass-
 24. te5 textures load (S9 prints each id's status); a failed one is replaced by its fallback with one warning.
 25. The default-zoom layout and the first-person lift feel right while playing (the closeness factor uses the horizontal camera
     distance, smoothed).
+
+## Review round 2
+
+Four critics reviewed the round-1 build (111.7 KB): the art director (AD2-01 to AD2-06), the wearer's and other players' view
+(W2-1 to W2-9), a Studio skeptic (R2S-1 to R2S-10) and a code review (CR2-01 to CR2-07): 5 priority-1, 10 priority-2 and 17
+priority-3 findings. The art director's verdict: "better built, but not insane yet, and in two places worse than pass 4" (the
+moon after the te5 upload, particles adding almost nothing at 36-40 studs, the void reading as a black ball with a faceted
+outline, the silver tinting cyan, the default-zoom framing). The first round-2 fixer was cut off by a usage limit part-way
+through (lifecycle, moon face, ghost split, near fade, far fade, height ride, layer lift and particle edits were in the module;
+none of the tools, textures, install kit or docs). The lead fixer audited every one of its edits against the findings, fixed
+what was half done or inconsistent (te5_ash and te5_hairspring no longer matched their PNGs and manifests, so the install kit's
+own tests failed; the fallback moon had become a 9-stud white plate; the moon's stream crossed its face; the fix-up hooks held
+their own weak keys), finished the rest, and verified it. Every priority-1 and priority-2 finding is done (W2-5's far beacon is built, but whether
+it is on by default is Milo's call); of the priority-3 findings, R2S-10 is half done (its second half needs a Studio memory
+measurement) and two optional extras were not needed (all below). **Still nothing has run in Roblox Studio**: everything here is harness output, snapshot
+measurements and preview renders.
+
+### What changed, and why
+
+**The roll cutscene and the hide/show lifecycle** (R2S-1 = CR2-02, P1)
+
+- `fx.update` now returns **before anything else** while the aura is hidden. Round 1 relied on the mock framework not calling
+  update while hidden; the real framework is not in this repo, and if it keeps calling update during the roll film, the grade
+  dimmed Milo's film and the whole assembly played unseen (the skeptic measured "first drawn frame at age 4.92"). Now neither
+  can happen whichever way the framework behaves. The grade also never starts over a Scriptable camera, never after age 4.5,
+  and only the build that took the shared grade last eases it out (a second "own" build no longer kills the first one's grade).
+- After a hide of more than 0.5 s the first visible frame **snaps** the yaw spring, the zoom factor, the dais, the height ride
+  and the ring lift to where they belong (no springing in from the old pose), forgets the last position (no fake 900 studs/s
+  speed spike and speed-trail burst on reveal) and applies the current day/night at once (dusk may have passed meanwhile).
+- New harness scenarios `equip_in_cutscene` (the framework keeps calling update while hidden) and `equip_in_cutscene_paused`
+  (it does not), with two new lints: `grade-over-cutscene` and `assembly-unseen`. The live pass-4 module trips both; pass 5
+  trips neither, in both framework behaviours.
+
+**The moon** (AD2-01, P1; R2S-9)
+
+- The face is now an **opaque 9-stud disc part** (MOONCORE, outside the Highlight) placed 4.4 studs toward the camera and turned
+  to face it every frame, with the texture on a SurfaceGui. Round 1's face was a BillboardGui: transparent, so the Silver
+  Highlight composited afterwards painted the bezel over the moon's right third in Milo's studio framing. A part writes depth:
+  the Highlight, the rings and the moon's own smoke born behind it can no longer veil it (which also settles R2S-9).
+- Before the te5 upload (what Milo installs and sees first) the same disc carries **pass 4's moon**, cropped to its disc
+  (`ImageRectOffset/Size`, chosen by `applyTex` from a `CROP` table whenever the fallback is in use, including after a failed
+  te5 load) and rounded with a `UICorner`, at Brightness 1.0 → 1.7. The cut-off build had put the uncropped te4 image (a moon
+  inside a glow ring) on a 9-stud white Neon disc: a white plate with a moon in the middle. The toy ball and its 6 flat crater
+  discs are gone.
+- The silver stream now leaves from **behind the face's rim** at about 4 o'clock (an attachment on the face disc) and rises
+  toward the wearer, so it never crosses the photographic face (at the default zoom it drew a white arc across it).
+- The halo billboard stays (15 studs: the face is nearer the camera than the core).
+
+**Particles** (AD2-02, P1; CR2-06; R2S-10)
+
+- The opacity rule changed (spec §7.3): particles with an **opaque core** (motes, glints, streaks, shards, ash) may be up to
+  2 studs; only translucent sprites keep the 0.6 cap. At 40 studs a 0.6-stud mote's core was ~3 px.
+- Rebalanced inside §14 (the art director's prototype numbers): white particles at Brightness 2.4 by day (just above Bloom: steady
+  glints read as light, not grey specks; they grow, hold and shrink, never flash), the void swirl 40 → 28/s but 0.9 → 1.5 studs,
+  rim glints 3 → 9/s at 1.9 studs, floor motes 26 → 18/s at 1.2 studs, the void's ink smoke denser (peak 0.30 → 0.16, 5 → 14
+  studs: the one particle that reads on the bright sky), the moon's smoke grey-silver (176) instead of near-white.
+- **P13 time dust**, the hero system, replaces the two meridian glint emitters (0.4/s each): 16 glints/s born just **outside**
+  the bezel's rim, locked to a ring that turns clockwise with the hands, so the clock wears a slow halo of moving light. (Placed
+  round the rim, not on it: a white glint on the silver bezel hardly read by day.)
+- The floor motes are drawn half size while the camera is close (a second size sequence made at build, swapped only when the
+  zoom crosses cz 0.5): at the default zoom 1.2-stud motes passed the lens as white bubbles.
+- `te5_ash` is one 256² flake instead of a 1024² 2×2 flipbook: 5 MB less texture memory for a flake of ~20 px, one fewer large
+  upload, and no flipbook mode to get wrong (CR2-06: Random would cross-fade each flake into another). The PNG, its generator,
+  manifest and sheets are regenerated.
+- Measured (share of pixels that change by more than 24 / 60 levels when the particles are drawn; day studio, day back = the
+  owner's view, night back): **te5** studio 2.4 / 0.8 % → 3.0 / 1.3 %, back 1.7 / 0.4 % → 2.5 / 1.0 %, night back 2.3 / 0.7 % → 3.2 / 1.4 % (the art director's prototype reached 3.4 / 1.5, 3.1 / 1.3 and 3.4 / 1.6; this measure counts large changes, so the small glints of the time-dust ring hardly register in it, though they read in the renders); **fallback textures** (what ships until the upload) studio 3.6 / 1.4 % → 4.8 / 2.1 %, back 3.5 / 1.4 % → 5.0 / 2.1 %, night back 3.8 / 1.5 % → 4.9 / 2.1 %.
+
+**The void** (AD2-03; W2-7)
+
+- An **event-horizon glow** made of particles: one te5_halo ring a second on the silhouette plane, three alive at once,
+  overlapping into a steady rim glow that blooms at night (pass 4's swirl-ring trick; a glow billboard would be cut by the
+  accretion plane, which the art director's first prototype showed).
+- Finer details: the photon ring is a 0.13-stud hairline of 24 segments (12 on low: 8 read as a white octagon on phones), the
+  lensed arc 9 shorter, thinner blocks (6 thick ones read as a separate faceted bracket), the heart a small brilliant star
+  (spikes 1.6 / 1.1, were 2.8 / 2.2), and the eight "spider" veins are gone.
+- The ribbon is a whip-thin strand curling into the pool (0.45 → 1.3 wide, curves 7 / −8) instead of a black stalk planting
+  the void in the dais. The accretion disc's never-seen Bottom GUI went to the moon's face.
+
+**The silver** (AD2-04, P2)
+
+- The tokens are neutral, a hair warm: SILVER (186, 184, 183), BRIGHT (226, 224, 223), SATIN (143, 141, 140); the Highlight fill
+  (216, 212, 208). Measured B − R on the bezel by day: round 1 +11 to +19 (the art director measured up to +39 on the crown and
+  meridian) → +4 to +10; on the rings at the default zoom +28 / +34 → about +15; at night +1 to +2 (neutral). One step warmer,
+  as the art director suggested, would have made the night silver visibly warm, so this is the compromise.
+- Close up the Highlight's **ink outline eases off** (AD2-06): 0.35 at 30+ studs, about 0.74 at the default zoom, in 0.05
+  steps written only when they change; fill and outline are written separately (CR2-04: a `HIGHLIGHT_FILL` of 1 no longer
+  hides the outline).
+
+**Roblox's default 12.5-stud zoom and first person** (W2-1 = AD2-05, P1; R2S-2; W2-3; W2-8)
+
+- The owner's clock stands 32 studs further back at the default zoom (other players' clocks 16, so a passing wearer's clock does
+  not slide far away); the orbs come down 5 and 10.5 toward the camera. Measured at 1280×720: the dial spans y 7 to 240 with
+  the hands at XII and the hub at y 105 (round 1: XII, the hands and the crown above the frame, hub at y 69); the moon moves out
+  of the top-left corner (centre (346, 196), was (259, 93)) and the hands visibly lock at XII during the equip. The crown and bow
+  stay just above the frame (at 19° down a 36-stud upright object cannot fit); MILO_PROMPT says to scroll out to ~30 studs to
+  see the whole watch. Nothing changes at 30 studs and beyond.
+- **First person** follows where the camera looks instead of holding the last yaw: the lifted clock rides in the sky ahead,
+  the orbs hang about 97° off the line of sight (outside the field of view) and the palm streams switch off. Before, turning
+  90° put the 8-stud void and its smoke straight into the view at ~13 studs. `tools/check_aura.sh --first-person` renders it.
+- The **armillary stays upright** while walking: its −18°·g lean laid the dark equator across the head line from the follow
+  camera. `glide` view-blocked 31 % → 4 %.
+- The rings **fade** out over 0.25 s in three steps before the near rule removes them, and fade back in, so scrolling between
+  9 and 12 studs never snaps them.
+
+**Other players** (W2-2, CR2-01 = R2S-4, W2-4, R2S-3, R2S-6, W2-5)
+
+- **Split ghosting:** their clock and orbs ghost (with their GUIs, Highlight and corona) only when they really stand between
+  your camera and you, and stay ghosted 1.2 s after; their rings ghost on their own (0.6 s). Round 1 ghosted the whole aura and
+  switched its dial off whenever someone just stood beside a wearer. New scenarios `pair_side` and `visit_close`: a friend 5
+  studs to the side now sees only the 76 ring parts go see-through.
+- Their **beams and particles ghost too** (Beam and ParticleEmitter have the same hidden `LocalTransparencyModifier`; probed at
+  build, and if it cannot be written those beams and emitters switch off instead): no dark smoke cloud or ink ribbon stays
+  across your character.
+- **Layer lift:** every wearer's dais layers sit at their own height (owner 0, others 0.018 / 0.037 by UserId parity), so two
+  pools side by side never share a plane (Roblox z-fights coplanar faces as a crawling shimmer).
+- **Highlight slots:** on low quality only the owner's aura has a Highlight, and another player's switches off past the detail
+  range (Roblox draws at most 31 per client, shared with Milo's other auras).
+- **Far remote wearers** update every other frame with both frames' time (springs exact): half the cost for something ~40 px tall.
+- **Far beacon** (W2-5): rebuilt as the wearer critic prototyped it (no texture, 8 → 3 studs wide, from above the bow to 280
+  studs: a solid ink column by day, white at night, fading in past ~110 studs). Still **off by default**: it changes what the
+  whole server sees, so it needs Milo's yes (S8 `FAR_BEACON = true` to try it).
+
+**Feel** (W2-6, CR2-03)
+
+- The clock and the orbs ride a **heavy spring** on the body's height: a 7.2-stud jump no longer throws the 28-stud watch up and
+  down. Measured in `jump`: at the apex the clock stays put (its height clamp over the dais holds it) and the moon rises 0.6
+  (round 1: clock +4.5, moon +6.5, void +6.3).
+- At the 110-stud far-detail switch the lights, the thin streams (and the far beacon the other way) and another player's
+  Highlight **fade over 0.5 s** instead of switching in one frame; light Brightness is written only when it changes.
+
+**Texture loading** (R2S-5 = CR2-05)
+
+- Only `AssetFetchStatus.Failure` counts at once; a time-out is asked for once more 20 s later before the fallback is swapped in.
+- What the build chose because te5 was there now goes back with the texture: the ribbon to ink (a failed te5 ribbon would have
+  been a white strap), the star window's and the moon face's brightness, and the te5-sized smoke, shards and streaks. The hooks
+  run only on a failure event and take the object as an argument (a weak-keyed table whose value held its key would never be
+  collected).
+
+**Tools** (R2S-7, W2-9, R2S-4 (4))
+
+- `register_headroom.py --opt 0,1,2` (default) compiles at every Luau optimisation level and reports the worst: **64 spare at
+  -O1/-O2, 29 at -O0** (a debugging compile keeps constant locals in registers). The test requires ≥ 16 at all three.
+- Harness: 4 new scenarios (32), `H.UPDATE_WHILE_HIDDEN`, the two lifecycle lints, per-scenario steady-state start, the
+  remote-wearer camera's Focus on the local player (round 1 put it on the remote wearer, which ghosted far views that would not
+  ghost in game), snapshots record the plaza top (`world.groundY`), beam and emitter `LocalTransparencyModifier`, and images'
+  `ImageRectOffset/Size` and `UICorner`. The `part-writes-per-frame` lint now flags appearance writes on most steady frames
+  (event bursts such as ghost steps no longer count; a new broken test module `bad_part_writes` keeps the check honest).
+- Preview: the floor at the plaza top (seated renders no longer hide the dais), cropped and rounded images, ghosted beams and
+  particles. `check_aura.sh --first-person`. FIDELITY.md says what of this is unverified.
+
+**Install kit** (R2S-8, CR2-07)
+
+- `00_status`, `12_apply` and `90_install_from_file` list the module's **CONFIG overrides** (attributes survive installs and
+  rollbacks); the checklist's first line in studio_checks says to clear unexpected ones (S8 `CLEAR_ALL`).
+- studio_checks: S5 runs its own copy of the module (unequip THE END before `IS_LOCAL = true`; check the grade and the te5
+  fallback with real equips); new checks for the cutscene grade, first person, the ring fade, side-by-side friends, two pools,
+  the 110-stud fade, the jump, the Highlight count and texture memory, the `HIGHLIGHT_FILL` 0.65 / 0.8 A/B. README: ~10 piece
+  payloads. upload_textures: 19 textures. The install tests' snippet expectations changed because the module did: the low
+  bench has 150 parts (was 149) and, on low, a remote stand-in no longer has a Highlight ("OFF on 1 aura" instead of 2).
+
+### Every round-2 finding
+
+| Finding | Status |
+|---|---|
+| AD2-01 moon (P1) | Done: opaque camera-facing face disc; cropped, rounded te4 fallback; craters and ball removed; stream from the rim. |
+| AD2-02 particles (P1) | Done: §7.3 amended, rebalance, P13 time dust (moved outside the rim after looking at the renders), close-zoom mote size. |
+| AD2-03 void (P2) | Done: horizon glow, hairlines, small heart, veins removed, thin ribbon; lensed arc 9 blocks. |
+| AD2-04 silver (P2) | Done (neutral tokens and a warm fill; one step less warm than proposed, see above); `HIGHLIGHT_FILL` A/B in studio_checks. |
+| AD2-05 default-zoom theme (P2) | Done through W2-1's layout (XII and the hands in frame); the 44° lean was not added on top (the dial would read as an ellipse lying back). |
+| AD2-06 close ink outline (P3) | Done. |
+| W2-1 owner's default camera (P1) | Done (proto B, owner-only extra distance). |
+| W2-2 ghost over-triggers (P2) | Done (rings separate; 1.2 s hold for the clock). |
+| W2-3 leaning rings hide the head (P2) | Done (upright; glide 31 % → 4 %). |
+| W2-4 coplanar pools (P2) | Done (layer lift); same-parity strangers still share planes: Studio check. |
+| W2-5 far flex (P2) | Built and documented; default stays off pending Milo's OK. |
+| W2-6 jump hop (P3) | Done (height spring). |
+| W2-7 photon octagon (P3) | Done (12 / 24 segments). |
+| W2-8 ring snap (P3) | Done (3-step fade). |
+| W2-9 tool quirks (P3) | Done (plaza ground, local Focus). |
+| R2S-1 cutscene interplay (P1) | Done (+ scenarios, lints, studio check 11). |
+| R2S-2 first person (P2) | Done (look-follow, orbs back, streams off, `--first-person`). |
+| R2S-3 Highlight cap (P2) | Done (owner-only on low; off when far for others); count in studio check 10. |
+| R2S-4 ghost misses fx and dais (P3) | Done (fx LTM + fallback; dais layer lift; LTM in snapshots). |
+| R2S-5 texture TimedOut / fallback (P3) | Done. |
+| R2S-6 far remote cost (P3) | Done (half rate). |
+| R2S-7 -O0 headroom (P3) | Done. |
+| R2S-8 stale CONFIG attributes (P3) | Done. |
+| R2S-9 moon face vs its smoke (P3) | Done by AD2-01 (an opaque face hides smoke born behind it); the `MOON_SMOKE_BEHIND` flag was not needed. STUDIO-VERIFY row added. |
+| R2S-10 texture memory (P3) | te5_ash done; the 512² low-quality variants wait for the Studio memory measurement (studio check 10). |
+| CR2-01 fx ghosting (P2) | Done (= R2S-4). |
+| CR2-02 lifecycle (P2) | Done (= R2S-1). |
+| CR2-03 far-detail pop (P3) | Done (0.5 s fade). The optional 0.3 s debounce of `setDetail(false)` was not added: the fade already absorbs a flip-flopping framework (each flip only reverses a fade). |
+| CR2-04 outline writes (P3) | Done. |
+| CR2-05 texture fallback (P3) | Done (= R2S-5). |
+| CR2-06 ash flipbook mode (P3) | Done by removing the flipbook (single flake). The preview's Random flipbook was left as it is: nothing uses it now. |
+| CR2-07 S5 runs its own copy (P3) | Done (doc notes). |
+
+### Declined or only partly done
+
+| Finding | Why |
+|---|---|
+| AD2-04 "one step warmer" | Measured: with neutral tokens the bezel is B − R +4 to +10 by day and +1 to +2 at night; warmer tokens would read visibly warm at night (the style lock is black, white and silver). The Highlight fill carries the day correction instead. |
+| AD2-05 lean 44° | W2-1's layout already puts XII and the hands in frame; adding the lean on top tips the dial into an ellipse. |
+| AD2-02 "half of P8 on glint5" | It needs a 21st emitter (limit 20). The close-zoom size swap removes the bubbles instead. |
+| W2-5 beacon default on | Needs Milo's OK (it changes what everyone in the server sees). |
+| R2S-9 `MOON_SMOKE_BEHIND` | Not needed: the opaque face hides smoke born behind it (`ZOffset −3` keeps the rest behind the face plane). |
+| R2S-10 512² low variants | Needs the Studio memory number first (studio check 10). |
+| CR2-03 debounce | The fade absorbs it (above). |
+| CR2-06 (5) preview Random flipbook | Nothing uses Random any more. |
+
+### Checks run (cloud only)
+
+- **Harness, 32 scenarios:** 0 errors, 0 harness gaps, nothing left behind after `destroy()`, no flicker, 0 new instances per
+  frame, 1 BulkMoveTo per update, 0 steady-state GUI or Transparency writes. 3 warning kinds remain, the same as round 1: the
+  `translucent-layer` lint on the rim-only moon halo and night corona (§7.3's allowed soft elements).
+- **Budgets** (no limit raised): parts 360 / 150 (far 299 / 150), emitters 20 / 12, rate ≈ 186/s (+14 while the speed trail
+  runs: 200) / 54 (+6), beams 6 / 2, GUIs 11 / 8, PointLights 2 / 0, 1 Highlight, registers 64 spare at -O1/-O2 and 29 at -O0.
+- **Self-tests:** `tools/harness/tests/run_tests.py` passes (incl. `bad_part_writes`, pass 4 clean in all 32 scenarios, the
+  baseline report refreshed); `roblox/install/test/run_tests.py` 25/25.
+- **Measured on snapshots:** default-zoom framing and jump numbers above; `pair_side` / `visit_close` ghost only the ring parts;
+  the crowd's six pools sit at 0, 0.018 and 0.037; first-person renders keep both orbs out of view.
+- **Renders** (fallback and te5, day and night, the standard views plus first person and the assembly) compared with round 1 and
+  the cut-off build side by side; the curated set in `docs/the-end/pass5-renders/` is regenerated (the contact sheet now also
+  shows the default zoom and first person).
+- Module size 126,319 bytes, checksum 822800729 (was 111.7 KB). Payloads regenerated with `make_payloads.py` and checked (`--check`).
+
+### New STUDIO-VERIFY items (also in `roblox/install/studio_checks.md`)
+
+26. The moon's face disc: the te5 moon not mirrored (SurfaceGui Left face of a cylinder), whole where it overlaps the bezel, no
+    grey veil of its own smoke; before te5, the cropped pass-4 moon round (the `UICorner` rounds an image on a SurfaceGui).
+27. Rolling THE END (or equipping during a roll film): S2 says `grade: none` while the film plays, and the whole assembly plays
+    after it.
+28. First person: turning left and right keeps the void and the moon out of the view; the clock rides in the sky ahead.
+29. Another wearer beside you: only the rings ghost; between you and the camera: no dark smoke or ink ribbon stays solid
+    (`LocalTransparencyModifier` on beams and particles).
+30. Two or three wearers 10 studs apart: no crawling seams where the pools overlap.
+31. At night, walking past 110 studs from a wearer: the moon's light on the ground fades, never pops.
+32. The time-dust ring reads by day and night as a slow halo of glints round the bezel; no flashing.
+33. Highlights in a full server: count them (≤ 31 per client), and the owner's tone is never the one dropped.
+34. Texture memory on a phone at graphics level 1-3 (F9 -> Memory -> GraphicsTexture) before and after equipping.
+35. The `HIGHLIGHT_FILL` 0.65 / 0.8 A/B with the neutral silvers.

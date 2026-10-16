@@ -18,19 +18,20 @@
 	                 inlaid white numerals and raised lume plots, an openwork star rete, a guilloché sub-dial, seven toothed
 	                 gears turning at meshed rates behind and in front of the dial (their teeth break the rim at 1:30, 4, 8
 	                 and 10:30), hands locked at twelve while the seconds hand sweeps, a crown and bow on top. Glints ride
-	                 the bezel, smoke curls off its rim (ink on the void side, silver on the moon side), metal shards break
-	                 off at eleven and fly into the void, and a corona rings it at night.
+	                 the bezel and a ring of time-dust turns round it with the hands, metal shards break off at eleven and
+	                 fly into the void, and a corona rings it at night.
 	  the armillary  three gimballed rings round the wearer — a precessing silver meridian, a dark equator band with twelve
 	                 lume hours, the ecliptic at 23.4° — joined by pins, with eight time shards riding the ecliptic.
-	  the balance    a solid cratered white moon and a pure-black void hang on an invisible beam on the viewer's left and
-	                 right and rock slowly like scales. The void has a white photon ring hugging its silhouette, a lensed arc
-	                 over the top, a white four-point heart with crackle veins, an opaque accretion disc nearly edge-on (its
-	                 near half crosses in front of the core) and matter spiralling into it. Dust snows off the moon; its own
-	                 key light rims the wearer at night.
+	  the balance    a moon (a photographic full moon on an opaque disc that turns to face you) and a pure-black void hang
+	                 on an invisible beam on the viewer's left and right and rock slowly like scales. The void has a hairline
+	                 photon ring hugging its silhouette and a soft horizon glow, a lensed arc over the top, a small brilliant
+	                 four-point heart, an opaque accretion disc tilted toward the viewer (its near half crosses in front of
+	                 the core), ink smoke boiling off it and matter spiralling into it. Dust and grey smoke drift off the
+	                 moon; its own key light rims the wearer at night.
 	  the streams    a silver stream arcs from the moon into one palm and an ink stream from the void into the other (the
-	                 palms drink them in), and an ink ribbon falls from the void onto the dais rim.
+	                 palms drink them in).
 	  the dais       a dark galaxy pool 30 studs across with white arms inside a raised fluted silver rim, two floating arm
-	                 layers turning against it, an engraved clock ring round it, a balance wheel with a hairspring swinging
+	                 layers turning against it, an engraved clock ring round it, a balance wheel swinging
 	                 under the feet with a vortex of streaks climbing into it, motes and black ash rising, time dripping off
 	                 the soles, ankle mist when standing on the ground. It stays put for jumps and floats under a flyer.
 	  the air        silver dust, glints, and big slow bokeh drifting between the camera and the wearer (three scales).
@@ -40,7 +41,7 @@
 	meanwhile. After that everything turns, sways or drifts at a steady pace: no pulses, strobes or flicker, ever.
 	Day reads by value (dark steel, black void and dark pool against white lume, silver metal and an ink contour; one
 	Highlight keeps the metal neutral under the cyan sky); night glows softly through GUI Brightness above the Bloom threshold.
-	Past ~110 studs the particles stop and the fine detail is dropped; low quality builds 149 parts. Flags: CONFIG below (a
+	Past ~110 studs the particles stop and the fine detail is dropped; low quality builds 150 parts. Flags: CONFIG below (a
 	ModuleScript attribute with the same name and type overrides each one in Studio).
 	Spec: docs/the-end/pass5-spec.md. Build notes and decisions: docs/the-end/pass5-build-notes.md.
 	Textures: aura_work/tex4/make_theend_tex4.py (ids in aura_work/tex4/uploaded.md); aura_work/tex3/make_theend_tex3.py (ids in aura_work/tex3/uploaded.md) + the AuraCinema kit / _VFXLib (VFX Studio).
@@ -70,7 +71,7 @@ local TEX = {
 -- game) it falls back to a pass-4 texture (FALLBACK), so the aura always looks complete.
 local TEX5 = {
 	dialInlay = "", subdial = "", accretion = "", galaxyFloor = "", galaxyArms = "", galaxyCore = "", engraving = "",
-	halo = "", stream = "", ribbon = "", moon = "", starWindow = "",
+	halo = "", stream = "", moon = "", starWindow = "",
 	shards5 = "", smoke5 = "", mote = "", glint5 = "", bokeh = "", streak5 = "", ash5 = "",
 }
 -- (te5_ash is one 256² flake: random rotation and spin vary it, and it costs a quarter of a 1024² flipbook sheet)
@@ -78,10 +79,13 @@ local TEX5_LAYOUT = { shards5 = { "Grid4x4", "Loop" }, smoke5 = { "Grid4x4", "On
 local FALLBACK = { -- key -> { pass-4 TEX key, flipbook layout, mode }
 	dialInlay = { "dialOuter" }, subdial = { "dialInner" }, accretion = { "galaxy4" }, galaxyFloor = { "galaxy4" },
 	galaxyArms = { "galaxy4" }, galaxyCore = { "ornate" }, engraving = { "gring" }, halo = { "rim" },
-	stream = { "line" }, ribbon = { "line" }, moon = { "moon" }, starWindow = { "galaxy4" },
+	stream = { "line" }, moon = { "moon" }, starWindow = { "galaxy4" },
 	shards5 = { "ash", "None", "Loop" }, smoke5 = { "puff", "Grid4x4", "OneShot" }, mote = { "glow" }, glint5 = { "glint" },
 	bokeh = { "glow" }, streak5 = { "spark" }, ash5 = { "ash", "None", "Loop" },
 }
+-- (te4_moon is a 512² moon disc, radius 152 px, inside a glow ring. Drawn as the face of the moon's disc it is cropped to
+-- the moon itself and rounded, so no white ring or square corner shows round the face; te5_moon is drawn whole)
+local CROP = { moon = { Vector2.new(104, 104), Vector2.new(304, 304) } }
 local warned = {}
 local function warnOnce(key, msg)
 	if not warned[key] then
@@ -122,13 +126,20 @@ local function T(key)
 end
 local function isTe5(key) return not failed[key] and idOf(TEX5[key], key) ~= nil end
 -- every live image, beam and emitter that uses a te5 key, so a texture that fails to load can be swapped for its fallback;
--- fixUps[o] puts back what the build chose because the te5 texture was there (a colour, a brightness, a size)
+-- fixUps[o](o) puts back what the build chose because the te5 texture was there (a colour, a brightness, a size). (The
+-- hook gets the object as its argument: a weak-keyed entry whose value held its own key would never be collected)
 local texUsers = setmetatable({}, { __mode = "k" })
 local fixUps = setmetatable({}, { __mode = "k" })
+local usedKeys = {} -- (te5 keys some build on this client draws: only those are asked for)
 local function applyTex(o, key)
 	local id, layout, mode = T(key)
 	if o:IsA("ImageLabel") then
 		o.Image = id
+		local c = CROP[key]
+		if c then
+			local fb = not isTe5(key)
+			o.ImageRectOffset, o.ImageRectSize = fb and c[1] or Vector2.zero, fb and c[2] or Vector2.zero
+		end
 	elseif o:IsA("Beam") then
 		o.Texture = id
 	elseif o:IsA("ParticleEmitter") then
@@ -136,43 +147,67 @@ local function applyTex(o, key)
 		o.FlipbookLayout = Enum.ParticleFlipbookLayout[layout]
 		if layout ~= "None" then o.FlipbookMode = Enum.ParticleFlipbookMode[mode] end
 	end
-	if TEX5[key] then texUsers[o] = key end
-end
--- ask the engine for every filled-in te5 texture once (in the background: never blocks require or build). One that does
--- not load (wrong id, still in moderation, rejected) is reported and swapped for its pass-4 fallback everywhere. A slow
--- phone or a cold cache can time out: that id is asked for once more 20 s later before anything is swapped.
-do
-	local ids, keyOf, retried = {}, {}, {}
-	for k in pairs(TEX5) do
-		local id = idOf(TEX5[k], k)
-		if id and not string.match(id, "^pending:") then
-			table.insert(ids, id)
-			keyOf[id] = k
-		end
+	if TEX5[key] then
+		texUsers[o] = key
+		usedKeys[key] = true
 	end
-	local function onStatus(id, status)
-		local k = keyOf[id]
-		if not k or failed[k] or status == Enum.AssetFetchStatus.Success then return end
-		if status ~= Enum.AssetFetchStatus.Failure and not retried[k] then
-			retried[k] = true
-			task.delay(20, function()
-				pcall(function() game:GetService("ContentProvider"):PreloadAsync({ id }, onStatus) end)
-			end)
-			return
-		end
+end
+-- ask the engine for the te5 textures a build actually draws, once each (in the background: never blocks require or
+-- build; a low-quality build never asks for the six textures only high quality uses, so a phone does not hold them). One
+-- that does not load (wrong id, still in moderation, rejected) is reported and swapped for its pass-4 fallback everywhere,
+-- for every key that shares its id. A slow phone or a cold cache can time out: that id is asked for once more 20 s later
+-- before anything is swapped.
+local preloadUsed
+do
+	local asked, keysOf, retried, dead = {}, {}, {}, {}
+	local function failKey(k, id, status)
+		if failed[k] then return end
 		failed[k] = true
 		warn(string.format("TheEnd: te5 texture %s (%s) did not load (%s); using its pass-4 fallback", k, id, tostring(status)))
 		for o, ok in pairs(texUsers) do
 			if ok == k then
 				pcall(applyTex, o, k)
-				if fixUps[o] then pcall(fixUps[o]) end
+				if fixUps[o] then pcall(fixUps[o], o) end
 			end
 		end
 	end
-	if #ids > 0 then
-		task.spawn(function()
-			pcall(function() game:GetService("ContentProvider"):PreloadAsync(ids, onStatus) end)
-		end)
+	local function onStatus(id, status)
+		local ks = keysOf[id]
+		if not ks or status == Enum.AssetFetchStatus.Success then return end
+		if status ~= Enum.AssetFetchStatus.Failure and not retried[id] then
+			retried[id] = true
+			task.delay(20, function()
+				pcall(function() game:GetService("ContentProvider"):PreloadAsync({ id }, onStatus) end)
+			end)
+			return
+		end
+		dead[id] = status
+		for _, k in ipairs(ks) do failKey(k, id, status) end
+	end
+	function preloadUsed()
+		local ids = {}
+		for k in pairs(usedKeys) do
+			local id = idOf(TEX5[k], k)
+			if id and not string.match(id, "^pending:") then
+				local ks = keysOf[id]
+				if not ks then
+					ks = {}
+					keysOf[id] = ks
+				end
+				if not table.find(ks, k) then table.insert(ks, k) end
+				if dead[id] then
+					failKey(k, id, dead[id]) -- (another key with this id already failed to load)
+				elseif not asked[id] then
+					asked[id] = true
+					table.insert(ids, id)
+				end
+			end
+		end
+		if #ids > 0 then
+			task.spawn(function()
+				pcall(function() game:GetService("ContentProvider"):PreloadAsync(ids, onStatus) end)
+			end)
+		end
 	end
 end
 
@@ -182,12 +217,12 @@ local INK = Color3.fromRGB(5, 5, 8)
 local SMOKE = Color3.fromRGB(14, 14, 19)
 local MIST = Color3.fromRGB(205, 209, 220)
 local ASH = Color3.fromRGB(16, 16, 20)
-local RIBBON_INK = Color3.fromRGB(12, 12, 16)
 -- solid parts: colour, material, reflectance and the sub-model they live in (the Highlight covers only "Silver").
--- The silvers are neutral: the cyan day sky already tints Metal blue, so a cool token read as baby-blue plastic.
+-- The silvers are neutral, a hair warm: the cyan day sky already tints Metal blue (a cool token read as baby-blue
+-- plastic), and at night, with no sky tint, they read plain grey-silver.
 local MAT = {
-	SILVER = { Color3.fromRGB(184, 184, 185), Enum.Material.Metal, 0.08, "Silver" },
-	BRIGHT = { Color3.fromRGB(224, 224, 225), Enum.Material.Metal, 0.12, "Silver" },
+	SILVER = { Color3.fromRGB(186, 184, 183), Enum.Material.Metal, 0.08, "Silver" },
+	BRIGHT = { Color3.fromRGB(226, 224, 223), Enum.Material.Metal, 0.12, "Silver" },
 	STEEL = { Color3.fromRGB(44, 46, 51), Enum.Material.SmoothPlastic, 0, "Dark" },
 	DEEP = { Color3.fromRGB(30, 31, 35), Enum.Material.SmoothPlastic, 0, "Dark" },
 	BASE = { Color3.fromRGB(12, 12, 16), Enum.Material.SmoothPlastic, 0, "Dark" },
@@ -197,7 +232,7 @@ local MAT = {
 	MOON = { Color3.fromRGB(234, 236, 240), Enum.Material.SmoothPlastic, 0, "Silver" }, -- (the film-mesh moon only)
 	-- a darker satin silver for every other flute (bezel, dais rim) and the equator band: metal reads as metal when it has
 	-- light and dark structure, not one flat value
-	SATIN = { Color3.fromRGB(142, 142, 143), Enum.Material.Metal, 0.08, "Silver" },
+	SATIN = { Color3.fromRGB(143, 141, 140), Enum.Material.Metal, 0.08, "Silver" },
 	-- the moon: a grey core (it carries the dust, smoke, stream and key light, and casts the shadow) behind an opaque face
 	-- disc that always turns to the camera. Both stay outside the Highlight (no ink ring, nothing painted over the face)
 	MOONCORE = { Color3.fromRGB(184, 186, 192), Enum.Material.SmoothPlastic, 0, "Dark" },
@@ -214,6 +249,10 @@ local DEFAULTS = {
 	YAW_SPRING = 6.5, -- how fast the clock swings round when the camera moves (rad/s; 95 % in 0.73 s)
 	YAW_LAG_MAX = 22, -- the most (degrees) the clock and the orbs may trail a fast camera swing (a flick never throws them into the lens)
 	ZOOM_FAR = 30, ZOOM_NEAR = 14, -- camera distances (studs) over which the layout eases into its close-camera form (Roblox's default zoom is 12.5)
+	-- the owner's clock steps back along the view until this point of the watch (studs above its hub) is inside the top of
+	-- the frame, at any zoom and camera tilt: 9.6 = the XII numeral (the hands at midnight), 22.4 = the whole watch with
+	-- its bow (smaller at the default zoom), 0 = off
+	FRAME_TOP = 9.6,
 	FIRST_PERSON_LIFT = true, -- in first person the owner's clock rises into the sky, out of the level view
 	HIGHLIGHT = true, HIGHLIGHT_LOW = true, -- the silver-tone Highlight (keeps the metal neutral under the cyan sky)
 	HIGHLIGHT_FILL = 0.65, HIGHLIGHT_OUTLINE = 0.35, -- its day FillTransparency / OutlineTransparency (night: 0.80 / 0.70)
@@ -226,8 +265,12 @@ local DEFAULTS = {
 	NEAR_BOKEH_HIDE = 18, NEAR_BOKEH_SHOW = 20, -- the big bokeh discs only drift by in showcase framings
 	GHOST_REMOTE = true, -- another wearer's clock, rings and orbs turn see-through while they stand between you and your camera
 	FAR_BEACON = false, -- (needs Milo's OK) a thin steady spire over the wearer that only far-away players see
+	-- where the ring of the pass-2 "rim" texture peaks, as a fraction of the image's half-width (measure it on the Mac:
+	-- studio_checks.md). Until te5_halo is uploaded the night corona, the void's horizon glow and the moon halo use "rim",
+	-- and they are scaled so its ring lands where te5_halo's does (0.73)
+	RIM_R = 0.86,
 	-- Studio checks that are one attribute flip each (see roblox/install/studio_checks.md):
-	FLOW_SIGN = 1, -- -1 if the streams flow out of the palms (and the ribbon up into the void)
+	FLOW_SIGN = 1, -- -1 if the streams flow out of the palms (and the void's lensed band runs against the accretion disc)
 	ACC_DIR = 1, -- -1 if the accretion streaks (and the void swirl) lead their spin instead of trailing it
 	FUNNEL_DIR = 1, -- -1 if the floor vortex winds against the galaxy arms
 	GALAXY_DIR = 1, -- -1 if the galaxy floor's arms lead their spin instead of trailing it
@@ -242,7 +285,7 @@ local RANGES = {
 	CLOCK_DIST = { 4, 20 }, CLOCK_HEIGHT = { 6, 16 }, CLOCK_TILT = { -10, 30 }, YAW_SPRING = { 1, 30 }, YAW_LAG_MAX = { 5, 120 },
 	ZOOM_FAR = { 10, 120 }, ZOOM_NEAR = { 0, 110 }, HIGHLIGHT_FILL = { 0, 1 }, HIGHLIGHT_OUTLINE = { 0, 1 }, AIR_ON = { 7.5, 60 },
 	AIR_OFF = { 7, 59 }, NEAR_ARM_HIDE = { 0, 40 }, NEAR_ARM_SHOW = { 0.5, 41 }, NEAR_BOKEH_HIDE = { 0, 60 },
-	NEAR_BOKEH_SHOW = { 0.5, 61 }, NIGHT_INTERVAL = { 0.25, 10 },
+	NEAR_BOKEH_SHOW = { 0.5, 61 }, NIGHT_INTERVAL = { 0.25, 10 }, FRAME_TOP = { 0, 24 }, RIM_R = { 0.5, 0.98 },
 }
 local SIGNS = { FLOW_SIGN = true, ACC_DIR = true, FUNNEL_DIR = true, GALAXY_DIR = true }
 local CONFIG = {}
@@ -309,7 +352,7 @@ End.pose = {
 }
 
 local rad, sin, cos, exp, sqrt, abs, atan2 = math.rad, math.sin, math.cos, math.exp, math.sqrt, math.abs, math.atan2
-local min, max, clamp, pi = math.min, math.max, math.clamp, math.pi
+local min, max, clamp, pi, asin, tan = math.min, math.max, math.clamp, math.pi, math.asin, math.tan
 local TAU = 2 * pi
 local IDENT = CFrame.new()
 local DISC = CFrame.Angles(0, rad(90), 0) -- a cylinder lying with its axis along z (a disc facing the viewer)
@@ -321,8 +364,9 @@ local FLAT = CFrame.new(0, 0.95, 0) * CFrame.Angles(rad(90), 0, 0) -- the rings 
 local ASM_END = 6.5
 -- the close-camera form (cz = 1 at Roblox's 12.5-stud default zoom, 0 from 30 studs out): the owner's clock stands this
 -- much further back (other players' clocks less, so a passing wearer's clock does not slide far away) and leans back a
--- little more; the orbs come in, down and toward the camera, so the dial with its hands at XII and both orbs are on screen
-local CLOSE = { dist = 32, distRemote = 16, tilt = 24, arm = 1.0, orbY = 5, orbZ = 10.5 }
+-- little more; the orbs come down and move back and a little out, so at the default zoom the moon is about the dial's
+-- size beside it (not a huge disc under the HUD) and the theme reads first
+local CLOSE = { dist = 32, distRemote = 16, tilt = 24, arm = -2, orbY = 5, orbZ = 18 }
 
 local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
@@ -337,14 +381,33 @@ if Players.LocalPlayer then
 	Players.LocalPlayer.CharacterAdded:Connect(mark)
 end
 
--- the wearer's equip grade lives here (one per client), so a quick re-equip takes it over instead of stacking a second one
-local liveGrade, liveGradeTween, gradeToken = nil, nil, 0
+-- the wearer's equip grade lives here (one per client), so a quick re-equip takes it over instead of stacking a second one;
+-- gradeOwner is the build that took it last (only that one eases it out)
+local liveGrade, liveGradeTween, gradeToken, gradeOwner = nil, nil, 0, nil
+-- when this client's own THE END was last taken away, and from which character (a respawn rebuilds it on a new character
+-- within seconds: that is not an equip, so no grade)
+local ownGone, ownGoneChar = nil, setmetatable({}, { __mode = "v" }) -- (weak: an old character is never kept alive)
+-- where this client's own clock hub is (the owner's build writes it every frame): another wearer's clock and orbs step
+-- back behind it instead of standing in front of your own clock
+local ownerHub = nil
 local GRADE_ON = { Saturation = -0.75, Brightness = -0.1, Contrast = 0.15, TintColor = Color3.fromRGB(232, 238, 255) }
 local GRADE_OFF = { Saturation = 0, Brightness = 0, Contrast = 0, TintColor = Color3.new(1, 1, 1) }
 -- where the time shards leave the bezel on equip (K angles), and the bezel point at eleven the metal shards break off from
 local SHARD_A = {}
 for i = 0, 7 do SHARD_A[i] = math.rad(300 + 20 * i) end
 local FEED_PT = Vector3.new(-10.72, 9.00, 0)
+-- the camera closeness (in 0.05 steps) at which the floor's twinkles step down a size (each step under 20 %)
+local MOTE_T = { 0.3, 0.45, 0.6, 0.75 }
+local DOWN9 = Vector3.new(0, -9, 0) -- (the dais's slope rays)
+-- the hairlines (the photon ring's thickness, the seconds needle's width) by distance band: under 50 studs, 50-95, beyond.
+-- A 0.13-stud line is under a pixel past ~85 studs; drawn without anti-aliasing (phones, low graphics) it breaks into a
+-- crawling stair-step, so it thickens in two steps (5 studs of margin each way: no back and forth)
+local HAIR = { { 0.13, 0.12 }, { 0.22, 0.2 }, { 0.36, 0.3 } }
+local function hairBand(d, b)
+	if b < 3 and d > (b == 1 and 50 or 95) then return b + 1 end
+	if b > 1 and d < (b == 2 and 45 or 90) then return b - 1 end
+	return b
+end
 
 local function new(class, props, parent)
 	local o = Instance.new(class)
@@ -496,7 +559,7 @@ function End.build(ctx)
 	local GF1, GF2, GF3 = 13, 14, 15
 	local GSHARD0 = 15 -- (the eight time shards are groups GSHARD0 + 1 .. GSHARD0 + 8)
 	local GMOON, GVOID, GPF, GHF, GACC, GSWIRL = 24, 25, 26, 27, 28, 29
-	local GDAIS, GG0, GG1, GG2, GENG, GWHEEL, GFUNNEL, GRIBEND = 30, 31, 32, 33, 34, 35, 37, 38 -- (36: unused)
+	local GDAIS, GG0, GG1, GG2, GENG, GWHEEL, GFUNNEL = 30, 31, 32, 33, 34, 35, 37 -- (36, 38: unused)
 	local GFEED, GAIR, GBOKEH, GPALMM, GPALMV, GMOONF, GDUST = 39, 40, 41, 42, 43, 44, 45
 	local GCF = table.create(45, IDENT)
 	-- per-frame state that is not a hot inner-loop value lives in one table (End.build is close to Luau's 200-register
@@ -510,14 +573,20 @@ function End.build(ctx)
 		-- and the balance ride (a heavy spring, so a jump does not throw them); layer: this wearer's dais lift (no z-fighting
 		-- between two pools); lodF: the far-detail fade; armF/armQ/armG/armGQ/armHold: the rings' near-camera fade and
 		-- their own ghost; fpOn: first person; skipN/skipDt: half-rate updates for a far remote wearer
-		snap = false, kY = nil, kYv = 0, layer = 0, lodF = 1, lodQ = 20, armF = 0, armQ = 0, armWant = false, armG = 0, armGQ = 0,
-		armHold = 0, fpOn = false, skipN = 0, skipDt = 0, czq = 0, hlO = -1, hlFh = 0, kB = -1, wB = -1, fxLtm = false,
+		snap = false, kY = nil, kYv = 0, layer = 0, lodF = 1, armF = 0, armQ = 0, armWant = false, armG = 0, armGQ = 0,
+		armHold = 0, fpOn = false, skipN = 0, skipDt = 0, czq = 0, hlO = -1, kB = -1, wB = -1, fxLtm = false, moteI = 1,
+		-- (round 3) gn/gnT/gpT: the dais's ground plane (normal, target, ray timer); fitD: how far the owner's clock steps back
+		-- to keep XII in frame; yieldD/yieldT/yieldHold: another wearer's clock stepping back behind yours; r0: the rings'
+		-- rise delay for the owner's close camera (decided at the first visible frame); ringsOut: the rings out of the
+		-- silver tone while they fade; nearHide/ghostRemote: those flags as this build read them
+		gn = Vector3.yAxis, gnT = Vector3.yAxis, gpT = 0, fitD = 0, yieldD = 0, yieldT = 0, yieldHold = 0, r0 = nil, ringsOut = false,
+		nearHide = CONFIG.NEAR_HIDE, ghostRemote = CONFIG.GHOST_REMOTE, pBand = low and 2 or 1, nBand = low and 2 or 1,
 	}
 
 	-- the part registry: part, group, rest transform in the group, hide group; the assembly's start transform and motion
-	-- window; the fade window; the photon ring / lensed arc keep a radius that follows the void's silhouette
+	-- window; the fade window; the photon ring keeps a radius that follows the void's silhouette
 	local PP, PG, PL, PH, PS, PM0, PM1, PF0, PF1, PCUR = {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
-	local PROT, PRR, PRS, PRSO = {}, {}, {}, {}
+	local PROT, PRR, PRS = {}, {}, {}
 	local NP = 0
 	local solids = {} -- parts that fade in (rest Transparency 0)
 	local clockParts = {} -- (for the body-anchored fallback's see-through rule)
@@ -604,6 +673,8 @@ function End.build(ctx)
 	-- (frame K: x = viewer's right, y = toward XII, z = toward the viewer; the angle θ runs clockwise from XII)
 	local function radial(th, r, z) return CFrame.Angles(0, 0, -rad(th)) * CFrame.new(0, r, z) end
 	local hosts = {} -- invisible carriers and attachments the emitters, beams and lights hang on (one table: saves registers)
+	-- (the silver rings' parts move here, outside the Highlight's Silver model, while they fade or ghost)
+	hosts.noTone = new("Model", { Name = "SilverRings" }, root)
 	local ghostGuis = {} -- GUIs that switch off while another wearer's aura is ghosted (LocalTransparencyModifier skips GUIs)
 	local frontL = CONFIG.FRONT_FACES and FLIP or IDENT -- (FRONT_FACES: draw the dial GUIs on Front faces of flipped planes, as pass 4)
 	local frontFace = CONFIG.FRONT_FACES and Enum.NormalId.Front or Enum.NormalId.Back
@@ -642,7 +713,7 @@ function End.build(ctx)
 			motion(k0, CFrame.new(0, 0, -3.15) * frot, 2.3, 0.6)
 			fadeWin(k0, 2.3, 2.55)
 		else
-			local NC = low and 16 or 24
+			local NC = low and 16 or 18 -- (its inner edge is dark on the dark star window and the inlay covers its face: 18 is enough)
 			for i = 0, NC - 1 do
 				local th = (i + 0.5) * 360 / NC
 				local odd = i % 2 == 1
@@ -752,7 +823,7 @@ function End.build(ctx)
 			if hi then handPart("Lume", "LUME", CORE, hd.grp, "Block", Vector3.new(hd.lumeW, hd.lumeL, 0.05), Vector3.new(0, hd.lumeY, 0.105)) end
 		end
 	end
-	handPart("Needle", "SILVER", CORE, GSEC, "Block", Vector3.new(0.12, 12.2, 0.08), Vector3.new(0, 3.5, 0))
+	hosts.needle = PP[handPart("Needle", "SILVER", CORE, GSEC, "Block", Vector3.new(HAIR[low and 2 or 1][2], 12.2, 0.08), Vector3.new(0, 3.5, 0))]
 	if hi then
 		handPart("Weight", "BRIGHT", CORE, GSEC, "Cylinder", Vector3.new(0.08, 0.9, 0.9), Vector3.new(0, -2.0, 0), DISC)
 		handPart("SecondsTip", "LUME", CORE, GSEC, "Ball", Vector3.new(0.26, 0.26, 0.26), Vector3.new(0, 9.6, 0))
@@ -825,25 +896,31 @@ function End.build(ctx)
 		crownPart("Crown", "Cylinder", Vector3.new(1.5, 2.6, 2.6), CFrame.new(0, 16.0, -0.2) * VERT)
 		if hi then
 			crownPart("Cap", "Ball", Vector3.new(1.2, 1.2, 1.2), CFrame.new(0, 16.85, -0.2))
-			for j = 0, 9 do
-				local b = rad((j + 0.5) * 36)
-				crownPart("Bow", "Cylinder", Vector3.new(1.662, 0.55, 0.55), CFrame.new(2.283 * cos(b), 19.6 + 2.283 * sin(b), -0.2) * CFrame.Angles(0, 0, b + rad(90)))
+			for j = 0, 7 do
+				local b = rad((j + 0.5) * 45)
+				crownPart("Bow", "Cylinder", Vector3.new(2.05, 0.55, 0.55), CFrame.new(2.283 * cos(b), 19.6 + 2.283 * sin(b), -0.2) * CFrame.Angles(0, 0, b + rad(90)))
 			end
 		end
 	end
 
 	-- the night corona: a soft ring of light just outside the bezel (night only, rim-only, behind the clock). Kept at every
 	-- distance: at night it is the clock's glow from across the plaza
+	-- (the corona, the void's horizon glow and the moon halo are sized for te5_halo, whose ring peaks at 0.73 of its
+	-- half-width. Until it is uploaded, or if it fails to load, the pass-2 "rim" texture stands in: hs scales them so its
+	-- ring, at RIM_R, lands in the same place)
+	hosts.hs = isTe5("halo") and 1 or 0.73 / CONFIG.RIM_R
 	local corona, coronaEntry
 	if hi then
-		local cp = carrier("Corona", CORE, GK, Vector3.new(44, 44, 0.05), CFrame.new(0, 0, -3.2) * frontL) -- (ring peak R 16.3: seen from the front, 3.2 studs back, it lands just outside the bezel)
+		local cp = carrier("Corona", CORE, GK, Vector3.new(44, 44, 0.05) * hosts.hs, CFrame.new(0, 0, -3.2) * frontL) -- (ring peak R 16.3: seen from the front, 3.2 studs back, it lands just outside the bezel)
 		corona, coronaEntry = surface(cp, frontFace, 512, 1.8, nil, "halo", 5.0, 6.0, Color3.fromRGB(240, 240, 242))
 		corona.Enabled = false
 		coronaEntry[2] = 1
+		if hosts.hs == 1 then
+			fixUps[coronaEntry[1]] = function(o) o.Parent.Parent.Size = Vector3.new(44, 44, 0.05) * (0.73 / CONFIG.RIM_R) end
+		end
 	end
-	-- the clock's emitter hosts: the bezel annulus (glints) and the shard feed at eleven (the rim smoke moved onto the void)
-	hosts.rimGlint = carrier("RimGlint", CORE, GK, Vector3.new(28.4, 28.4, 0.2), CFrame.new(0, 0, 1.05))
-	hosts.timeDust = hi and carrier("TimeDust", CORE, GDUST, Vector3.new(29.4, 29.4, 0.2)) -- (a ring turning with the hands: P13)
+	-- the clock's emitter hosts: the shard feed at eleven (the rim smoke moved onto the void) and the time-dust ring
+	hosts.timeDust = hi and carrier("TimeDust", CORE, GDUST, Vector3.new(31.6, 31.6, 0.2)) -- (a ring turning with the hands: P13)
 	hosts.shardFeed = hi and carrier("ShardFeed", DETAIL, GFEED, Vector3.new(2, 2, 2))
 
 	---------------------------------------------------------------- THE ARMILLARY: three gimballed rings round the wearer
@@ -857,21 +934,23 @@ function End.build(ctx)
 				fadeWin(k, f0, f0 + 0.3)
 			end
 		end
-		-- (a slimmer silver meridian, so the body reads through the cage; a satin-silver equator bracelet with twelve lume hours)
-		ring("Meridian", "SILVER", ARM, GF1, low and 14 or 18, 6.0, 0.40, 0.24, 1.0)
-		ring("Equator", "SATIN", ARM, GF2, low and 14 or 18, 5.3, 0.20, 0.4, 1.3)
+		-- fine silver wire rings with many short segments, so they read round (no kinks or joints) from Roblox's default
+		-- zoom, and slim, so the body reads through the cage; a satin-silver equator bracelet with twelve lume hours. (On low
+		-- the parts go to the meridian, the biggest silver shape on a phone's screen)
+		ring("Meridian", "SILVER", ARM, GF1, low and 18 or 28, 6.0, 0.26, 0.15, 1.0)
+		ring("Equator", "SATIN", ARM, GF2, low and 14 or 22, 5.3, 0.20, 0.32, 1.3)
 		if hi then
 			for k = 0, 11 do -- twelve lume hours on the equator band's outer face
-				local i = solid("Hour", "LUME", ARMD, GF2, "Block", Vector3.new(0.14, 0.10, 0.32), radial(k * 30, 5.45, 0))
+				local i = solid("Hour", "LUME", ARMD, GF2, "Block", Vector3.new(0.14, 0.10, 0.28), radial(k * 30, 5.45, 0))
 				fadeWin(i, 1.3, 1.6)
 			end
-			ring("Ecliptic", "SILVER", ARM, GF3, 16, 4.6, 0.45, 0.20, 1.6)
-			for _, x in ipairs({ 5.58, -5.58 }) do -- pins: equator to meridian
-				local i = solid("Pin", "BRIGHT", ARMD, GF1, "Cylinder", Vector3.new(0.55, 0.30, 0.30), CFrame.new(x, 0, 0))
+			ring("Ecliptic", "SILVER", ARM, GF3, 24, 4.6, 0.28, 0.14, 1.6)
+			for _, x in ipairs({ 5.6, -5.6 }) do -- pins: equator to meridian
+				local i = solid("Pin", "BRIGHT", ARMD, GF1, "Cylinder", Vector3.new(0.62, 0.26, 0.26), CFrame.new(x, 0, 0))
 				fadeWin(i, 1.0, 1.3)
 			end
-			for _, y in ipairs({ 5.01, -5.01 }) do -- pins: ecliptic to equator
-				local i = solid("Pin", "BRIGHT", ARMD, GF2, "Cylinder", Vector3.new(0.45, 0.30, 0.30), CFrame.new(0, y, 0) * VERT)
+			for _, y in ipairs({ 4.97, -4.97 }) do -- pins: ecliptic to equator
+				local i = solid("Pin", "BRIGHT", ARMD, GF2, "Cylinder", Vector3.new(0.52, 0.26, 0.26), CFrame.new(0, y, 0) * VERT)
 				fadeWin(i, 1.3, 1.6)
 			end
 			-- the time shards: eight slivers riding the inside of the ecliptic like beads on a wire, tumbling as they go
@@ -887,7 +966,7 @@ function End.build(ctx)
 	-- casts the shadow) behind its face, an opaque 9-stud disc 4.4 studs toward the camera that turns to face it every
 	-- frame. The face is solid geometry, so it writes depth: no Highlight contour, smoke or ring behind it can paint over it
 	-- (a BillboardGui face could not stop that). With te5_moon: the photographic full moon on a grey disc. Until it is
-	-- uploaded: pass 4's glowing moon on a white Neon disc (a pearl that glows at night).
+	-- uploaded: pass 4's moon, cropped round, on the same grey disc.
 	local moon, haloIm, haloEntry
 	local moonFace = false
 	do
@@ -904,30 +983,43 @@ function End.build(ctx)
 			moonFace = true
 			moon = PP[solid("Moon", "MOONCORE", CORE, GMOON, "Ball", Vector3.new(6, 6, 6), IDENT)]
 			fadeWin(NP, 0.6, 0.9)
-			local t5 = isTe5("moon")
-			hosts.moonFace = PP[solid("MoonFace", t5 and "MOONCORE" or "LUME", CORE, GMOONF, "Cylinder", Vector3.new(0.1, 9, 9), DISC)]
+			hosts.moonFace = PP[solid("MoonFace", "MOONCORE", CORE, GMOONF, "Cylinder", Vector3.new(0.1, 9, 9), DISC)]
 			fadeWin(NP, 0.6, 0.9)
-			-- STUDIO-VERIFY: SurfaceGui Face = Left on the face disc (the cylinder's -X end turns to the camera), not mirrored
-			local fg, fe = surface(hosts.moonFace, Enum.NormalId.Left, hiCanvas, 1.25, 2.6, "moon", 0.6, 0.9)
+			-- STUDIO-VERIFY: SurfaceGui Face = Left on the face disc (the cylinder's -X end turns to the camera), not mirrored;
+			-- and the UICorner rounds the image (a SurfaceGui on a cylinder's end is drawn on its square face)
+			-- (pass 4's moon is a paler, softer image than te5_moon: drawn as brightly its maria would wash out into a white
+			-- plate, so it glows less)
+			local m5 = isTe5("moon")
+			local fg, fe = surface(hosts.moonFace, Enum.NormalId.Left, hiCanvas, m5 and 1.25 or 0.75, m5 and 2.6 or 1.25, "moon", 0.6, 0.9)
+			new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, fe[1])
 			table.insert(ghostGuis, fg)
-			if t5 then
-				-- (te5_moon failed to load in the game: pass 4's moon needs the white disc behind it)
-				local fd = hosts.moonFace
+			if m5 then
+				local be = brights[#brights]
 				fixUps[fe[1]] = function()
-					fd.Color, fd.Material = MAT.LUME[1], MAT.LUME[2]
+					be[2], be[3] = 0.75, 1.25
+					be[1].Brightness = 0.75 + 0.5 * nightStep()
 				end
 			end
 		end
 		moon.CastShadow = CONFIG.SHADOWS and hi
-		hosts.moonOut = new("Attachment", { Name = "StreamOut", CFrame = CFrame.new(0, 0, moonFace and -3.95 or -4.55) * CFrame.Angles(0, 0, rad(90)) }, moon)
+		-- the silver stream leaves from behind the face's rim on the wearer's side (lower right as the viewer sees it), first
+		-- rising a little toward the wearer, so it never crosses the moon's face (the disc's local z is the viewer's right,
+		-- its y up, its +x away from the camera)
+		hosts.moonOut = moonFace and new("Attachment", { Name = "StreamOut", CFrame = CFrame.fromMatrix(Vector3.new(0.1, -1.77, 3.81),
+			Vector3.new(0, 0.34, 0.94), Vector3.new(1, 0, 0)) }, hosts.moonFace)
+			or new("Attachment", { Name = "StreamOut", CFrame = CFrame.new(0, 0, -4.55) * CFrame.Angles(0, 0, rad(90)) }, moon)
 		-- a thin halo round the moon's rim (15 studs: the face is 4.4 studs nearer the camera, so it looks bigger than the
 		-- core). It sits 2 studs behind the core, so the face hides its inner edge; not further,
 		-- or on the clock side it would reach the inlay plane and get cut (keeps >= 0.4 from every GUI plane)
-		local halo = new("BillboardGui", { Name = "Halo", Size = UDim2.new(15, 0, 15, 0), StudsOffset = Vector3.new(0, 0, -2.0), LightInfluence = 0,
+		local hd = 15 * hosts.hs
+		local halo = new("BillboardGui", { Name = "Halo", Size = UDim2.new(hd, 0, hd, 0), StudsOffset = Vector3.new(0, 0, -2.0), LightInfluence = 0,
 			Brightness = 1.0, MaxDistance = 400, AlwaysOnTop = false }, moon)
 		haloIm = new("ImageLabel", { BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ImageColor3 = Color3.fromRGB(240, 240, 244),
 			ImageTransparency = 1 }, halo)
 		applyTex(haloIm, "halo")
+		if hosts.hs == 1 then
+			fixUps[haloIm] = function(o) o.Parent.Size = UDim2.new(10.95 / CONFIG.RIM_R, 0, 10.95 / CONFIG.RIM_R, 0) end
+		end
 		haloEntry = { haloIm, 0.65, 1.4, 2.2, 1 }
 		table.insert(images, haloEntry)
 		table.insert(brights, { halo, 1.0, 1.6 })
@@ -959,7 +1051,6 @@ function End.build(ctx)
 	end
 	void.CastShadow = CONFIG.SHADOWS and hi
 	hosts.voidOut = new("Attachment", { Name = "StreamOut", CFrame = CFrame.new(0, 0, -4.05) * CFrame.Angles(0, 0, rad(90)) }, void)
-	hosts.ribbonOut = new("Attachment", { Name = "RibbonOut", CFrame = CFrame.new(0, -4.05, 0) * CFrame.Angles(0, rad(-90), 0) }, void)
 	do
 		-- the accretion disc: opaque white-hot streaks with black dust lanes, tilted 24° toward the viewer, its near half in
 		-- front of the core. (Top face only: the disc always tilts toward the viewer, so its underside is never seen.)
@@ -970,26 +1061,21 @@ function End.build(ctx)
 		-- soft rings alive at once, overlapping into a steady glow that hugs the black edge (no pulse; never a billboard,
 		-- which the accretion plane would cut)
 		hosts.horizon = hi and carrier("Horizon", CORE, GPF, Vector3.new(0.2, 0.2, 0.2))
-		-- the photon ring: a lume hairline that always hugs the black silhouette as the camera sees it (from any distance)
+		-- the photon ring: a lume hairline that always hugs the black silhouette as the camera sees it (from any distance;
+		-- it thickens with distance in steps, HAIR below, so it never breaks into a crawling stair-step without anti-aliasing)
 		local N = low and 12 or 24
+		hosts.photon = {}
 		for i = 0, N - 1 do
 			local th = (i + 0.5) * 360 / N
-			local k = solid("PhotonRing", "LUME", CORE, GPF, "Block", Vector3.new(low and 2.25 or 1.14, 0.13, 0.12), IDENT)
-			PROT[k], PRR[k], PRS[k] = CFrame.Angles(0, 0, -rad(th)), 0.18, 11
+			local k = solid("PhotonRing", "LUME", CORE, GPF, "Block", Vector3.new(low and 2.25 or 1.14, HAIR[low and 2 or 1][1], 0.12), IDENT)
+			PROT[k], PRR[k], PRS[k] = CFrame.Angles(0, 0, -rad(th)), 0.115 + HAIR[low and 2 or 1][1] / 2, 11
+			table.insert(hosts.photon, k)
 			PS[k], PM0[k], PM1[k] = true, 0.25 + 0.6 * i / N, 0.85 + 0.6 * i / N
 			fadeWin(k, 0.25 + 0.6 * i / N, 0.45 + 0.6 * i / N)
 		end
-		-- the lensed arc: the far side of the disc bent up over the top of the shadow
-		if hi then
-			for i = 0, 5 do
-				local th = -75 + (i + 0.5) * 150 / 6
-				local k = solid("LensedArc", "ARC", DETAIL, GPF, "Block", Vector3.new(2.05, 0.16, 0.10), IDENT)
-				PROT[k], PRR[k], PRSO[k] = CFrame.Angles(0, 0, -rad(th)), 0.6, 3
-				PS[k], PM0[k], PM1[k] = true, 0.7, 1.4
-				fadeWin(k, 0.7, 0.9)
-			end
-		end
-		-- the heart: a small brilliant four-point star just in front of the core (a pinpoint of light, not a sticker).
+		-- (the lensed disc, the far side of the accretion disc bent over and under the shadow, is two beams: below)
+		-- the heart: a small brilliant four-point star just in front of the core (a pinpoint of light inside the lensed band,
+		-- not a sticker; on low just the lume ball: a single pair of spikes read as a slit pupil).
 		-- STUDIO-VERIFY: Roblox wedge orientation (right angle at -Y, +Z); if the spikes come out hollow: attribute WEDGE_SWAP
 		local hb = solid("Heart", "LUME", CORE, GHF, "Ball", Vector3.new(0.70, 0.70, 0.70), IDENT)
 		fadeWin(hb, 0.9, 1.1)
@@ -998,8 +1084,8 @@ function End.build(ctx)
 			fadeWin(i, 0.9, 1.1)
 		end
 		local wa = CONFIG.WEDGE_SWAP and -90 or 90
-		for _, sp in ipairs({ { 0, 1.6 }, { 180, 1.6 }, { 90, 1.1 }, { 270, 1.1 } }) do
-			if hi or sp[1] % 180 == 0 then
+		for _, sp in ipairs({ { 0, 1.3 }, { 180, 1.3 }, { 90, 0.9 }, { 270, 0.9 } }) do
+			if hi then
 				local S = CFrame.Angles(0, 0, -rad(sp[1]))
 				local h = sp[2]
 				local La = S * CFrame.new(-0.16, h / 2, 0) * CFrame.Angles(0, rad(wa), 0)
@@ -1026,12 +1112,18 @@ function End.build(ctx)
 		end
 		local core = carrier("GalaxyCore", CORE, GG2, Vector3.new(12, 0.05, 12))
 		surface(core, Enum.NormalId.Top, midCanvas, 1.5, 2.6, "galaxyCore", 4.0, 4.6)
+		-- the stage: an engraved clock ring 56 studs across round the pool (inked Roman numerals 3 studs tall, a minute track
+		-- with lume ticks), solid ink and white lines on the ground. Kept at every distance: from far away it is the aura's
+		-- footprint. The ink carries the day; it glows at night
 		if hi then
-			local eng = carrier("Engraving", DETAIL, GENG, Vector3.new(40, 0.05, 40))
-			surface(eng, Enum.NormalId.Top, 1024, 1.2, 2.0, "engraving", 4.2, 5.2)
+			local eng = carrier("Engraving", CORE, GENG, Vector3.new(56, 0.05, 56))
+			surface(eng, Enum.NormalId.Top, 1024, 1.0, 2.0, "engraving", 4.2, 5.2)
 		end
+		-- the floor's particles (mist, motes, ash) rise from their own invisible disc just above the top floor layer, so they
+		-- draw over the galaxy whether Roblox sorts a particle by its emitter's part or by the particles themselves
+		hosts.floorFx = carrier("FloorFx", CORE, GG0, Vector3.new(29.6, 0.05, 29.6), CFrame.new(0, 0.8, 0))
 		-- the rim: fluted blocks (bright silver and satin) rising in a wave round the pool on equip
-		local NR = low and 16 or 28
+		local NR = low and 16 or 24
 		for i = 0, NR - 1 do
 			local th = i * 360 / NR
 			local h = i % 2 == 0 and 0.90 or 0.96
@@ -1056,14 +1148,17 @@ function End.build(ctx)
 		wheelHub = PP[solid("WheelHub", "BRIGHT", CORE, GWHEEL, "Cylinder", Vector3.new(0.5, 0.7, 0.7), VERT)]
 		fadeWin(NP, 4.6, 4.9)
 		hosts.funnel = hi and carrier("Funnel", CORE, GFUNNEL, Vector3.new(11, 0.4, 11))
-		local ribbonEnd = hi and carrier("RibbonEnd", CORE, GRIBEND, Vector3.new(0.4, 0.4, 0.4))
-		hosts.ribbonIn = ribbonEnd and new("Attachment", { Name = "RibbonIn" }, ribbonEnd)
 		if CONFIG.FAR_BEACON then
-			-- (the base disc is a cylinder standing upright: its local +X is world up. The column starts above the bow, so it
-			-- never crosses the dial, and climbs to 280 studs)
-			hosts.beacon0 = new("Attachment", { Name = "BeaconFoot", Position = Vector3.new(38, 0, 0) }, hosts.base)
-			hosts.beacon1 = new("Attachment", { Name = "BeaconTop", Position = Vector3.new(280, 0, 0) }, hosts.base)
+			-- (the wheel's hub is a cylinder standing upright and stays level on a slope: its local +X is world up. The column
+			-- starts above the bow, so it never crosses the dial, and climbs to 280 studs)
+			hosts.beacon0 = new("Attachment", { Name = "BeaconFoot", Position = Vector3.new(37, 0, 0) }, wheelHub)
+			hosts.beacon1 = new("Attachment", { Name = "BeaconTop", Position = Vector3.new(279, 0, 0) }, wheelHub)
 		end
+		-- the slope rays (below) see only the ground: never an aura (anyone's) or the wearer, never a non-collidable part
+		hosts.gp = RaycastParams.new()
+		hosts.gp.FilterType = Enum.RaycastFilterType.Exclude
+		hosts.gp.FilterDescendantsInstances = ctx.container and { ctx.container, char, root } or { char, root }
+		hosts.gp.RespectCanCollide = true
 	end
 
 	---------------------------------------------------------------- THE AIR and the palm intake carriers
@@ -1084,9 +1179,9 @@ function End.build(ctx)
 			OutlineColor = Color3.fromRGB(10, 10, 14), OutlineTransparency = 1, DepthMode = Enum.HighlightDepthMode.Occluded }, mats.Silver)
 	end
 
-	---------------------------------------------------------------- THE CHARACTER: palms and soles
+	---------------------------------------------------------------- THE CHARACTER: palms (and the body wrap's emitters, below)
 	local charStuff = {}
-	local palmR, palmL, soleL, soleR
+	local palmR, palmL
 	do
 		local function limb(r15, r6) return char:FindFirstChild(r15) or char:FindFirstChild(r6) end
 		local function palm(hand, name, grip)
@@ -1102,15 +1197,6 @@ function End.build(ctx)
 		end
 		palmR = palm(limb("RightHand", "Right Arm"), "TheEndPalmR", "RightGripAttachment")
 		palmL = palm(limb("LeftHand", "Left Arm"), "TheEndPalmL", "LeftGripAttachment")
-		local function sole(foot, name)
-			if not (foot and foot:IsA("BasePart")) then return nil end
-			local pos = (foot.Name == "LeftFoot" or foot.Name == "RightFoot") and Vector3.new(0, -foot.Size.Y / 2, 0) or Vector3.new(0, -1, 0)
-			local a = new("Attachment", { Name = name, Position = pos }, foot)
-			table.insert(charStuff, a)
-			return a
-		end
-		soleL = sole(limb("LeftFoot", "Left Leg"), "TheEndSoleL")
-		soleR = sole(limb("RightFoot", "Right Leg"), "TheEndSoleR")
 	end
 	-- (no hands: the streams end on the intake carriers, placed beside the wearer)
 	local moonCarA = new("Attachment", { Name = "Palm" }, hosts.palmMoon)
@@ -1163,9 +1249,9 @@ function End.build(ctx)
 		end
 		local WRAP, STRETCH = Enum.TextureMode.Wrap, Enum.TextureMode.Stretch
 		local moonA0, voidA0 = palmFor(-assign, moonCarA), palmFor(assign, voidCarA)
-		-- STUDIO-VERIFY: Beam TextureSpeed direction: the streams must flow from the orb INTO the palm and the ribbon must flow
-		-- down onto the dais (all four are built source -> destination, so they share one sign; if they run backwards:
-		-- attribute FLOW_SIGN = -1)
+		-- STUDIO-VERIFY: Beam TextureSpeed direction: the streams must flow from the orb INTO the palm (all four are built
+		-- source -> destination, so they share one sign; if they run backwards: attribute FLOW_SIGN = -1). The lensed band
+		-- shares the sign: it drifts slowly left to right over the top (either way reads)
 		local trCore = { { 0, 0.15 }, { 0.12, 0.05 }, { 0.88, 0.05 }, { 1, 0.30 } }
 		sb = {
 			beam("MoonCore", hosts.moonOut, moonA0, "stream", WRAP, 5, 0.8, 1.4, 0.30, 4.0, 0, WHITE, 0, 0.45, 1.6, 2.4, trCore),
@@ -1175,16 +1261,18 @@ function End.build(ctx)
 			hi and beam("VoidCrackle", hosts.voidOut, voidA0, "line", STRETCH, 1, 0, 0.14, 0.10, 2.6, 0, WHITE, 0.2, 0.8, 1.8, 2.4,
 				{ { 0, 0.3 }, { 0.1, 0.1 }, { 0.9, 0.1 }, { 1, 0.5 } }, true),
 		}
-		if hi then
-			-- the ink ribbon: a whip-thin strand that curls out of the void and down into the pool (solid in its body, soft
-			-- at the void end). (The te5 ribbon carries its own ink body and white hairlines, so it needs a white Beam
-			-- Color; the fallback line is inked.)
-			local te5r = isTe5("ribbon")
-			local rb = beam("Ribbon", hosts.ribbonOut, hosts.ribbonIn, "ribbon", WRAP, 8, 0.5, 0.45, 1.3, 7.0, -8.0, te5r and WHITE or RIBBON_INK,
-				0, 0, 1.0, 1.0, { { 0, 0.55 }, { 0.15, 0.15 }, { 0.85, 0.05 }, { 1, 0.35 } })
-			if te5r then fixUps[rb] = function() rb.Color = ColorSequence.new(RIBBON_INK) end end
-			beam("RibbonEdge", hosts.ribbonOut, hosts.ribbonIn, "line", STRETCH, 1, 0, 0.10, 0.10, 7.3, -8.3, WHITE, 0.2, 0.8, 1.8, 2.4,
-				{ { 0, 0.3 }, { 0.1, 0.1 }, { 0.9, 0.1 }, { 1, 0.4 } }, true)
+		if hosts.horizon then
+			-- the lensed disc (the black hole's signature): the far side of the accretion disc, bent by the void's gravity, a
+			-- bright band arching over the top of the shadow and a thinner one under it. Both hang on the camera-facing
+			-- horizon carrier, so they hug the silhouette from every side; slimmer when the camera is close
+			local function lens(name, sg, w, br)
+				local a0 = new("Attachment", { Name = name .. "0", CFrame = CFrame.fromMatrix(Vector3.new(-4.45, 0, 0), Vector3.new(0, sg, 0), Vector3.new(-sg, 0, 0)) }, hosts.horizon)
+				local a1 = new("Attachment", { Name = name .. "1", CFrame = CFrame.fromMatrix(Vector3.new(4.45, 0, 0), Vector3.new(0, -sg, 0), Vector3.new(sg, 0, 0)) }, hosts.horizon)
+				return beam(name, a0, a1, "stream", WRAP, 6, 0.4, w, w, 6.0, 6.0, WHITE, 0.2, 0.8, br, br + 1.0,
+					{ { 0, 1 }, { 0.15, 0.05 }, { 0.85, 0.05 }, { 1, 1 } })
+			end
+			hosts.lensTop = lens("LensTop", 1, 1.5, 2.0)
+			hosts.lensBot = lens("LensBottom", -1, 0.8, 1.8)
 		end
 		if hosts.beacon0 then
 			-- (FAR_BEACON) a steady column seen only from far away: solid ink on the day sky, white at night, soft at the top.
@@ -1192,10 +1280,12 @@ function End.build(ctx)
 			hosts.beaconBeam = beam("Spire", hosts.beacon0, hosts.beacon1, nil, STRETCH, 1, 0, 8, 3, 0, 0, INK, 0, 1, 1, 2,
 				{ { 0, 0.1 }, { 0.6, 0.15 }, { 1, 1 } }, false, true)
 		end
-		-- (entry [10]: one of the four palm streams, switched off in first person; [11]: the Enabled last written)
+		-- (entry [10]: one of the four palm streams, switched off in first person; [11]: the Enabled last written; [12]: when
+		-- it fades in on equip: the lens with the void's heart, the streams once the dais is down)
 		for _, b in ipairs(beams) do
 			b[10] = b[1] == sb[1] or b[1] == sb[2] or b[1] == sb[3] or b[1] == sb[4]
 			b[11] = b[1].Enabled
+			b[12] = (b[1] == hosts.lensTop or b[1] == hosts.lensBot) and 0.9 or 4.6
 		end
 	end
 
@@ -1242,7 +1332,7 @@ function End.build(ctx)
 		local stS = isTe5("streak5") and 2.2 or 1
 		-- (a te5 texture that fails to load in the game: its emitter goes back to the size made for the fallback)
 		local function sizeFix(p, scale, pts)
-			if scale ~= 1 then fixUps[p] = function() p.Size = seq(pts) end end
+			if scale ~= 1 then fixUps[p] = function(o) o.Size = seq(pts) end end
 			return p
 		end
 		local stRot = CONFIG.STREAK_FLIP and n(180) or n(0)
@@ -1264,8 +1354,8 @@ function End.build(ctx)
 			p1.Shape, p1.ShapeStyle, p1.ShapeInOut, p1.EmissionDirection = CYL, SURFACE, INWARD, N_.Top
 			pe(hosts.swirl, "mote", 1.2, p1, WHITE_LE, WHITE_BR)
 		end
-		-- P2: dust snows off the moon and falls away below it
-		pe(moon, "mote", 1.6, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = rate(16, 5), Lifetime = n(3.0, 4.5),
+		-- P2: dust snows off the moon and falls away below it (halved while the wearer travels)
+		em.dust = pe(moon, "mote", 1.6, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = rate(10, 5), Lifetime = n(3.0, 4.5),
 			Speed = n(0.25, 0.6), Acceleration = Vector3.new(0, -1.1, 0), Drag = 0.4, Size = seq({ { 0, 0.18 }, { 0.2, 0.6, 0.15 }, { 1, 0.18 } }),
 			Transparency = seq({ { 0, 1 }, { 0.12, 0.08 }, { 0.75, 0.15 }, { 1, 1 } }), Color = ColorSequence.new(Color3.fromRGB(238, 240, 246)),
 			Rotation = n(0, 360), RotSpeed = n(-30, 30) }, { 0.2, 0.7 }, { 1.4, 2.2 })
@@ -1282,38 +1372,36 @@ function End.build(ctx)
 		-- P4: the two opposite energies breathe: dense ink smoke boils off the void and grey-silver smoke off the moon,
 		-- curling out and up round each orb (a dark corona that reads on the bright day sky, a pale one at night). Drawn 3
 		-- studs further back, so the orbs' silhouettes stay crisp (the moon's opaque face hides what is born behind it).
-		-- Thinner while the wearer travels, so no trail of puffs hangs on the path.
-		local smS = isTe5("smoke5") and 1.3 or 1 -- (te5_smoke's curls are wispier than the pass-4 puff, so they are drawn bigger)
-		em.smoke = sizeFix(pe(void, "smoke5", 1.0, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = rate(10, 4), Lifetime = n(3.5, 4.5),
-			Speed = n(1.4, 2.4), Drag = 0.35, Acceleration = Vector3.new(0, 0.4, 0), Size = seq({ { 0, 5 * smS }, { 1, 14 * smS } }),
+		-- While the wearer travels the void's smoke thins and goes short-lived and the moon's stops, so no smog patches
+		-- hang along the path. (te5_smoke's billows fill their cells like the pass-4 puff: both are drawn the same size)
+		em.smoke = pe(void, "smoke5", 1.0, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = rate(10, 4), Lifetime = n(3.5, 4.5),
+			Speed = n(1.4, 2.4), Drag = 0.35, Acceleration = Vector3.new(0, 0.4, 0), Size = seq({ { 0, 5 }, { 1, 14 } }),
 			Transparency = seq({ { 0, 1 }, { 0.2, 0.16 }, { 0.7, 0.45 }, { 1, 1 } }), Color = ColorSequence.new(SMOKE), Rotation = n(0, 360),
-			RotSpeed = n(-25, 25), ZOffset = -3 }), smS, { { 0, 5 }, { 1, 14 } })
-		em.smokeMoon = hi and sizeFix(pe(moon, "smoke5", 1.6, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = 5, Lifetime = n(3.5, 4.5),
-			Speed = n(0.9, 1.5), Drag = 0.35, Acceleration = Vector3.new(0, 0.3, 0), Size = seq({ { 0, 3.5 * smS }, { 1, 9 * smS } }),
+			RotSpeed = n(-25, 25), ZOffset = -3 })
+		em.smokeMoon = hi and pe(moon, "smoke5", 1.6, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = 5, Lifetime = n(3.5, 4.5),
+			Speed = n(0.9, 1.5), Drag = 0.35, Acceleration = Vector3.new(0, 0.3, 0), Size = seq({ { 0, 3.5 }, { 1, 9 } }),
 			Transparency = seq({ { 0, 1 }, { 0.2, 0.32 }, { 0.7, 0.55 }, { 1, 1 } }), Color = ColorSequence.new(Color3.fromRGB(176, 176, 178)),
-			Rotation = n(0, 360), RotSpeed = n(-20, 20), ZOffset = -3 }, { 0.1, 0.4 }), smS, { { 0, 3.5 }, { 1, 9 } })
-		-- P5: slow four-point glints bloom on the bezel metal and fade (grow, hold, shrink: never a flash).
-		-- STUDIO-VERIFY: Disc ShapePartial = the inner-radius fraction (0.86 -> the annulus over the bezel), oriented by EmissionDirection
-		local glintT = seq({ { 0, 0.1 }, { 1, 0.1 } })
-		pe(hosts.rimGlint, "glint5", 3.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.86, EmissionDirection = N_.Back, Rate = rate(9, 3),
-			Lifetime = n(1.6, 2.2), Size = seq({ { 0, 0 }, { 0.35, 1.9, 0.5 }, { 0.65, 1.9, 0.5 }, { 1, 0 } }), Transparency = glintT,
-			LockedToPart = true, ZOffset = 1.0, Rotation = n(0, 90) }, { 0.5, 1 }, WHITE_BR)
+			Rotation = n(0, 360), RotSpeed = n(-20, 20), ZOffset = -3 }, { 0.1, 0.4 })
+		local glintT = seq({ { 0, 0.1 }, { 1, 0.1 } }) -- (a glint grows, holds and shrinks through its size: never a flash)
 		if hi then
-			-- P13: time-dust orbits the bezel: glints born on the rim ride a ring that turns clockwise with the hands (locked
-			-- to it), so the clock wears a slow halo of moving light
-			pe(hosts.timeDust, "glint5", 4.4, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.88, EmissionDirection = N_.Back, Rate = 14,
-				Lifetime = n(4, 5), Size = seq({ { 0, 0 }, { 0.3, 1.4, 0.3 }, { 0.7, 1.4, 0.3 }, { 1, 0 } }), Transparency = glintT,
+			-- P13: time-dust orbits the bezel: glints born just round its rim ride a ring that turns clockwise with the hands
+			-- (locked to it), so the clock wears a slow halo of moving light. (Round the rim, not on it: under the silver
+			-- tone a white glint on the bezel hardly reads by day; against the sky and the dark gears it does)
+			pe(hosts.timeDust, "glint5", 4.4, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.9, EmissionDirection = N_.Back, Rate = 20,
+				Lifetime = n(4, 5), Size = seq({ { 0, 0 }, { 0.3, 1.7, 0.35 }, { 0.7, 1.7, 0.35 }, { 1, 0 } }), Transparency = glintT,
 				LockedToPart = true, ZOffset = 1.0, Rotation = n(0, 90), RotSpeed = n(-15, 15) }, { 0.5, 1 }, WHITE_BR)
-			-- the event horizon's glow (above): three soft rings alive at once, Rate 1 x 3 s
-			pe(hosts.horizon, "halo", 1.0, { Rate = 1, Lifetime = n(3, 3), Size = n(11.2, 11.2), LockedToPart = true,
+			-- the event horizon's glow (above): three soft rings alive at once, Rate 1 x 3 s (sized for te5_halo's ring;
+			-- the fallback's ring sits elsewhere in its image, so it is drawn at hs)
+			local hz = pe(hosts.horizon, "halo", 1.0, { Rate = 1, Lifetime = n(3, 3), Size = n(11.2 * hosts.hs, 11.2 * hosts.hs), LockedToPart = true,
 				Transparency = seq({ { 0, 1 }, { 0.2, 0.12 }, { 0.8, 0.12 }, { 1, 1 } }), Rotation = n(0, 360), RotSpeed = n(-8, 8), ZOffset = 0.4 },
 				{ 0.4, 1 }, { 1.6, 3.0 })
+			if hosts.hs == 1 then fixUps[hz] = function(o) o.Size = NumberSequence.new(8.18 / CONFIG.RIM_R) end end
 		end
-		-- P6: three scales of air: silver dust (fewer, bigger: the old 1-4 px specks never read), mid glints, and big slow
-		-- bokeh between the camera and the wearer (showcase framings only)
-		pe(hosts.air, "mote", 2.5, { Shape = BOX, ShapeStyle = VOLUME, Rate = rate(8, 4), Lifetime = n(6, 9), Speed = n(0.1, 0.3),
-			SpreadAngle = Vector2.new(180, 180), Size = n(0.22, 0.40), Transparency = seq({ { 0, 1 }, { 0.2, 0.1 }, { 0.8, 0.15 }, { 1, 1 } }),
-			Color = ColorSequence.new(Color3.fromRGB(226, 230, 240)) }, { 0.2, 0.8 }, { 1.4, 2.2 })
+		-- P6: three scales of air round the wearer: a field of slow four-point sparkles (they read from 40 studs, as pass
+		-- 4's did), smaller glints, and big slow bokeh between the camera and the wearer (showcase framings only)
+		pe(hosts.air, "glint5", 2.5, { Shape = BOX, ShapeStyle = VOLUME, Rate = rate(14, 4), Lifetime = n(3, 4.5), Speed = n(0.1, 0.3),
+			SpreadAngle = Vector2.new(180, 180), Size = seq({ { 0, 0 }, { 0.3, 1.1, 0.3 }, { 0.7, 1.1, 0.3 }, { 1, 0 } }), Transparency = glintT,
+			Rotation = n(0, 90), RotSpeed = n(-15, 15) }, WHITE_LE, WHITE_BR)
 		pe(hosts.air, "glint5", 2.5, { Shape = BOX, ShapeStyle = VOLUME, Rate = rate(5, 1.5), Lifetime = n(4, 6), Speed = n(0.2, 0.5),
 			SpreadAngle = Vector2.new(180, 180), Size = seq({ { 0, 0 }, { 0.3, 0.7, 0.2 }, { 0.7, 0.7, 0.2 }, { 1, 0 } }),
 			Transparency = seq({ { 0, 1 }, { 0.3, 0.1 }, { 0.7, 0.1 }, { 1, 1 } }), Rotation = n(0, 90), RotSpeed = n(-20, 20) }, { 0.4, 1 }, WHITE_BR)
@@ -1321,51 +1409,71 @@ function End.build(ctx)
 			SpreadAngle = Vector2.new(180, 180), Size = n(1.2, 2.4), Transparency = seq({ { 0, 1 }, { 0.25, 0.72 }, { 0.75, 0.72 }, { 1, 1 } }),
 			Color = ColorSequence.new(Color3.fromRGB(232, 236, 246)), Rotation = n(0, 360), RotSpeed = n(-4, 4) }, { 0.3, 0.8 }, { 1.2, 1.8 }, "bokeh")
 		if hi then
-			-- P7: one low mist bank at the ankles, only while standing on the ground
-			pe(hosts.floor, "smoke5", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, EmissionDirection = N_.Top, Rate = 2.5, Lifetime = n(6, 8),
-				Speed = n(0.1, 0.25), Size = seq({ { 0, 8 }, { 1, 14 } }), Transparency = seq({ { 0, 1 }, { 0.3, 0.80 }, { 0.7, 0.82 }, { 1, 1 } }),
+			-- P7: a low mist bank round the pool's rim, only while standing on the ground (ShapePartial 0.8: the outer fifth
+			-- of the disc, so the galaxy inside stays clear)
+			pe(hosts.floorFx, "smoke5", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.8, EmissionDirection = N_.Top, Rate = 2.5,
+				Lifetime = n(6, 8), Speed = n(0.1, 0.25), Size = seq({ { 0, 8 }, { 1, 14 } }), Transparency = seq({ { 0, 1 }, { 0.3, 0.80 }, { 0.7, 0.82 }, { 1, 1 } }),
 				Color = ColorSequence.new(MIST), LockedToPart = true, Rotation = n(0, 360), RotSpeed = n(-6, 6) }, nil, nil, "ground")
 		end
-		-- P8: motes rise off the turning arms and swirl with them; black ash flakes rise against them
-		pe(hosts.floor, "mote", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.15, EmissionDirection = N_.Top, Rate = rate(18, 8),
-			Lifetime = n(2.6, 3.6), Speed = n(0.5, 1.2), Acceleration = Vector3.new(0, 0.35, 0), Drag = 0.2,
-			Size = seq({ { 0, 0 }, { 0.2, 1.2, 0.3 }, { 1, 0 } }), Transparency = seq({ { 0, 1 }, { 0.15, 0.05 }, { 0.8, 0.15 }, { 1, 1 } }),
+		-- P8: starlight rises off the turning arms and swirls with them, in slow four-point twinkles (grow, hold, shrink);
+		-- black ash flakes rise against them. At Roblox's default zoom, where the floor is a few studs from the lens, the
+		-- twinkles are drawn smaller (five sizes made here, each step under 20 %, changed only when the zoom moves a step
+		-- past a threshold: never a jump or a pulse on the floor)
+		hosts.moteSizes = {}
+		for k = 1, 5 do
+			local pk = 1.3 - 0.1625 * (k - 1) -- (1.3, 1.14, 0.98, 0.81, 0.65)
+			hosts.moteSizes[k] = seq({ { 0, 0 }, { 0.25, pk, 0.3 * pk / 1.3 }, { 0.75, pk, 0.3 * pk / 1.3 }, { 1, 0 } })
+		end
+		em.motes = pe(hosts.floorFx, "glint5", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.15, EmissionDirection = N_.Top,
+			Rate = rate(18, 8), Lifetime = n(2.6, 3.6), Speed = n(0.5, 1.2), Acceleration = Vector3.new(0, 0.35, 0), Drag = 0.2,
+			Size = hosts.moteSizes[1], Transparency = glintT, Rotation = n(0, 90), RotSpeed = n(-20, 20),
 			LockedToPart = true, ZOffset = 0.2 }, WHITE_LE, WHITE_BR)
 		if hi then
 			-- (te5_ash is one charred flake; its random rotation and tumble make every particle a different shape)
-			pe(hosts.floor, "ash5", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.15, EmissionDirection = N_.Top, Rate = 8,
+			em.ash = pe(hosts.floorFx, "ash5", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.15, EmissionDirection = N_.Top, Rate = 8,
 				Lifetime = n(3, 4.5), Speed = n(0.8, 2.0), Acceleration = Vector3.new(0, 0.3, 0), Drag = 0.4, Size = n(0.4, 0.6),
 				Transparency = seq({ { 0, 1 }, { 0.15, 0.05 }, { 0.75, 0.2 }, { 1, 1 } }), Color = ColorSequence.new(ASH), Rotation = n(0, 360),
 				RotSpeed = n(-90, 90) })
-			-- P9: a vortex funnel: streaks spiral inward and climb into the balance wheel
+			-- P9: a vortex funnel: streaks spiral inward and climb into the balance wheel (off in first person: the camera
+			-- sits right inside it)
 			local p9 = { Rate = 16, Lifetime = n(1.7, 2.0), Speed = n(2.8, 3.2), Acceleration = Vector3.new(0, 1.0, 0),
 				Size = seq({ { 0, 0.42 * stS }, { 1, 0.1 * stS } }), Transparency = seq({ { 0, 1 }, { 0.12, 0.05 }, { 0.85, 0.1 }, { 1, 1 } }),
 				LockedToPart = true, Orientation = VPAR, Rotation = stRot }
 			if CONFIG.SWIRL_POINTS then
 				p9.EmissionDirection, p9.SpreadAngle = N_.Front, Vector2.new(0, 10)
-				sizeFix(pe(rimPoint(hosts.funnel, 5.3), "streak5", 4.8, p9, WHITE_LE, WHITE_BR), stS, { { 0, 0.42 }, { 1, 0.1 } })
+				sizeFix(pe(rimPoint(hosts.funnel, 5.3), "streak5", 4.8, p9, WHITE_LE, WHITE_BR, "nearcam"), stS, { { 0, 0.42 }, { 1, 0.1 } })
 			else
 				p9.Shape, p9.ShapeStyle, p9.ShapeInOut, p9.EmissionDirection = CYL, SURFACE, INWARD, N_.Top
-				sizeFix(pe(hosts.funnel, "streak5", 4.8, p9, WHITE_LE, WHITE_BR), stS, { { 0, 0.42 }, { 1, 0.1 } })
+				sizeFix(pe(hosts.funnel, "streak5", 4.8, p9, WHITE_LE, WHITE_BR, "nearcam"), stS, { { 0, 0.42 }, { 1, 0.1 } })
 			end
 		end
 		-- P10: the palms drink the streams: silver streaks converge into one palm, ink streaks into the other (locked to the
-		-- palm, so they still converge on it while the wearer walks). STUDIO-VERIFY: Sphere + Surface + Inward converges on
-		-- the centre (fallback: Outward with a negative Speed)
+		-- palm, so they still converge on it while the wearer walks; off in first person, where the palms are just under the
+		-- lens). STUDIO-VERIFY: Sphere + Surface + Inward converges on the centre (fallback: Outward with a negative Speed)
 		local function intake(host, color, le, br)
 			sizeFix(pe(host, "streak5", 5.2, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = INWARD, Rate = rate(14, 6), Lifetime = n(0.85, 0.95),
 				Speed = n(1.35, 1.45), Size = seq({ { 0, 0.3 * stS }, { 1, 0.05 * stS } }), Transparency = seq({ { 0, 1 }, { 0.25, 0.05 }, { 1, 0.2 } }),
-				Color = ColorSequence.new(color), ZOffset = 0.2, Orientation = VPAR, Rotation = stRot, LockedToPart = true }, le, br),
+				Color = ColorSequence.new(color), ZOffset = 0.2, Orientation = VPAR, Rotation = stRot, LockedToPart = true }, le, br, "nearcam"),
 				stS, { { 0, 0.3 }, { 1, 0.05 } })
 		end
 		intake(hosts.palmMoon, WHITE, WHITE_LE, WHITE_BR)
 		intake(hosts.palmVoid, INK, nil, nil)
-		-- P11: time drips off each sole onto the balance wheel below
-		for _, a in ipairs({ soleL, soleR }) do
-			if a then
-				pe(a, "mote", 5.2, { EmissionDirection = N_.Bottom, Rate = rate(4, 2), Lifetime = n(0.6, 0.8), Speed = n(0.1, 0.3),
-					SpreadAngle = Vector2.new(8, 8), Acceleration = Vector3.new(0, -5, 0), Size = seq({ { 0, 0.18 }, { 1, 0.08 } }),
-					Transparency = seq({ { 0, 0.1 }, { 0.8, 0.2 }, { 1, 1 } }) }, WHITE_LE, WHITE_BR, "foot")
+		-- P11: the wearer burns with the aura: silver wisps rise off the shoulders and back (not while travelling: no smog
+		-- trail), and sparks stream up the body (they keep going while travelling and stream out behind like a comet's
+		-- tail). Silver, not ink: from every camera the wearer stands against the black dial, where ink would vanish. They
+		-- live on the character's torso (destroy() removes them) and switch off in first person
+		do
+			local torso = char:FindFirstChild("UpperTorso") or char:FindFirstChild("Torso")
+			if torso and torso:IsA("BasePart") then
+				em.wisps = pe(torso, "smoke5", 5.2, { Shape = BOX, ShapeStyle = SURFACE, EmissionDirection = N_.Top, Rate = rate(7, 3), Lifetime = n(1.6, 2.2),
+					Speed = n(1.5, 2.5), SpreadAngle = Vector2.new(20, 20), Acceleration = Vector3.new(0, 1, 0), Size = seq({ { 0, 1.2 }, { 1, 3.4 } }),
+					Transparency = seq({ { 0, 1 }, { 0.2, 0.32 }, { 0.6, 0.55 }, { 1, 1 } }), Color = ColorSequence.new(Color3.fromRGB(200, 202, 208)),
+					ZOffset = -1.5, Rotation = n(0, 360), RotSpeed = n(-40, 40) }, { 0.2, 0.6 }, { 1.2, 2.0 }, "body")
+				table.insert(charStuff, em.wisps)
+				table.insert(charStuff, pe(torso, "glint5", 5.2, { Shape = BOX, ShapeStyle = VOLUME, EmissionDirection = N_.Top, Rate = rate(14, 6),
+					Lifetime = n(1.4, 2.0), Speed = n(1.5, 3.0), SpreadAngle = Vector2.new(25, 25), Acceleration = Vector3.new(0, 1.5, 0),
+					Size = seq({ { 0, 0 }, { 0.25, 1.3, 0.3 }, { 0.75, 1.3, 0.3 }, { 1, 0 } }), Transparency = glintT, Rotation = n(0, 90),
+					RotSpeed = n(-30, 30), ZOffset = 0.5 }, { 0.5, 1 }, WHITE_BR, "body"))
 			end
 		end
 		-- P12: while the wearer flies or runs fast, silver streaks stream out behind the body (off when slow)
@@ -1376,7 +1484,7 @@ function End.build(ctx)
 		-- which emitters belong to the parts that turn see-through while another wearer's aura is in your way (their smoke,
 		-- swirl, dust, shards, glints, horizon and palm streaks must not stay solid across your character)
 		local ghostHost = { [moon] = true, [void] = true }
-		for _, h in ipairs({ "swirl", "rimGlint", "shardFeed", "horizon", "timeDust", "palmMoon", "palmVoid" }) do
+		for _, h in ipairs({ "swirl", "shardFeed", "horizon", "timeDust", "palmMoon", "palmVoid" }) do
 			if hosts[h] then ghostHost[hosts[h]] = true end
 		end
 		for _, e in ipairs(emitters) do
@@ -1426,23 +1534,28 @@ function End.build(ctx)
 	end)
 	-- this wearer's dais sits a hair above (or below) the others', so two pools side by side never share a plane (Roblox
 	-- z-fights coplanar faces as a crawling shimmer). The layer surfaces repeat every 0.055 studs (engraving, base,
-	-- floor), so the three lifts are a third of that apart: the owner 0, other players 0.018 or 0.037.
+	-- floor), so the three lifts are a third of that apart: your own pool on top (0.037), other players 0 or 0.018, so where
+	-- two pools overlap yours is the one you see.
 	do
 		local uid = 0
 		pcall(function()
 			local plr = Players:GetPlayerFromCharacter(char)
 			uid = plr and plr.UserId or #char.Name
 		end)
-		st.layer = ctx.isLocal and 0 or 0.0183 * (1 + uid % 2)
+		st.layer = ctx.isLocal and 0.0366 or 0.0183 * (uid % 2)
 	end
 
 	---------------------------------------------------------------- the wearer's own screen grade (real equips only)
 	-- It starts with the first frame the player can actually see (not while the roll cutscene still holds the camera), eases
 	-- back when the assembly ends, and never snaps: hiding or unequipping eases it out too.
 	local grade
-	st.gradeWanted = CONFIG.GRADE and ctx.isLocal and os.clock() - (spawnedAt[char] or 0) > 4
+	st.gradeWanted, st.builtAt = CONFIG.GRADE and ctx.isLocal, os.clock()
 	local function gradeTo(target, dur, thenDestroy)
 		if not grade then return end
+		if gradeOwner ~= st then
+			grade = nil -- (another build took the grade over since: it is theirs to ease out)
+			return
+		end
 		if liveGradeTween then liveGradeTween:Cancel() end
 		liveGradeTween = TweenService:Create(grade, TweenInfo.new(dur, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), target)
 		liveGradeTween:Play()
@@ -1453,7 +1566,7 @@ function End.build(ctx)
 			task.delay(dur + 0.05, function()
 				if gradeToken == tok and liveGrade == g then
 					g:Destroy()
-					liveGrade, liveGradeTween = nil, nil
+					liveGrade, liveGradeTween, gradeOwner = nil, nil, nil
 				end
 			end)
 		end
@@ -1481,7 +1594,8 @@ function End.build(ctx)
 			local kind = e[3]
 			if kind == "ground" then want = want and grounded
 			elseif kind == "bokeh" then want = want and not bokehNear
-			elseif kind == "foot" then want = want and visible and st.footOk and not st.seated -- (they live on the character)
+			elseif kind == "body" then want = want and visible and st.footOk and not st.fpOn -- (they live on the character)
+			elseif kind == "nearcam" then want = want and not st.fpOn -- (the funnel and palm streaks: right under the lens)
 			elseif kind == "speed" then want = want and st.speedOn end
 			if e[6] and st.ghostGui and not st.fxLtm then want = false end -- (a ghosted aura without emitter LTM: smoke off)
 			if want ~= e[5] then
@@ -1505,12 +1619,15 @@ function End.build(ctx)
 			end
 		end
 	end
-	-- the beam fade steps: each beam's Transparency is one of its 21 precomputed sequences (no allocation)
-	local function beamSteps(fb)
-		st.fb = fb
+	-- the beam fade steps: each beam's Transparency is one of its 21 precomputed sequences (no allocation); fa is the
+	-- framework's fade, and while the aura assembles each beam fades in over 0.8 s from its own time
+	local function beamSteps(fa)
+		st.fb = fa
 		local lod = st.lod
+		local asm = age < ASM_END
 		for _, b in ipairs(beams) do
-			local f = fb
+			local f = fa
+			if asm then f *= smooth((age - b[12]) / 0.8) end
 			if b[8] then f *= lod elseif b[9] then f *= 1 - lod end
 			local q = clamp(math.floor(f * 20 + 0.5), 0, 20)
 			if q ~= b[3] then
@@ -1562,7 +1679,9 @@ function End.build(ctx)
 	-- the Highlight's fill and outline strength (1 - transparency) at night factor q. The ink outline is for the bright sky
 	-- at a distance: close up (Roblox's default zoom) the metal fills the view and reads by its own shading, so the outline
 	-- eases off (czq: the camera-closeness factor in 0.05 steps)
-	local function hlFill(q) return (1 - CONFIG.HIGHLIGHT_FILL) * (1 - q) + 0.20 * q end
+	-- (by day the close camera sees the rings and bezel against the cyan sky and grass, which lift green as much as blue:
+	-- the fill strengthens close up, in the same zoom steps, so the silver stays neutral)
+	local function hlFill(q) return min(1, (1 - CONFIG.HIGHLIGHT_FILL) * (1 + 0.45 * st.czq)) * (1 - q) + 0.20 * q end
 	local function hlOut(q) return (1 - CONFIG.HIGHLIGHT_OUTLINE) * (1 - 0.6 * st.czq) * (1 - q) + 0.30 * q end
 	-- the Highlight follows its fade (st.hlA: assembly x alpha), the night, the camera closeness and, for another player's
 	-- aura, the far-detail fade; fill and outline are each written only when they moved (snapped exactly at the ends)
@@ -1585,7 +1704,7 @@ function End.build(ctx)
 	-- frees one of the client's 31 Highlights and its outline pass)
 	local function toneOn()
 		if tone then
-			local on = not st.ghostGui and (ctx.isLocal or st.lod > 0)
+			local on = st.ghostQ <= 0 and (ctx.isLocal or st.lod > 0) -- (off from the first ghost step: it would paint the ghost solid)
 			if tone.Enabled ~= on then tone.Enabled = on end
 		end
 	end
@@ -1662,9 +1781,7 @@ function End.build(ctx)
 				e[5] = tr
 			end
 		end
-		local fb = a
-		if asm then fb *= smooth((age - 4.6) / 0.8) end
-		beamSteps(fb)
+		beamSteps(a)
 		local kf, wf = a, a
 		if asm then kf, wf = a * smooth((age - 0.6) / 1.0), a * smooth((age - 4.6) / 1.0) end
 		if abs(kf - st.kf) >= thr or abs(wf - st.wf) >= thr or ((kf <= 0 or kf >= 1) and kf ~= st.kf) or ((wf <= 0 or wf >= 1) and wf ~= st.wf) then
@@ -1691,11 +1808,11 @@ function End.build(ctx)
 				if not b[9] then b[1].LocalTransparencyModifier = m end
 			end
 		end
+		toneOn()
 		local off = q >= 0.5
 		if off ~= st.ghostGui then
 			st.ghostGui = off
 			for _, g in ipairs(ghostGuis) do g.Enabled = not off end
-			toneOn()
 			if corona then corona.Enabled = nq > 0.05 and not off end
 			if not st.fxLtm then
 				refreshEmitters()
@@ -1707,6 +1824,20 @@ function End.build(ctx)
 	local function writeRings()
 		local m = max(0.75 * st.armGQ, st.armQ)
 		for _, p in ipairs(ringParts) do p.LocalTransparencyModifier = m end
+		-- (a Highlight paints a see-through part at full strength, whatever its LocalTransparencyModifier: while the rings
+		-- fade or ghost they leave the silver tone, two parent writes each way, so no grey outlined silhouette stays behind)
+		local out = m > 0
+		if out ~= st.ringsOut then
+			st.ringsOut = out
+			for h = ARM, ARMD do
+				for _, hp in ipairs(holders[h]) do
+					if hp[2] == mats.Silver or hp[2] == hosts.noTone then
+						hp[2] = out and hosts.noTone or mats.Silver
+						if hp[1].Parent then hp[1].Parent = hp[2] end
+					end
+				end
+			end
+		end
 	end
 	local function segDist(p, a, ab, len2) -- distance from point p to the segment a -> a + ab
 		local t = clamp((p - a):Dot(ab) / len2, 0, 1)
@@ -1718,6 +1849,9 @@ function End.build(ctx)
 		-- (hidden, e.g. under the roll cutscene's camera, or too far away: nothing advances, so the assembly and the grade
 		-- wait for the player, whether or not the framework keeps calling update)
 		if destroyed or not visible then return end
+		-- (a physics fling can hand us one NaN position: skip that frame instead of poisoning every spring for good)
+		local p0 = s.cf.Position
+		if p0.X ~= p0.X or p0.Y ~= p0.Y or p0.Z ~= p0.Z or s.hover ~= s.hover then return end
 		if remote and not near then
 			-- another player's aura past ~110 studs (about 40 px tall) runs every other frame, with both frames' time: the
 			-- springs and spins stay exact and it costs half
@@ -1755,10 +1889,16 @@ function End.build(ctx)
 			setGroups()
 		end
 		-- the wearer's own grade starts with the first frame they can see (never over a scripted camera, e.g. a cutscene)
-		if st.gradeWanted and not st.gradeStarted then
+		if st.gradeWanted and not st.gradeStarted and age < 4.5 then -- (not when the assembly is nearly over)
 			st.gradeStarted = true
 			local camG = workspace.CurrentCamera
-			if camG and camG.CameraType == Enum.CameraType.Scriptable then
+			-- (not for a character that has just spawned or respawned: a reset rebuilds the aura on the new character, which
+			-- is not an equip. Decided here rather than at build, when every CharacterAdded handler has run; and with a
+			-- 12 s window, as the framework may build only once the avatar has loaded)
+			local sa = spawnedAt[char]
+			if (sa and st.builtAt - sa < 12) or (ownGone and ownGoneChar[1] ~= char and st.builtAt - ownGone < 15) then
+				st.gradeWanted = false
+			elseif camG and camG.CameraType == Enum.CameraType.Scriptable then
 				st.gradeStarted = false
 			elseif camG then
 				if liveGrade and liveGrade.Parent then
@@ -1767,6 +1907,7 @@ function End.build(ctx)
 					grade = new("ColorCorrectionEffect", { Name = "TheEndReveal" }, camG)
 					liveGrade = grade
 				end
+				gradeOwner = st
 				gradeToken += 1
 				gradeTo(GRADE_ON, 1.2)
 			end
@@ -1780,6 +1921,8 @@ function End.build(ctx)
 		-- so a jump is not a flight), and whether they sit
 		local lastO = st.lastO
 		st.lastO = O
+		-- (a teleport, to another island or a lobby pad: everything starts where it belongs instead of springing across)
+		if lastO and ((O - lastO).Magnitude >= 30 or abs(O.Y - lastO.Y) > 8) then snap = true end
 		if lastO then
 			local dO = O - lastO
 			if grounded then dO = Vector3.new(dO.X, 0, dO.Z) end
@@ -1812,8 +1955,11 @@ function End.build(ctx)
 		local cam = workspace.CurrentCamera
 		local camPos = lastCamPos
 		if cam then
-			camPos = cam.CFrame.Position
-			lastCamPos = camPos
+			local cp = cam.CFrame.Position
+			if cp.X == cp.X and cp.Y == cp.Y and cp.Z == cp.Z then
+				camPos = cp
+				lastCamPos = cp
+			end
 		end
 		local v = O - camPos
 		local dh = sqrt(v.X * v.X + v.Z * v.Z)
@@ -1825,7 +1971,22 @@ function End.build(ctx)
 		local czq = math.floor(cz * 20 + 0.5) / 20
 		if czq ~= st.czq then
 			st.czq = czq
-			toneLevels(0) -- (the ink outline eases off close up)
+			toneLevels(0) -- (close up the ink outline eases off and the silver fill strengthens)
+			-- (the floor's twinkles: one size step at a time, each a band past its threshold, so a camera resting near one
+			-- never flips them back and forth)
+			local mi = st.moteI
+			while mi < 5 and czq >= MOTE_T[mi] + 0.05 do mi += 1 end
+			while mi > 1 and czq <= MOTE_T[mi - 1] - 0.05 do mi -= 1 end
+			if mi ~= st.moteI then
+				st.moteI = mi
+				em.motes.Size = hosts.moteSizes[mi]
+			end
+			if hosts.lensTop then
+				-- (the lensed band slims as the camera comes close: at the default zoom a full-width band reads as a crescent)
+				local k = 1 - 0.45 * czq
+				hosts.lensTop.Width0, hosts.lensTop.Width1 = 1.5 * k, 1.5 * k
+				hosts.lensBot.Width0, hosts.lensBot.Width1 = 0.8 * k, 0.8 * k
+			end
 		end
 		if haloEntry then
 			-- (the white ball's soft halo fades out as the camera comes close, where the leaning dial plane would cut it)
@@ -1892,10 +2053,42 @@ function End.build(ctx)
 		else
 			target = lastGroundY
 		end
+		if target ~= target then target = daisY or O.Y - 3 end
 		if snap then daisY = nil end
 		if daisY then daisY += (target - daisY) * (1 - exp(-(target < daisY and 30 or 8) * dt)) else daisY = target end
 		local dY = daisY + st.layer
+		-- on a slope (a hillside, a beach, a ramp) the pool lies along the ground: a plane through three rays round the
+		-- wearer, every 0.2 s while standing on it, accepted only when it is a clean slope through the ground under the
+		-- wearer (stairs, cliff edges, other players: it stays level). It tilts over smoothly; flying or seated it is level
+		if isGrounded and not seated then
+			st.gpT -= dt
+			if st.gpT <= 0 then
+				st.gpT = 0.2
+				local nT = Vector3.yAxis
+				local gp = hosts.gp
+				local h1 = workspace:Raycast(Vector3.new(O.X + 9 * sin(yawW), dY + 4, O.Z + 9 * cos(yawW)), DOWN9, gp)
+				local h2 = h1 and workspace:Raycast(Vector3.new(O.X + 9 * sin(yawW + 2.0944), dY + 4, O.Z + 9 * cos(yawW + 2.0944)), DOWN9, gp)
+				local h3 = h2 and workspace:Raycast(Vector3.new(O.X + 9 * sin(yawW + 4.1888), dY + 4, O.Z + 9 * cos(yawW + 4.1888)), DOWN9, gp)
+				if h3 then
+					local p1 = h1.Position
+					local nn = (h2.Position - p1):Cross(h3.Position - p1)
+					if nn.Magnitude > 1e-3 then
+						nn = nn.Unit
+						if nn.Y < 0 then nn = -nn end
+						if nn.Y >= 0.94 and abs((gnd - p1):Dot(nn)) < 0.6 then nT = nn end -- (at most 20°, through the ground underfoot)
+					end
+				end
+				st.gnT = nT
+			end
+		else
+			st.gnT = Vector3.yAxis
+		end
+		local gn = snap and st.gnT or st.gn + (st.gnT - st.gn) * (1 - exp(-4 * dt))
+		gn = gn.Magnitude > 1e-3 and gn.Unit or Vector3.yAxis
+		st.gn = gn
+		local slopeT = gn.Y < 0.99996 and sqrt(1 - gn.Y * gn.Y) / gn.Y or 0 -- (tan of the tilt; under 0.5° it stays level)
 		local Gd = CFrame.new(O.X, dY, O.Z)
+		if slopeT > 0 then Gd *= CFrame.fromAxisAngle(Vector3.yAxis:Cross(gn).Unit, math.acos(gn.Y)) end
 		-- the height the clock and the balance ride: a heavy spring, so a jump (or a step) does not throw a 28-stud watch
 		-- up and down with the body; it catches up fast when flying or sitting
 		if snap or not st.kY then
@@ -1917,10 +2110,30 @@ function End.build(ctx)
 		local Hc = CONFIG.CLOCK_HEIGHT - 0.5 * g - 3 * cz + 16 * fp - 3 * sitT
 		local Dc = CONFIG.CLOCK_DIST + 2 * g + (remote and CLOSE.distRemote or CLOSE.dist) * cz + 6 * fp - 2 * sitT
 		local tilt = rad(clamp(CONFIG.CLOCK_TILT + 14 * g + 4 * st.speedT + CLOSE.tilt * cz - 32 * fp, -10, 50))
-		local minHc = dY + 1.2 - st.kY + 14.2 * cos(tilt) + 1.44 * sin(tilt)
+		-- (its lowest point is the bezel's back edge when it leans back, its front edge when it leans forward; on a slope
+		-- the ground under it is higher or lower by the slope's rise along the view)
+		local vl = V.LookVector
+		local rise = slopeT > 0 and -(gn.X * vl.X + gn.Z * vl.Z) / gn.Y or 0
+		local minHc = dY + rise * Dc + 1.2 - st.kY + 14.2 * cos(tilt) + (tilt >= 0 and 1.44 or 1.12) * abs(sin(tilt))
 		if Hc < minHc then Hc = minHc end
+		-- the owner's camera: the clock steps back along the view until FRAME_TOP above its hub (the XII numeral: the hands
+		-- at midnight) is inside the top of the frame, at every zoom and camera tilt players use; looking steeply down it
+		-- settles at most CLOSE.dist further back. It glides there (never jumps) and is off in first person
+		local ft = (ctx.isLocal and cam) and CONFIG.FRAME_TOP or 0
+		if ft > 0 then
+			local lim = min(1.45, asin(clamp(cam.CFrame.LookVector.Y, -1, 1)) + rad(cam.FieldOfView) * 0.455) -- (the frame's top edge, less a margin)
+			local push = clamp((st.kY + Hc + ft * cos(tilt) - camPos.Y) / max(tan(lim), 0.05) - dh - ft * sin(tilt) - Dc, 0,
+				CLOSE.dist + 1.1 * max(0, ft - 9.6)) * (1 - fp)
+			st.fitD = snap and push or st.fitD + (push - st.fitD) * (1 - exp(-3 * dt))
+			Dc += st.fitD
+			if rise > 0 then Hc += rise * st.fitD end -- (uphill behind: it stands on the rising ground)
+		end
+		-- another wearer's clock and orbs step back behind your own clock instead of standing in front of it (decided
+		-- below, one frame late: a spring, so they glide)
+		Dc += st.yieldD
 		local K = Vk * CFrame.new(0, Hc, -Dc) * CFrame.Angles(0, rad(9 + 5 * sin(TAU * t / 16)), 0) * CFrame.Angles(-tilt, 0, 0)
 		GCF[GK] = K
+		if not remote then ownerHub = K.Position end
 
 		-- 2. the clockwork: gears (meshed rates from the server clock), hands, crown
 		for _, gd in ipairs(gearData) do
@@ -1960,7 +2173,7 @@ function End.build(ctx)
 		local wheelAngle = rad(160) * sin(TAU * t / 3.2) * (asm and smooth((age - 4.6) / 1.2) or 1)
 		local wheelY = O.Y - s.legLen - 0.9
 		wheelY += (dY + 1.2 - wheelY) * sitT
-		if wheelY < dY + 1.2 then wheelY = dY + 1.2 end
+		if wheelY < dY + 1.2 + 2.5 * slopeT then wheelY = dY + 1.2 + 2.5 * slopeT end
 		local Bw = CFrame.new(O.X, wheelY, O.Z) * CFrame.Angles(0, wheelAngle, 0)
 		GCF[GWHEEL] = Bw
 
@@ -1972,10 +2185,10 @@ function End.build(ctx)
 		local R2 = R1 * CFrame.Angles(rad(57) + rad(18) * sin(TAU * t / 19), 0, 0)
 		local R3 = R2 * CFrame.Angles(0, rad(23.4) + rad(14) * sin(TAU * t / 27 + 1.1), 0)
 		local n1, n2, n3 = R1.ZVector.Y, R2.ZVector.Y, R3.ZVector.Y
-		local drop = max(6.30 * sqrt(max(0, 1 - n1 * n1)) + 0.13 * abs(n1), 5.52 * sqrt(max(0, 1 - n2 * n2)) + 0.21 * abs(n2),
-			4.90 * sqrt(max(0, 1 - n3 * n3)) + 0.11 * abs(n3))
+		local drop = max(6.23 * sqrt(max(0, 1 - n1 * n1)) + 0.09 * abs(n1), 5.54 * sqrt(max(0, 1 - n2 * n2)) + 0.17 * abs(n2),
+			4.79 * sqrt(max(0, 1 - n3 * n3)) + 0.08 * abs(n3))
 		local baseY = 1.3 - 1.0 * sitT
-		local liftT = max(0, dY + 0.96 - (O.Y + baseY - drop))
+		local liftT = max(0, dY + 0.96 + 6.3 * slopeT - (O.Y + baseY - drop))
 		st.lift = snap and liftT or st.lift + (liftT - st.lift) * (1 - exp(-6 * dt))
 		if st.lift < liftT - 0.3 then st.lift = liftT - 0.3 end
 		local A0p = O + Vector3.new(0, baseY + st.lift, 0)
@@ -1984,14 +2197,20 @@ function End.build(ctx)
 		local F3 = CFrame.new(A0p) * R3
 		GCF[GF1], GCF[GF2], GCF[GF3] = F1, F2, F3
 		if asm then
+			-- (for the owner's close camera the rings wait flat on the dais until the hands have locked at XII, then close
+			-- round the wearer as the finale: risen earlier, the meridian would stand across the dial during the lock.
+			-- Decided once, at the first frame the player sees, so a zoom during the assembly never makes them jump)
+			if st.r0 == nil then st.r0 = (ctx.isLocal and cz > 0.5) and 3.5 or 0 end
+			local r0 = st.r0
 			local flat = Gd * FLAT
-			if age < 2.4 then GCF[GF1] = lerpCF(flat, F1, easeOutBack((age - 1.0) / 1.4)) end
-			if age < 2.7 then GCF[GF2] = lerpCF(flat, F2, easeOutBack((age - 1.3) / 1.4)) end
-			if age < 3.0 then GCF[GF3] = lerpCF(flat, F3, easeOutBack((age - 1.6) / 1.4)) end
+			if age < 2.4 + r0 then GCF[GF1] = lerpCF(flat, F1, easeOutBack((age - 1.0 - r0) / 1.4)) end
+			if age < 2.7 + r0 then GCF[GF2] = lerpCF(flat, F2, easeOutBack((age - 1.3 - r0) / 1.4)) end
+			if age < 3.0 + r0 then GCF[GF3] = lerpCF(flat, F3, easeOutBack((age - 1.6 - r0) / 1.4)) end
 		end
 		if hi then
+			local F3c = GCF[GF3] -- (the shards ride the ecliptic where it is, rising or not)
 			for i = 0, 7 do
-				local c = F3 * CFrame.Angles(0, 0, -((rad(i * 45 + 22.5) + rad(22) * t) % TAU)) * CFrame.new(0, 4.0, 0)
+				local c = F3c * CFrame.Angles(0, 0, -((rad(i * 45 + 22.5) + rad(22) * t) % TAU)) * CFrame.new(0, 4.0, 0)
 					* CFrame.Angles((t * rad(50 + 15 * i)) % TAU, (t * rad(35 - 7 * i)) % TAU, 0)
 				if asm then
 					local u = (age - 5.0 - 0.06 * i) / 0.8
@@ -2005,13 +2224,14 @@ function End.build(ctx)
 			end
 		end
 
-		-- 5. the balance: moon and void on the viewer's left and right of an invisible beam, rocking like scales (closer in
-		-- and a little behind the wearer when the camera is close, so both stay on screen)
+		-- 5. the balance: moon and void on the viewer's left and right of an invisible beam, rocking like scales (lower, a
+		-- little wider and well behind the wearer when the camera is close, so the moon sits beside the dial at about its
+		-- size, clear of the HUD; another wearer's step back behind your clock with it)
 		local sway = asm and smooth((age - 1.8) / 1.2) or 1
 		-- (the void's centre stays >= 13.4 studs out horizontally, so its 13-stud disc always clears the rings' 6.3 reach)
 		-- (in first person they move back beside the view: about 97° off the line of sight, outside the 102° field of view)
 		local arm = 12.5 - CLOSE.arm * cz
-		local orbZ = 1.5 - CLOSE.orbZ * cz + 12 * fp
+		local orbZ = 1.5 - CLOSE.orbZ * cz + 12 * fp - st.yieldD
 		local Pv = Vk * CFrame.new(0, 6.0 - CLOSE.orbY * cz, orbZ) * CFrame.Angles(0, 0, rad(10) * sin(TAU * t / 10) * sway)
 		local moonC = Pv * Vector3.new(-arm, 0, 0)
 		local voidC = Pv * Vector3.new(arm, 0, 0)
@@ -2038,6 +2258,22 @@ function End.build(ctx)
 		local dc = max(dm, 5)
 		local up = abs(nrm.Y) > 0.98 and Vector3.zAxis or Vector3.yAxis
 		rt = 4 * sqrt(1 - 16 / (dc * dc))
+		-- (the hairlines' distance steps: event writes, only when a band changes)
+		local pb = max(hairBand(dm, st.pBand), low and 2 or 1)
+		if pb ~= st.pBand then
+			st.pBand = pb
+			local hy = HAIR[pb][1]
+			local hl = low and 2.25 or 1.14
+			for _, k in ipairs(hosts.photon) do
+				PP[k].Size = Vector3.new(hl, hy, 0.12)
+				PRR[k] = 0.115 + hy / 2
+			end
+		end
+		local nb = max(hairBand((camPos - K.Position).Magnitude, st.nBand), low and 2 or 1)
+		if nb ~= st.nBand then
+			st.nBand = nb
+			hosts.needle.Size = Vector3.new(HAIR[nb][2], 12.2, 0.08)
+		end
 		GCF[GPF] = CFrame.lookAt(voidC + nrm * (16 / dc), voidC, up)
 		GCF[GHF] = CFrame.lookAt(voidC + nrm * 4.1, voidC, up)
 		local Dk = CFrame.new(voidC) * V.Rotation * TILTACC
@@ -2045,8 +2281,6 @@ function End.build(ctx)
 		if asm then accExtra = (accExtra + rad(360 * exp(-3 * max(0, age - 0.3))) * dt * dir) % TAU end
 		GCF[GACC] = Dk * CFrame.Angles(0, (rad(40) * now * dir + accExtra) % TAU, 0)
 		GCF[GSWIRL] = Dk * CFrame.Angles(0, (rad(85) * now * dir) % TAU, 0)
-		local az = atan2(voidC.X - O.X, voidC.Z - O.Z)
-		GCF[GRIBEND] = Gd * CFrame.new(13.2 * sin(az), 0.3, 13.2 * cos(az)) * CFrame.Angles(0, az, 0)
 		GCF[GFEED] = CFrame.lookAt(K * FEED_PT, voidC)
 
 		-- 6. the air (turned to face the way the wearer travels: the speed trail streams out behind) and the palms
@@ -2074,7 +2308,7 @@ function End.build(ctx)
 		-- near-camera rules (with hysteresis), decided before the move so a group shown again moves this very frame: no rings
 		-- or bokeh blobs across the lens. The rings fade out over 0.25 s in three steps before they leave the world, and come
 		-- back fully see-through and fade in, so scrolling between 9 and 12 studs never snaps the biggest thing near the lens
-		if CONFIG.NEAR_HIDE then
+		if st.nearHide then
 			local dA = (camPos - A0p).Magnitude
 			if (not st.armWant and dA < CONFIG.NEAR_ARM_HIDE) or (st.armWant and dA > CONFIG.NEAR_ARM_SHOW) then
 				st.armWant = not st.armWant
@@ -2113,11 +2347,14 @@ function End.build(ctx)
 				applyLod()
 			end
 		end
-		-- first person: the palm streams switch off (their ends sit just under the lens)
+		-- first person: the palm streams, the palm and funnel streaks and the body's wisps and sparks switch off (they sit
+		-- just under or round the lens), and fewer ash flakes drift across the bottom of the view
 		local fpOn = fp > 0.5
 		if fpOn ~= st.fpOn then
 			st.fpOn = fpOn
 			refreshBeams()
+			refreshEmitters()
+			if em.ash then em.ash.Rate = fpOn and 3 or 8 end
 		end
 
 		-- 7. every part = its group's frame x its rest transform (eased from its start pose while it assembles)
@@ -2131,8 +2368,7 @@ function End.build(ctx)
 				if S and age < PM1[i] then
 					local kk = 1 - easeOutBack((age - PM0[i]) / (PM1[i] - PM0[i]))
 					if rr then
-						local r0 = PRS[i] or (rt + PRSO[i])
-						L = PROT[i] * CFrame.new(0, rt + rr + (r0 - rt - rr) * kk, 0)
+						L = PROT[i] * CFrame.new(0, rt + rr + (PRS[i] - rt - rr) * kk, 0)
 					else
 						L = lerpCF(L, S, kk)
 					end
@@ -2197,23 +2433,47 @@ function End.build(ctx)
 			grounded = isGrounded
 			refreshEmitters()
 		end
-		-- the drips come back a second after the aura is shown again (a quick hide/show never blinks them)
+		-- the body's wisps and sparks come back a second after the aura is shown again (a quick hide/show never blinks them)
 		if not st.footOk and os.clock() - st.shownAt >= 1.1 then
 			st.footOk = true
 			refreshEmitters()
 		end
-		-- walking or flying: the void's ink smoke thins out, so no trail of puffs hangs along the path
+		-- walking or flying: the void's ink smoke thins out and dies young, the moon's smoke and the body's wisps stop and
+		-- the moon dust halves, so no smog patches hang along the path (the body's sparks and the speed trail stream out
+		-- behind instead)
 		local slow = (st.smokeSlow and (g > 0.3 or st.speedOn)) or g > 0.6 or st.speedOn
 		if slow ~= st.smokeSlow then
 			st.smokeSlow = slow
-			em.smoke.Rate = slow and (low and 1.5 or 2.5) or (low and 4 or 10)
-			em.smoke.Lifetime = slow and n(2, 2.5) or n(3.5, 4.5)
-			if em.smokeMoon then
-				em.smokeMoon.Rate = slow and 1.5 or 5
-				em.smokeMoon.Lifetime = slow and n(2, 2.5) or n(3.5, 4.5)
-			end
+			em.smoke.Rate = slow and (low and 1 or 1.5) or (low and 4 or 10)
+			em.smoke.Lifetime = slow and n(1.0, 1.4) or n(3.5, 4.5)
+			if em.smokeMoon then em.smokeMoon.Rate = slow and 0 or 5 end
+			em.dust.Rate = (low and 5 or 10) * (slow and 0.5 or 1)
+			if em.wisps then em.wisps.Rate = slow and 0 or (low and 3 or 7) end
 		end
-		if remote and CONFIG.GHOST_REMOTE and cam then
+		if remote and cam and ownerHub then
+			-- another wearer's clock or orbs in front of your own clock (a friend beside or behind you): theirs step back
+			-- along your view (a spring) until they stand 12 studs behind your clock, smaller and still solid. Tested at
+			-- where they would stand without stepping back, and held 1.5 s, so they never swing back and forth
+			local ab = ownerHub - camPos
+			local len2 = ab:Dot(ab)
+			local y0 = st.yieldD
+			local Kp0, nz = K.Position - vl * y0, K.LookVector
+			local hit = false
+			if len2 > 1 then
+				local d0, d1 = (camPos - Kp0):Dot(nz), (ownerHub - Kp0):Dot(nz)
+				if d0 * d1 < 0 then hit = (camPos + ab * (d0 / (d0 - d1)) - Kp0).Magnitude < 14.5 end
+				hit = hit or segDist(moonC - vl * y0, camPos, ab, len2) < 5.5 or segDist(voidC - vl * y0, camPos, ab, len2) < 7.0
+			end
+			if hit then
+				st.yieldHold = 1.5
+				st.yieldT = clamp((ownerHub - Kp0):Dot(vl) + 12, 0, 48)
+			elseif st.yieldHold > 0 then
+				st.yieldHold -= dt
+				if st.yieldHold <= 0 then st.yieldT = 0 end
+			end
+			st.yieldD = snap and st.yieldT or st.yieldD + (st.yieldT - st.yieldD) * (1 - exp(-3 * dt))
+		end
+		if remote and st.ghostRemote and cam then
 			-- someone else's aura between you and your camera: test the segment from the camera to your own focus against
 			-- their clock disc and their orbs (those ghost together, with their GUIs, smoke and streams; enter at once, leave
 			-- after 1.2 s clear) and, separately, against their rings (only the rings ghost: a friend standing beside the
@@ -2281,7 +2541,7 @@ function End.build(ctx)
 		visible = on
 		if on then
 			-- (parented again by the next update, together with that frame's positions; after a long hide it fades back in
-			-- instead of popping, and the foot drips wait a second)
+			-- instead of popping, and the body's wisps and sparks wait a second)
 			st.pendingRoot = true
 			st.shownAt = os.clock()
 			st.lastO = nil -- (the distance walked while hidden is not a speed)
@@ -2293,6 +2553,7 @@ function End.build(ctx)
 			root.Parent = nil
 			st.pendingRoot = false
 			st.hiddenAt = os.clock()
+			if not remote then ownerHub = nil end -- (other wearers no longer step back for a clock you cannot see)
 			st.footOk = false
 			if grade then
 				-- (never left on top of a cutscene or a hidden aura)
@@ -2316,6 +2577,10 @@ function End.build(ctx)
 		if destroyed then return end
 		destroyed = true
 		if grade then gradeTo(GRADE_OFF, 0.8, true) end -- (the screen eases back instead of snapping)
+		if ctx.isLocal then
+			ownGone, ownGoneChar[1] = os.clock(), char -- (a respawn's rebuild within seconds is not an equip: no grade)
+			ownerHub = nil
+		end
 		for h = 1, 4 do
 			for _, hp in ipairs(holders[h]) do hp[1]:Destroy() end -- (also the groups hidden by far LOD or the near rule)
 		end
@@ -2330,6 +2595,7 @@ function End.build(ctx)
 
 	applyNight(nightStep())
 	root.Parent = ctx.container
+	preloadUsed() -- (the te5 textures this build draws, asked for once each, in the background)
 	if CONFIG.DEBUG then
 		local nb, ng = 0, 0
 		for _, d in ipairs(root:GetDescendants()) do

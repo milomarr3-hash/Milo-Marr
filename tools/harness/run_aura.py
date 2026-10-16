@@ -326,7 +326,8 @@ def fmt(x, nd=1):
 
 CAMERA_OVERRIDES = {}  # scenario label -> camera spec name (set in main; the follow-camera checks skip these)
 FOLLOW_CAM = {"day_idle", "night_idle", "glide", "dusk", "low_quality", "r6_character", "film_meshes_present", "film_meshes_absent",
-              "join_wearing", "respawn", "reequip", "air", "pair_behind", "pair_walkby", "jump", "seated", "small_avatar", "downhill"}
+              "join_wearing", "respawn", "reequip", "air", "pair_behind", "pair_walkby", "jump", "seated", "small_avatar", "downhill",
+              "equip_in_cutscene", "equip_in_cutscene_paused", "pair_side"}
 
 
 def derive_warnings(s, name):
@@ -339,7 +340,10 @@ def derive_warnings(s, name):
             if x["cat"] == "gui" and share >= 0.5:
                 out.append(("gui-writes-per-frame", "%s is written in %d%% of steady frames (%.1f writes/frame): per-frame GUI property "
                             "writes stall Roblox; write GUIs only when a value changes" % (x["key"], round(share * 100), x["steadyAvg"])))
-            elif x["cat"] == "part" and x["key"].endswith(("Transparency", "LocalTransparencyModifier", "Color", "Size")) and x["steadyAvg"] >= 5:
+            # (appearance writes on parts: flagged when they happen most frames; a burst on an event, such as the 3 steps of
+            # a ghost fade written once each, is not per-frame work however many parts it touches)
+            elif x["cat"] == "part" and x["key"].endswith(("Transparency", "LocalTransparencyModifier", "Color", "Size")) and x["steadyAvg"] >= 5 \
+                    and share >= 0.2:
                 out.append(("part-writes-per-frame", "%s: %.1f writes per steady frame (move parts with BulkMoveTo; avoid per-frame "
                             "appearance writes on many parts)" % (x["key"], x["steadyAvg"])))
             elif x["steadyAvg"] > 40:

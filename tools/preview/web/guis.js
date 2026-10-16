@@ -33,12 +33,24 @@ void main() {
 	gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 #endif
 }`;
+// ImageRectOffset / ImageRectSize (uRect: uv origin and size of the cropped rect; z = 0: the whole image) and a UICorner
+// (uCorner: radius as a fraction of the image's side; 0.5 = a circle)
+const CROP_GLSL = /* glsl */`
+uniform vec4 uRect; uniform float uCorner;
+vec2 cropUv(vec2 uv) { return uRect.z > 0.0 ? uRect.xy + uv * uRect.zw : uv; }
+bool outsideCorner(vec2 uv) {
+	if (uCorner <= 0.0) return false;
+	vec2 q = abs(uv - 0.5) - (0.5 - uCorner);
+	return length(max(q, 0.0)) > uCorner;
+}`;
 const FRAG = /* glsl */`
 uniform sampler2D map; uniform vec3 uColor; uniform float uOpacity; uniform float uClip; uniform float uSolid; uniform float uBoost;
 varying vec2 vUv; varying vec2 vCuv;
+${CROP_GLSL}
 void main() {
 	if (uClip > 0.5 && (vCuv.x < 0.0 || vCuv.x > 1.0 || vCuv.y < 0.0 || vCuv.y > 1.0)) discard;
-	vec4 t = uSolid > 0.5 ? vec4(1.0) : texture2D(map, vUv);
+	if (outsideCorner(vUv)) discard;
+	vec4 t = uSolid > 0.5 ? vec4(1.0) : texture2D(map, cropUv(vUv));
 	float a = t.a * uOpacity;
 	if (a < 0.002) discard;
 	// uColor = ImageColor3 x (lit: the scene light | unlit: 1); uBoost = the unlit Brightness. Calibrated on the pass-4
@@ -63,9 +75,11 @@ void main() {
 const OCC_FRAG = /* glsl */`
 uniform sampler2D map; uniform float uOpacity; uniform float uClip; uniform float uSolid;
 varying vec2 vUv; varying vec2 vCuv;
+${CROP_GLSL}
 void main() {
 	if (uClip > 0.5 && (vCuv.x < 0.0 || vCuv.x > 1.0 || vCuv.y < 0.0 || vCuv.y > 1.0)) discard;
-	vec4 t = uSolid > 0.5 ? vec4(1.0) : texture2D(map, vUv);
+	if (outsideCorner(vUv)) discard;
+	vec4 t = uSolid > 0.5 ? vec4(1.0) : texture2D(map, cropUv(vUv));
 	if (t.a * uOpacity < 0.6) discard;
 	gl_FragColor = vec4(0.0);
 }`;
@@ -74,18 +88,20 @@ function occluderMaterial(src) {
 	return new THREE.ShaderMaterial({
 		vertexShader: VERT, fragmentShader: OCC_FRAG, transparent: true, depthWrite: true, depthTest: true, colorWrite: false,
 		side: THREE.FrontSide, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2,
-		uniforms: { map: src.uniforms.map, uOpacity: src.uniforms.uOpacity, uClip: src.uniforms.uClip, uSolid: src.uniforms.uSolid },
+		uniforms: { map: src.uniforms.map, uOpacity: src.uniforms.uOpacity, uClip: src.uniforms.uClip, uSolid: src.uniforms.uSolid,
+			uRect: src.uniforms.uRect, uCorner: src.uniforms.uCorner },
 	});
 }
 
-function guiMaterial(tex, color, opacity, { billboard = false, clip = true, alwaysOnTop = false, solid = false, depthWrite = false, boost = 1 } = {}) {
+function guiMaterial(tex, color, opacity, { billboard = false, clip = true, alwaysOnTop = false, solid = false, depthWrite = false, boost = 1,
+	rect = null, corner = 0 } = {}) {
 	const m = new THREE.ShaderMaterial({
 		vertexShader: VERT, fragmentShader: FRAG, transparent: true, depthWrite, depthTest: !alwaysOnTop,
 		side: THREE.FrontSide, defines: billboard ? { BILLBOARD: '' } : {},
 		polygonOffset: !billboard, polygonOffsetFactor: -1, polygonOffsetUnits: -2,
 		uniforms: {
 			map: { value: tex }, uColor: { value: color }, uOpacity: { value: opacity }, uClip: { value: clip ? 1 : 0 }, uBoost: { value: boost },
-			uSolid: { value: solid ? 1 : 0 },
+			uSolid: { value: solid ? 1 : 0 }, uRect: { value: rect || new THREE.Vector4(0, 0, 0, 0) }, uCorner: { value: corner },
 			uCenter: { value: new THREE.Vector3() }, uOffset: { value: new THREE.Vector3() }, uWorldOffset: { value: new THREE.Vector3() },
 		},
 	});
@@ -173,7 +189,7 @@ export function buildGuis(snapshot, ctx) {
 			geo.setAttribute('cuv', new THREE.Float32BufferAttribute(cuv, 2));
 			const materials = mats.map(({ it, start, count }, i) => {
 				geo.addGroup(start, count, i);
-				return itemMaterial(it, bright, li, lightK, ctx, { clip: true, alwaysOnTop: !!g.alwaysOnTop });
+				return itemMaterial(it, bright, li, lightK, ctx, { clip: true, alwaysOnTop: !!g.alwaysOnTop, canvasW: cw, canvasH: ch });
 			});
 			const mesh = new THREE.Mesh(geo, materials);
 			mesh.position.copy(center);
@@ -211,7 +227,7 @@ export function buildGuis(snapshot, ctx) {
 			const lightK = li > 0 ? ctx.lightAt(null) : 1;
 			const materials = mats.map(({ it, start, count }, i) => {
 				geo.addGroup(start, count, i);
-				const mat = itemMaterial(it, bright, li, lightK, ctx, { billboard: true, clip: false, alwaysOnTop: !!g.alwaysOnTop });
+				const mat = itemMaterial(it, bright, li, lightK, ctx, { billboard: true, clip: false, alwaysOnTop: !!g.alwaysOnTop, canvasW: cw, canvasH: ch });
 				mat.uniforms.uCenter.value.copy(centerW);
 				mat.uniforms.uOffset.value.set(...(g.studsOffset || [0, 0, 0]));
 				mat.uniforms.uWorldOffset.value.set(...(g.studsOffsetWorldSpace || [0, 0, 0]));
@@ -275,7 +291,20 @@ function itemMaterial(it, bright, li, lightK, ctx, opts) {
 	// k(texel) = lit + unlit * (1 .. Brightness): written as uColor = colour x (lit + unlit), uBoost scaling the unlit share
 	const base = lit + unlit;
 	const boost = base > 0 ? (lit + unlit * bright) / base : 1;
-	return guiMaterial(ctx.tex(im.image, 'clamp'), srgb(im.color || [255, 255, 255]).multiplyScalar(base), 1 - (im.transparency || 0), { ...opts, boost });
+	const tex = ctx.tex(im.image, 'clamp');
+	// ImageRectOffset / ImageRectSize in image pixels (top-left origin; the textures load with flipY, v up)
+	let crop = null;
+	const rs = im.rectSize, ro = im.rectOffset || [0, 0];
+	const iw = tex && tex.image && tex.image.width, ih = tex && tex.image && tex.image.height;
+	if (rs && rs[0] > 0 && rs[1] > 0 && iw && ih) crop = new THREE.Vector4(ro[0] / iw, 1 - (ro[1] + rs[1]) / ih, rs[0] / iw, rs[1] / ih);
+	// UICorner: CornerRadius scale is relative to the image's shorter side (0.5 and up: round)
+	let corner = 0;
+	if (im.corner) {
+		const r = rect(im, opts.canvasW || 100, opts.canvasH || 100);
+		const side = Math.max(Math.min(r.w, r.h), 1e-6);
+		corner = Math.min(0.5, im.corner[0] + (im.corner[1] || 0) / side);
+	}
+	return guiMaterial(tex, srgb(im.color || [255, 255, 255]).multiplyScalar(base), 1 - (im.transparency || 0), { ...opts, boost, rect: crop, corner });
 }
 
 // TextLabels: drawn TextScaled-style in a bold sans (the snapshot carries no font), white, tinted by TextColor3

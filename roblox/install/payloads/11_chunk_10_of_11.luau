@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 10_chunk_09_of_10.luau | step 10: piece 9 of 10
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (123861 bytes, checksum 523677650).
+-- AuraRNG Studio install kit | 11_chunk_10_of_11.luau | step 11: piece 10 of 11
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "10_chunk_09_of_10.luau"
+local FILE = "11_chunk_10_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-123861-523677650-10-457228033"
-local NEW_LEN, NEW_SUM = 123861, 523677650
+local RUN = "TheEnd-141659-402664341-11-730820328"
+local NEW_LEN, NEW_SUM = 141659, 402664341
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 10
-local LENS = { 13381, 13376, 13386, 13381, 13350, 13333, 13298, 13314, 13338, 3704 }
-local SUMS = { 138302907, 144820895, 284418912, 946852927, 737433606, 204697128, 129328051, 22255047, 37178664, 110492221 }
+local N = 11
+local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
+local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -67,9 +67,51 @@ local function chunkOk(h, i)
 	return v ~= nil and v:IsA("StringValue") and #v.Value == LENS[i] and sum(v.Value) == SUMS[i]
 end
 
-local K = 9
--- piece 9 of 10 of the new source (13338 bytes, checksum 37178664, long bracket level 1)
-local DATA = [=[
+local K = 10
+-- piece 10 of 11 of the new source (13321 bytes, checksum 886213953, long bracket level 0)
+local DATA = [[
+		-- at midnight) is inside the top of the frame, at every zoom and camera tilt players use; looking steeply down it
+		-- settles at most CLOSE.dist further back. It glides there (never jumps) and is off in first person
+		local ft = (ctx.isLocal and cam) and CONFIG.FRAME_TOP or 0
+		if ft > 0 then
+			local lim = min(1.45, asin(clamp(cam.CFrame.LookVector.Y, -1, 1)) + rad(cam.FieldOfView) * 0.455) -- (the frame's top edge, less a margin)
+			local push = clamp((st.kY + Hc + ft * cos(tilt) - camPos.Y) / max(tan(lim), 0.05) - dh - ft * sin(tilt) - Dc, 0,
+				CLOSE.dist + 1.1 * max(0, ft - 9.6)) * (1 - fp)
+			st.fitD = snap and push or st.fitD + (push - st.fitD) * (1 - exp(-3 * dt))
+			Dc += st.fitD
+			if rise > 0 then Hc += rise * st.fitD end -- (uphill behind: it stands on the rising ground)
+		end
+		-- another wearer's clock and orbs step back behind your own clock instead of standing in front of it (decided
+		-- below, one frame late: a spring, so they glide)
+		Dc += st.yieldD
+		local K = Vk * CFrame.new(0, Hc, -Dc) * CFrame.Angles(0, rad(9 + 5 * sin(TAU * t / 16)), 0) * CFrame.Angles(-tilt, 0, 0)
+		GCF[GK] = K
+		if not remote then ownerHub = K.Position end
+
+		-- 2. the clockwork: gears (meshed rates from the server clock), hands, crown
+		for _, gd in ipairs(gearData) do
+			local x, y, z = gd.cx, gd.cy, gd.cz
+			if asm then
+				-- spin up fast and wind down to the running pace (an integrated extra angle, so nothing jumps)
+				gd.extra = (gd.extra + rad((gd.sign * 300 - gd.rate) * exp(-4 * max(0, age - gd.a0))) * dt) % TAU
+				local u = (age - gd.a0) / (gd.a1 - gd.a0)
+				if u < 1 then
+					local kk = 1 - easeOutBack(u)
+					x, y, z = x + (gd.sx - x) * kk, y + (gd.sy - y) * kk, z + (gd.sz - z) * kk
+				end
+			end
+			GCF[gd.grp] = K * CFrame.new(x, y, z) * CFrame.Angles(0, 0, -((rad(gd.rate) * now + gd.extra) % TAU))
+		end
+		local th, tm, ts = 0, 0, rad(6 * (now % 60))
+		local crownY = 0
+		if asm then
+			local kk = 1 - easeOutBack((age - 3.6) / 1.2)
+			th, tm, ts = -rad(330) * kk, -rad(1050) * kk, ts - rad(720) * kk
+			crownY = 6 * (1 - easeOutBack((age - 4.2) / 0.6))
+		end
+		GCF[GHOUR] = K * CFrame.Angles(0, 0, -th) * CFrame.new(0, 0, 0.85)
+		GCF[GMIN] = K * CFrame.Angles(0, 0, -tm) * CFrame.new(0, 0, 1.15)
+		GCF[GSEC] = K * CFrame.Angles(0, 0, -ts) * CFrame.new(0, 0, 1.42)
 		GCF[GDUST] = K * CFrame.new(0, 0, 1.3) * CFrame.Angles(0, 0, -((rad(20) * now) % TAU)) -- (the time-dust ring turns clockwise)
 		GCF[GCROWN] = crownY ~= 0 and K * CFrame.new(0, crownY, 0) or K
 
@@ -84,7 +126,7 @@ local DATA = [=[
 		local wheelAngle = rad(160) * sin(TAU * t / 3.2) * (asm and smooth((age - 4.6) / 1.2) or 1)
 		local wheelY = O.Y - s.legLen - 0.9
 		wheelY += (dY + 1.2 - wheelY) * sitT
-		if wheelY < dY + 1.2 then wheelY = dY + 1.2 end
+		if wheelY < dY + 1.2 + 2.5 * slopeT then wheelY = dY + 1.2 + 2.5 * slopeT end
 		local Bw = CFrame.new(O.X, wheelY, O.Z) * CFrame.Angles(0, wheelAngle, 0)
 		GCF[GWHEEL] = Bw
 
@@ -96,10 +138,10 @@ local DATA = [=[
 		local R2 = R1 * CFrame.Angles(rad(57) + rad(18) * sin(TAU * t / 19), 0, 0)
 		local R3 = R2 * CFrame.Angles(0, rad(23.4) + rad(14) * sin(TAU * t / 27 + 1.1), 0)
 		local n1, n2, n3 = R1.ZVector.Y, R2.ZVector.Y, R3.ZVector.Y
-		local drop = max(6.30 * sqrt(max(0, 1 - n1 * n1)) + 0.13 * abs(n1), 5.52 * sqrt(max(0, 1 - n2 * n2)) + 0.21 * abs(n2),
-			4.90 * sqrt(max(0, 1 - n3 * n3)) + 0.11 * abs(n3))
+		local drop = max(6.23 * sqrt(max(0, 1 - n1 * n1)) + 0.09 * abs(n1), 5.54 * sqrt(max(0, 1 - n2 * n2)) + 0.17 * abs(n2),
+			4.79 * sqrt(max(0, 1 - n3 * n3)) + 0.08 * abs(n3))
 		local baseY = 1.3 - 1.0 * sitT
-		local liftT = max(0, dY + 0.96 - (O.Y + baseY - drop))
+		local liftT = max(0, dY + 0.96 + 6.3 * slopeT - (O.Y + baseY - drop))
 		st.lift = snap and liftT or st.lift + (liftT - st.lift) * (1 - exp(-6 * dt))
 		if st.lift < liftT - 0.3 then st.lift = liftT - 0.3 end
 		local A0p = O + Vector3.new(0, baseY + st.lift, 0)
@@ -108,14 +150,20 @@ local DATA = [=[
 		local F3 = CFrame.new(A0p) * R3
 		GCF[GF1], GCF[GF2], GCF[GF3] = F1, F2, F3
 		if asm then
+			-- (for the owner's close camera the rings wait flat on the dais until the hands have locked at XII, then close
+			-- round the wearer as the finale: risen earlier, the meridian would stand across the dial during the lock.
+			-- Decided once, at the first frame the player sees, so a zoom during the assembly never makes them jump)
+			if st.r0 == nil then st.r0 = (ctx.isLocal and cz > 0.5) and 3.5 or 0 end
+			local r0 = st.r0
 			local flat = Gd * FLAT
-			if age < 2.4 then GCF[GF1] = lerpCF(flat, F1, easeOutBack((age - 1.0) / 1.4)) end
-			if age < 2.7 then GCF[GF2] = lerpCF(flat, F2, easeOutBack((age - 1.3) / 1.4)) end
-			if age < 3.0 then GCF[GF3] = lerpCF(flat, F3, easeOutBack((age - 1.6) / 1.4)) end
+			if age < 2.4 + r0 then GCF[GF1] = lerpCF(flat, F1, easeOutBack((age - 1.0 - r0) / 1.4)) end
+			if age < 2.7 + r0 then GCF[GF2] = lerpCF(flat, F2, easeOutBack((age - 1.3 - r0) / 1.4)) end
+			if age < 3.0 + r0 then GCF[GF3] = lerpCF(flat, F3, easeOutBack((age - 1.6 - r0) / 1.4)) end
 		end
 		if hi then
+			local F3c = GCF[GF3] -- (the shards ride the ecliptic where it is, rising or not)
 			for i = 0, 7 do
-				local c = F3 * CFrame.Angles(0, 0, -((rad(i * 45 + 22.5) + rad(22) * t) % TAU)) * CFrame.new(0, 4.0, 0)
+				local c = F3c * CFrame.Angles(0, 0, -((rad(i * 45 + 22.5) + rad(22) * t) % TAU)) * CFrame.new(0, 4.0, 0)
 					* CFrame.Angles((t * rad(50 + 15 * i)) % TAU, (t * rad(35 - 7 * i)) % TAU, 0)
 				if asm then
 					local u = (age - 5.0 - 0.06 * i) / 0.8
@@ -129,13 +177,14 @@ local DATA = [=[
 			end
 		end
 
-		-- 5. the balance: moon and void on the viewer's left and right of an invisible beam, rocking like scales (closer in
-		-- and a little behind the wearer when the camera is close, so both stay on screen)
+		-- 5. the balance: moon and void on the viewer's left and right of an invisible beam, rocking like scales (lower, a
+		-- little wider and well behind the wearer when the camera is close, so the moon sits beside the dial at about its
+		-- size, clear of the HUD; another wearer's step back behind your clock with it)
 		local sway = asm and smooth((age - 1.8) / 1.2) or 1
 		-- (the void's centre stays >= 13.4 studs out horizontally, so its 13-stud disc always clears the rings' 6.3 reach)
 		-- (in first person they move back beside the view: about 97° off the line of sight, outside the 102° field of view)
 		local arm = 12.5 - CLOSE.arm * cz
-		local orbZ = 1.5 - CLOSE.orbZ * cz + 12 * fp
+		local orbZ = 1.5 - CLOSE.orbZ * cz + 12 * fp - st.yieldD
 		local Pv = Vk * CFrame.new(0, 6.0 - CLOSE.orbY * cz, orbZ) * CFrame.Angles(0, 0, rad(10) * sin(TAU * t / 10) * sway)
 		local moonC = Pv * Vector3.new(-arm, 0, 0)
 		local voidC = Pv * Vector3.new(arm, 0, 0)
@@ -162,6 +211,22 @@ local DATA = [=[
 		local dc = max(dm, 5)
 		local up = abs(nrm.Y) > 0.98 and Vector3.zAxis or Vector3.yAxis
 		rt = 4 * sqrt(1 - 16 / (dc * dc))
+		-- (the hairlines' distance steps: event writes, only when a band changes)
+		local pb = max(hairBand(dm, st.pBand), low and 2 or 1)
+		if pb ~= st.pBand then
+			st.pBand = pb
+			local hy = HAIR[pb][1]
+			local hl = low and 2.25 or 1.14
+			for _, k in ipairs(hosts.photon) do
+				PP[k].Size = Vector3.new(hl, hy, 0.12)
+				PRR[k] = 0.115 + hy / 2
+			end
+		end
+		local nb = max(hairBand((camPos - K.Position).Magnitude, st.nBand), low and 2 or 1)
+		if nb ~= st.nBand then
+			st.nBand = nb
+			hosts.needle.Size = Vector3.new(HAIR[nb][2], 12.2, 0.08)
+		end
 		GCF[GPF] = CFrame.lookAt(voidC + nrm * (16 / dc), voidC, up)
 		GCF[GHF] = CFrame.lookAt(voidC + nrm * 4.1, voidC, up)
 		local Dk = CFrame.new(voidC) * V.Rotation * TILTACC
@@ -169,8 +234,6 @@ local DATA = [=[
 		if asm then accExtra = (accExtra + rad(360 * exp(-3 * max(0, age - 0.3))) * dt * dir) % TAU end
 		GCF[GACC] = Dk * CFrame.Angles(0, (rad(40) * now * dir + accExtra) % TAU, 0)
 		GCF[GSWIRL] = Dk * CFrame.Angles(0, (rad(85) * now * dir) % TAU, 0)
-		local az = atan2(voidC.X - O.X, voidC.Z - O.Z)
-		GCF[GRIBEND] = Gd * CFrame.new(13.2 * sin(az), 0.3, 13.2 * cos(az)) * CFrame.Angles(0, az, 0)
 		GCF[GFEED] = CFrame.lookAt(K * FEED_PT, voidC)
 
 		-- 6. the air (turned to face the way the wearer travels: the speed trail streams out behind) and the palms
@@ -198,7 +261,7 @@ local DATA = [=[
 		-- near-camera rules (with hysteresis), decided before the move so a group shown again moves this very frame: no rings
 		-- or bokeh blobs across the lens. The rings fade out over 0.25 s in three steps before they leave the world, and come
 		-- back fully see-through and fade in, so scrolling between 9 and 12 studs never snaps the biggest thing near the lens
-		if CONFIG.NEAR_HIDE then
+		if st.nearHide then
 			local dA = (camPos - A0p).Magnitude
 			if (not st.armWant and dA < CONFIG.NEAR_ARM_HIDE) or (st.armWant and dA > CONFIG.NEAR_ARM_SHOW) then
 				st.armWant = not st.armWant
@@ -237,11 +300,14 @@ local DATA = [=[
 				applyLod()
 			end
 		end
-		-- first person: the palm streams switch off (their ends sit just under the lens)
+		-- first person: the palm streams, the palm and funnel streaks and the body's wisps and sparks switch off (they sit
+		-- just under or round the lens), and fewer ash flakes drift across the bottom of the view
 		local fpOn = fp > 0.5
 		if fpOn ~= st.fpOn then
 			st.fpOn = fpOn
 			refreshBeams()
+			refreshEmitters()
+			if em.ash then em.ash.Rate = fpOn and 3 or 8 end
 		end
 
 		-- 7. every part = its group's frame x its rest transform (eased from its start pose while it assembles)
@@ -255,112 +321,11 @@ local DATA = [=[
 				if S and age < PM1[i] then
 					local kk = 1 - easeOutBack((age - PM0[i]) / (PM1[i] - PM0[i]))
 					if rr then
-						local r0 = PRS[i] or (rt + PRSO[i])
-						L = PROT[i] * CFrame.new(0, rt + rr + (r0 - rt - rr) * kk, 0)
+						L = PROT[i] * CFrame.new(0, rt + rr + (PRS[i] - rt - rr) * kk, 0)
 					else
 						L = lerpCF(L, S, kk)
 					end
-				end
-			end
-			acf[j] = GCF[PG[i]] * L
-		end
-		workspace:BulkMoveTo(actParts, acf, Enum.BulkMoveMode.FireCFrameChanged)
-
-		-- 8. event writes only
-		if flip or st.repoint then
-			st.repoint = false
-			sb[1].Attachment1 = mA
-			if sb[2] then sb[2].Attachment1 = mA end
-			sb[3].Attachment1 = vA
-			if sb[4] then sb[4].Attachment1 = vA end
-		end
-		if on ~= alphaOn then
-			alphaOn = on
-			refreshEmitters()
-			refreshLights()
-		end
-		if asm then
-			-- the void condenses out of a point (Size writes on this one part, during the assembly only)
-			local d = 0.6 + 7.4 * easeOutBack(age / 1.2)
-			if abs(d - voidD) >= 0.01 or (d == 8 and voidD ~= 8) then
-				voidD = d
-				void.Size = voidSize * (d / 8)
-			end
-			fadeAll(a, true, 0.03)
-			alphaW = a
-			-- the emitters switch on in turn as their part of the machine locks in
-			local e = emitters[nextEmit]
-			if e and age >= e[2] then
-				while e and age >= e[2] do
-					e[4] = true
-					nextEmit += 1
-					e = emitters[nextEmit]
-				end
-				refreshEmitters()
-				refreshLights()
-			end
-		elseif not settled or a ~= alphaW then
-			-- the assembly has ended (snap everything to rest) or the framework is fading the aura out (or back in)
-			if not settled then
-				settled = true
-				if voidD ~= 8 then
-					voidD = 8
-					void.Size = voidSize
-				end
-				for _, e in ipairs(emitters) do e[4] = true end
-				nextEmit = #emitters + 1
-				refreshEmitters()
-				refreshLights()
-				fadeAll(a, false, 0.03)
-			else
-				fadeAll(a, false, 0.04)
-			end
-			alphaW = a
-		end
-		if isGrounded ~= grounded then
-			grounded = isGrounded
-			refreshEmitters()
-		end
-		-- the drips come back a second after the aura is shown again (a quick hide/show never blinks them)
-		if not st.footOk and os.clock() - st.shownAt >= 1.1 then
-			st.footOk = true
-			refreshEmitters()
-		end
-		-- walking or flying: the void's ink smoke thins out, so no trail of puffs hangs along the path
-		local slow = (st.smokeSlow and (g > 0.3 or st.speedOn)) or g > 0.6 or st.speedOn
-		if slow ~= st.smokeSlow then
-			st.smokeSlow = slow
-			em.smoke.Rate = slow and (low and 1.5 or 2.5) or (low and 4 or 10)
-			em.smoke.Lifetime = slow and n(2, 2.5) or n(3.5, 4.5)
-			if em.smokeMoon then
-				em.smokeMoon.Rate = slow and 1.5 or 5
-				em.smokeMoon.Lifetime = slow and n(2, 2.5) or n(3.5, 4.5)
-			end
-		end
-		if remote and CONFIG.GHOST_REMOTE and cam then
-			-- someone else's aura between you and your camera: test the segment from the camera to your own focus against
-			-- their clock disc and their orbs (those ghost together, with their GUIs, smoke and streams; enter at once, leave
-			-- after 1.2 s clear) and, separately, against their rings (only the rings ghost: a friend standing beside the
-			-- wearer looks through the rings, never through the clock; 0.6 s)
-			local head = cam.Focus.Position
-			local ab = head - camPos
-			local len2 = ab:Dot(ab)
-			local occ, occA = false, false
-			if len2 > 1 then
-				local Kp, nz = K.Position, K.LookVector
-				local d0, d1 = (camPos - Kp):Dot(nz), (head - Kp):Dot(nz)
-				if d0 * d1 < 0 then occ = (camPos + ab * (d0 / (d0 - d1)) - Kp).Magnitude < 14.5 end
-				occ = occ or segDist(moonC, camPos, ab, len2) < 5.5 or segDist(voidC, camPos, ab, len2) < 7.0
-				occA = segDist(A0p, camPos, ab, len2) < 6.5
-			end
-			if occ then st.ghostHold = 1.2 elseif st.ghostHold > 0 then st.ghostHold -= dt end
-			local tgt = st.ghostHold > 0 and 1 or 0
-			if st.ghost ~= tgt then
-				st.ghost = tgt > st.ghost and min(1, st.ghost + 5 * dt) or max(0, st.ghost - 5 * dt)
-				local q = math.floor(st.ghost * 3 + 0.5) / 3
-				if q ~= st.ghostQ then setGhost(q) end
-			end
-]=]
+]]
 
 local function main()
 	if game:GetService("RunService"):IsRunning() then
@@ -404,7 +369,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "12_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "13_apply.luau"))
 end
 
 local ok, res = pcall(main)

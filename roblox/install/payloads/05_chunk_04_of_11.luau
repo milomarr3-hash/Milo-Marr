@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 05_chunk_04_of_10.luau | step 5: piece 4 of 10
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (123861 bytes, checksum 523677650).
+-- AuraRNG Studio install kit | 05_chunk_04_of_11.luau | step 5: piece 4 of 11
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (141659 bytes, checksum 402664341).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "05_chunk_04_of_10.luau"
+local FILE = "05_chunk_04_of_11.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-123861-523677650-10-457228033"
-local NEW_LEN, NEW_SUM = 123861, 523677650
+local RUN = "TheEnd-141659-402664341-11-730820328"
+local NEW_LEN, NEW_SUM = 141659, 402664341
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 10
-local LENS = { 13381, 13376, 13386, 13381, 13350, 13333, 13298, 13314, 13338, 3704 }
-local SUMS = { 138302907, 144820895, 284418912, 946852927, 737433606, 204697128, 129328051, 22255047, 37178664, 110492221 }
+local N = 11
+local LENS = { 13243, 13273, 13303, 13189, 13236, 13281, 13225, 13249, 13287, 13321, 9052 }
+local SUMS = { 563366530, 792637773, 818557759, 655489799, 441189153, 861752101, 374124160, 158431880, 132410676, 886213953, 397877975 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,93 @@ local function chunkOk(h, i)
 end
 
 local K = 4
--- piece 4 of 10 of the new source (13381 bytes, checksum 946852927, long bracket level 1)
+-- piece 4 of 11 of the new source (13189 bytes, checksum 655489799, long bracket level 1)
 local DATA = [=[
+	---------------------------------------------------------------- THE CLOCK: a skeleton pocket watch, 28 studs, 8 studs beyond
+	-- (frame K: x = viewer's right, y = toward XII, z = toward the viewer; the angle θ runs clockwise from XII)
+	local function radial(th, r, z) return CFrame.Angles(0, 0, -rad(th)) * CFrame.new(0, r, z) end
+	local hosts = {} -- invisible carriers and attachments the emitters, beams and lights hang on (one table: saves registers)
+	-- (the silver rings' parts move here, outside the Highlight's Silver model, while they fade or ghost)
+	hosts.noTone = new("Model", { Name = "SilverRings" }, root)
+	local ghostGuis = {} -- GUIs that switch off while another wearer's aura is ghosted (LocalTransparencyModifier skips GUIs)
+	local frontL = CONFIG.FRONT_FACES and FLIP or IDENT -- (FRONT_FACES: draw the dial GUIs on Front faces of flipped planes, as pass 4)
+	local frontFace = CONFIG.FRONT_FACES and Enum.NormalId.Front or Enum.NormalId.Back
+	do
+		-- the bezel: a fluted coin edge 2.4 deep, bright silver and darker satin flutes (the segments alternate in depth too,
+		-- so the flutes show and nothing z-fights); on equip it sweeps round clockwise from twelve, each segment flying in
+		-- from outside and behind
+		local filmBezel = film("FILM_BEZEL", "RingG")
+		local fsz, frot
+		if filmBezel then fsz, frot = fitDisc(filmBezel, 28.24, 2.5) end
+		local k0 = fsz and filmSolid(filmBezel, fsz, "Bezel", "SILVER", CORE, GK, CFrame.new(0, 0, -0.2) * frot)
+		if k0 then
+			motion(k0, CFrame.new(0, 0, -4.2) * CFrame.Angles(0, 0, -rad(40)) * frot, 2.0, 0.9)
+			fadeWin(k0, 2.0, 2.3)
+		else
+			local NB = low and 20 or 32
+			for i = 0, NB - 1 do
+				local th = (i + 0.5) * 360 / NB
+				local odd = i % 2 == 1
+				local Ro = odd and 14.12 or 14.00
+				local zb, zf = odd and -1.44 or -1.40, odd and 1.12 or 1.00
+				local rm, zc = (12.2 + Ro) / 2, (zb + zf) / 2
+				local k = solid("Bezel", odd and "SATIN" or "SILVER", CORE, GK, "Block",
+					Vector3.new(2 * Ro * math.tan(rad(180 / NB)) + 0.02, Ro - 12.2, zf - zb), radial(th, rm, zc))
+				local a = 2.0 + 0.9 * i / NB
+				motion(k, radial(th + 40, rm + 7, zc - 4), a, 0.7)
+				fadeWin(k, a, a + 0.25)
+			end
+		end
+		-- the chapter ring: dark steel, recessed into the bezel (its outer edge tucks under the bezel and hides the polygon)
+		local filmDial = film("FILM_DIAL", "Dial")
+		fsz, frot = nil, nil
+		if filmDial then fsz, frot = fitDisc(filmDial, 25.0, 0.5) end
+		k0 = fsz and filmSolid(filmDial, fsz, "Dial", "STEEL", CORE, GK, CFrame.new(0, 0, -0.15) * frot)
+		if k0 then
+			motion(k0, CFrame.new(0, 0, -3.15) * frot, 2.3, 0.6)
+			fadeWin(k0, 2.3, 2.55)
+		else
+			local NC = low and 16 or 18 -- (its inner edge is dark on the dark star window and the inlay covers its face: 18 is enough)
+			for i = 0, NC - 1 do
+				local th = (i + 0.5) * 360 / NC
+				local odd = i % 2 == 1
+				local zb, zf = odd and -0.42 or -0.40, odd and 0.12 or 0.10
+				local zc = (zb + zf) / 2
+				local k = solid("Chapter", "STEEL", CORE, GK, "Block", Vector3.new(2 * 12.5 * math.tan(rad(180 / NC)) + 0.02, 3.1, zf - zb),
+					radial(th, 10.95, zc))
+				local a = 2.3 + 0.9 * i / NC
+				motion(k, radial(th, 10.95, zc - 3), a, 0.6)
+				fadeWin(k, a, a + 0.25)
+			end
+		end
+		-- the inlay: white Roman numerals, minute track and stars set into the chapter ring (opaque strokes, glowing through
+		-- Brightness, not alpha). STUDIO-VERIFY: SurfaceGui Face = Back draws on the +Z face (toward the viewer), XII up
+		-- (if not: attribute FRONT_FACES = true)
+		hosts.inlay = carrier("Inlay", CORE, GK, Vector3.new(24.4, 24.4, 0.05), CFrame.new(0, 0, 0.12) * frontL)
+		hosts.inlayGui = surface(hosts.inlay, frontFace, hiCanvas, 1.6, 2.6, "dialInlay", 3.4, 4.2)
+		-- raised lume plots at the hours, on the minute track
+		if hi then
+			for h = 0, 11 do
+				local k = solid("Plot", "LUME", DETAIL, GK, "Block", Vector3.new(0.42, 0.55, 0.18), radial(h * 30, 11.85, 0.21))
+				motion(k, radial(h * 30, 11.85, 3.21), 3.4 + 0.04 * h, 0.3)
+				fadeWin(k, 3.4 + 0.04 * h, 3.5 + 0.04 * h)
+			end
+		end
+		-- the rete: an openwork twelve-point star of silver bars over the open dial (the bars alternate in depth at the
+		-- crossings). Kept at every distance: it is the dial's silhouette (dropping it far away made the face pop empty)
+		if hi then
+			local filmRete = film("FILM_RETE", "Astrolabe")
+			fsz, frot = nil, nil
+			if filmRete then fsz, frot = fitDisc(filmRete, 18.2, 0.24) end
+			k0 = fsz and filmSolid(filmRete, fsz, "Rete", "SILVER", CORE, GK, CFrame.new(0, 0, 0.27) * frot)
+			if k0 then
+				motion(k0, CFrame.new(0, 0, 3.27) * CFrame.Angles(0, 0, rad(60)) * frot, 3.0, 0.6)
+				fadeWin(k0, 3.0, 3.15)
+			else
+				for k = 0, 11 do
+					local phi = (k + 2.5) * 30
+					local zk = k % 2 == 0 and 0.25 or 0.29
+					local i = solid("Rete", "SILVER", CORE, GK, "Block", Vector3.new(17.58, 0.26, 0.20), radial(phi, 2.355, zk))
 					motion(i, radial(phi, 2.355 * 2.2, zk), 3.0 + 0.04 * k, 0.5)
 					fadeWin(i, 3.0 + 0.04 * k, 3.15 + 0.04 * k)
 				end
@@ -139,7 +224,7 @@ local DATA = [=[
 			if hi then handPart("Lume", "LUME", CORE, hd.grp, "Block", Vector3.new(hd.lumeW, hd.lumeL, 0.05), Vector3.new(0, hd.lumeY, 0.105)) end
 		end
 	end
-	handPart("Needle", "SILVER", CORE, GSEC, "Block", Vector3.new(0.12, 12.2, 0.08), Vector3.new(0, 3.5, 0))
+	hosts.needle = PP[handPart("Needle", "SILVER", CORE, GSEC, "Block", Vector3.new(HAIR[low and 2 or 1][2], 12.2, 0.08), Vector3.new(0, 3.5, 0))]
 	if hi then
 		handPart("Weight", "BRIGHT", CORE, GSEC, "Cylinder", Vector3.new(0.08, 0.9, 0.9), Vector3.new(0, -2.0, 0), DISC)
 		handPart("SecondsTip", "LUME", CORE, GSEC, "Ball", Vector3.new(0.26, 0.26, 0.26), Vector3.new(0, 9.6, 0))
@@ -212,108 +297,21 @@ local DATA = [=[
 		crownPart("Crown", "Cylinder", Vector3.new(1.5, 2.6, 2.6), CFrame.new(0, 16.0, -0.2) * VERT)
 		if hi then
 			crownPart("Cap", "Ball", Vector3.new(1.2, 1.2, 1.2), CFrame.new(0, 16.85, -0.2))
-			for j = 0, 9 do
-				local b = rad((j + 0.5) * 36)
-				crownPart("Bow", "Cylinder", Vector3.new(1.662, 0.55, 0.55), CFrame.new(2.283 * cos(b), 19.6 + 2.283 * sin(b), -0.2) * CFrame.Angles(0, 0, b + rad(90)))
+			for j = 0, 7 do
+				local b = rad((j + 0.5) * 45)
+				crownPart("Bow", "Cylinder", Vector3.new(2.05, 0.55, 0.55), CFrame.new(2.283 * cos(b), 19.6 + 2.283 * sin(b), -0.2) * CFrame.Angles(0, 0, b + rad(90)))
 			end
 		end
 	end
 
 	-- the night corona: a soft ring of light just outside the bezel (night only, rim-only, behind the clock). Kept at every
 	-- distance: at night it is the clock's glow from across the plaza
+	-- (the corona, the void's horizon glow and the moon halo are sized for te5_halo, whose ring peaks at 0.73 of its
+	-- half-width. Until it is uploaded, or if it fails to load, the pass-2 "rim" texture stands in: hs scales them so its
+	-- ring, at RIM_R, lands in the same place)
+	hosts.hs = isTe5("halo") and 1 or 0.73 / CONFIG.RIM_R
 	local corona, coronaEntry
 	if hi then
-		local cp = carrier("Corona", CORE, GK, Vector3.new(44, 44, 0.05), CFrame.new(0, 0, -3.2) * frontL) -- (ring peak R 16.3: seen from the front, 3.2 studs back, it lands just outside the bezel)
-		corona, coronaEntry = surface(cp, frontFace, 512, 1.8, nil, "halo", 5.0, 6.0, Color3.fromRGB(240, 240, 242))
-		corona.Enabled = false
-		coronaEntry[2] = 1
-	end
-	-- the clock's emitter hosts: the bezel annulus (glints) and the shard feed at eleven (the rim smoke moved onto the void)
-	hosts.rimGlint = carrier("RimGlint", CORE, GK, Vector3.new(28.4, 28.4, 0.2), CFrame.new(0, 0, 1.05))
-	hosts.timeDust = hi and carrier("TimeDust", CORE, GDUST, Vector3.new(29.4, 29.4, 0.2)) -- (a ring turning with the hands: P13)
-	hosts.shardFeed = hi and carrier("ShardFeed", DETAIL, GFEED, Vector3.new(2, 2, 2))
-
-	---------------------------------------------------------------- THE ARMILLARY: three gimballed rings round the wearer
-	-- flat bands made of segments; every other segment is a hair thicker so the overlaps never z-fight
-	do
-		local function ring(name, tok, h, grp, N, R, w, t, f0)
-			for i = 0, N - 1 do
-				local th = (i + 0.5) * 360 / N
-				local k = solid(name, tok, h, grp, "Block", Vector3.new(2 * (R + w / 2) * math.tan(rad(180 / N)) + 0.02, w, t + (i % 2 == 0 and 0.02 or -0.02)),
-					radial(th, R, 0))
-				fadeWin(k, f0, f0 + 0.3)
-			end
-		end
-		-- (a slimmer silver meridian, so the body reads through the cage; a satin-silver equator bracelet with twelve lume hours)
-		ring("Meridian", "SILVER", ARM, GF1, low and 14 or 18, 6.0, 0.40, 0.24, 1.0)
-		ring("Equator", "SATIN", ARM, GF2, low and 14 or 18, 5.3, 0.20, 0.4, 1.3)
-		if hi then
-			for k = 0, 11 do -- twelve lume hours on the equator band's outer face
-				local i = solid("Hour", "LUME", ARMD, GF2, "Block", Vector3.new(0.14, 0.10, 0.32), radial(k * 30, 5.45, 0))
-				fadeWin(i, 1.3, 1.6)
-			end
-			ring("Ecliptic", "SILVER", ARM, GF3, 16, 4.6, 0.45, 0.20, 1.6)
-			for _, x in ipairs({ 5.58, -5.58 }) do -- pins: equator to meridian
-				local i = solid("Pin", "BRIGHT", ARMD, GF1, "Cylinder", Vector3.new(0.55, 0.30, 0.30), CFrame.new(x, 0, 0))
-				fadeWin(i, 1.0, 1.3)
-			end
-			for _, y in ipairs({ 5.01, -5.01 }) do -- pins: ecliptic to equator
-				local i = solid("Pin", "BRIGHT", ARMD, GF2, "Cylinder", Vector3.new(0.45, 0.30, 0.30), CFrame.new(0, y, 0) * VERT)
-				fadeWin(i, 1.3, 1.6)
-			end
-			-- the time shards: eight slivers riding the inside of the ecliptic like beads on a wire, tumbling as they go
-			for i = 0, 7 do
-				local k = solid("TimeShard", i % 2 == 0 and "BRIGHT" or "LUME", ARMD, GSHARD0 + 1 + i, "Wedge", Vector3.new(0.14, 0.7 + 0.15 * (i % 3), 0.40), IDENT)
-				fadeWin(k, 5.0 + 0.06 * i, 5.2 + 0.06 * i)
-			end
-		end
-	end
-
-	---------------------------------------------------------------- THE BALANCE: the moon and the void, rocking like scales
-	-- the moon, tidally locked to the wearer: a grey core (it carries the dust, the smoke, the stream and the key light, and
-	-- casts the shadow) behind its face, an opaque 9-stud disc 4.4 studs toward the camera that turns to face it every
-	-- frame. The face is solid geometry, so it writes depth: no Highlight contour, smoke or ring behind it can paint over it
-	-- (a BillboardGui face could not stop that). With te5_moon: the photographic full moon on a grey disc. Until it is
-	-- uploaded: pass 4's glowing moon on a white Neon disc (a pearl that glows at night).
-	local moon, haloIm, haloEntry
-	local moonFace = false
-	do
-		local filmMoon = film("FILM_MOON", "Moon", true)
-		if filmMoon then
-			local sz = fitSphere(filmMoon, 9)
-			local k = sz and filmSolid(filmMoon, sz, "Moon", "MOON", CORE, GMOON, IDENT)
-			if k then
-				moon = PP[k]
-				fadeWin(k, 0.6, 0.9)
-			end
-		end
-		if not moon then
-			moonFace = true
-			moon = PP[solid("Moon", "MOONCORE", CORE, GMOON, "Ball", Vector3.new(6, 6, 6), IDENT)]
-			fadeWin(NP, 0.6, 0.9)
-			local t5 = isTe5("moon")
-			hosts.moonFace = PP[solid("MoonFace", t5 and "MOONCORE" or "LUME", CORE, GMOONF, "Cylinder", Vector3.new(0.1, 9, 9), DISC)]
-			fadeWin(NP, 0.6, 0.9)
-			-- STUDIO-VERIFY: SurfaceGui Face = Left on the face disc (the cylinder's -X end turns to the camera), not mirrored
-			local fg, fe = surface(hosts.moonFace, Enum.NormalId.Left, hiCanvas, 1.25, 2.6, "moon", 0.6, 0.9)
-			table.insert(ghostGuis, fg)
-			if t5 then
-				-- (te5_moon failed to load in the game: pass 4's moon needs the white disc behind it)
-				local fd = hosts.moonFace
-				fixUps[fe[1]] = function()
-					fd.Color, fd.Material = MAT.LUME[1], MAT.LUME[2]
-				end
-			end
-		end
-		moon.CastShadow = CONFIG.SHADOWS and hi
-		hosts.moonOut = new("Attachment", { Name = "StreamOut", CFrame = CFrame.new(0, 0, moonFace and -3.95 or -4.55) * CFrame.Angles(0, 0, rad(90)) }, moon)
-		-- a thin halo round the moon's rim (15 studs: the face is 4.4 studs nearer the camera, so it looks bigger than the
-		-- core). It sits 2 studs behind the core, so the face hides its inner edge; not further,
-		-- or on the clock side it would reach the inlay plane and get cut (keeps >= 0.4 from every GUI plane)
-		local halo = new("BillboardGui", { Name = "Halo", Size = UDim2.new(15, 0, 15, 0), StudsOffset = Vector3.new(0, 0, -2.0), LightInfluence = 0,
-			Brightness = 1.0, MaxDistance = 400, AlwaysOnTop = false }, moon)
-		haloIm = new("ImageLabel", { BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ImageColor3 = Color3.fromRGB(240, 240, 244),
-			ImageTransparency = 1 }, halo)
 ]=]
 
 local function main()
@@ -358,7 +356,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "12_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "13_apply.luau"))
 end
 
 local ok, res = pcall(main)

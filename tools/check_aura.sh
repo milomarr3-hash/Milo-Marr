@@ -3,7 +3,7 @@
 #
 #   tools/check_aura.sh MODULE.lua OUTDIR [options]
 #
-#   1. the harness runs the module in all 28 scenarios           -> OUTDIR/harness/report.md (+ report.json, snapshots/)
+#   1. the harness runs the module in all 32 scenarios           -> OUTDIR/harness/report.md (+ report.json, snapshots/)
 #   2. the harness runs day_idle and night_idle once per view, with the camera of that view, and snapshots t = 8 s
 #      (so anything the module places from the camera, like pass 5's viewer-anchored clock, is placed for that view)
 #                                                                -> OUTDIR/views/snapshots/<scenario>@<view>/
@@ -23,17 +23,19 @@
 #   --ss 2            supersample the renders (crisper hairlines, ~3x slower)
 #   --size WxH|game   render size (default game = 1280 wide at Studio's 1920x913 viewport aspect)
 #   --real-day FILE --real-night FILE   Studio screenshots taken with the studio camera (see tools/README.md) to compare
+#   --first-person    also render the owner's first-person view by day, looking left and right of the wearer's facing
+#                     (subject:0,-1,0.05,0.5 / subject:0,1,0.05,0.5, characters hidden as Roblox hides them) -> OUTDIR/fp/
 #
 # Exit code: the harness's (0 clean, 1 the module raised errors, 2 harness failure); 3 when rendering failed.
 # Needs: python3, the luau CLI (LUAU_BIN or tools/harness default), node 18+ with `npm install` done in tools/preview,
 # and Pillow for the sheets (python3 -m pip install pillow).
 set -u
 
-usage() { sed -n '2,29p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
+usage() { sed -n '2,31p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
 [ $# -ge 2 ] || usage 2
 case "$1" in -h|--help) usage 0;; esac
 MODULE=$1; OUT=$2; shift 2
-T=8; VIEWS="studio,front34,back,side,far,closeup,subject:-1,0,0.35,12.5"; FULL=1; RENDER=1; SEED=12345; SS=1; SIZE=game; REAL_DAY=""; REAL_NIGHT=""
+T=8; VIEWS="studio,front34,back,side,far,closeup,subject:-1,0,0.35,12.5"; FULL=1; RENDER=1; SEED=12345; SS=1; SIZE=game; REAL_DAY=""; REAL_NIGHT=""; FP=0
 while [ $# -gt 0 ]; do
 	case "$1" in
 		--time) T=$2; shift;;
@@ -45,6 +47,7 @@ while [ $# -gt 0 ]; do
 		--size) SIZE=$2; shift;;
 		--real-day) REAL_DAY=$2; shift;;
 		--real-night) REAL_NIGHT=$2; shift;;
+		--first-person) FP=1;;
 		-h|--help) usage 0;;
 		*) echo "unknown option $1 (see --help)" >&2; exit 2;;
 	esac
@@ -102,6 +105,13 @@ EOF
 		[ $# -gt 0 ] && "$PY" "$HERE/preview/sheet.py" grid "$OUT/${base%_idle}_sheet.png" "$@" --cols 3 --width 640 \
 			--title "$(basename "$MODULE")  ${base}  t=${T}s  (harness + preview, not Studio)"
 	done
+	if [ "$FP" = 1 ]; then
+		echo "== first person (day, looking left / right)"
+		"$PY" "$HERE/harness/run_aura.py" "$MODULE" --scenarios "day_idle@subject:0,-1,0.05,0.5,day_idle@subject:0,1,0.05,0.5" \
+			--snapshot "all:t=$T" --out "$OUT/fp/views" --seed "$SEED" --quiet
+		node "$HERE/preview/render.mjs" --snapshot "$OUT/fp/views/snapshots" --views cam --size "$SIZE" --ss "$SS" --sheet off \
+			--hide characters --out "$OUT/fp" || { echo "rendering failed" >&2; exit 3; }
+	fi
 	stu() { ls "$OUT/renders/${1}@studio_f"*_cam.png 2>/dev/null | head -1; }
 	if [ -n "$REAL_DAY" ] && [ -n "$(stu day_idle)" ]; then
 		"$PY" "$HERE/preview/sheet.py" compare "$OUT/compare_day.png" "$REAL_DAY" "$(stu day_idle)" --labels "Studio (day),preview day_idle@studio"

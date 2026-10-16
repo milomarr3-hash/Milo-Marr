@@ -3,7 +3,7 @@
 Cloud sessions can't open Studio, so an aura module (like `roblox/ReplicatedStorage/AuraFX/TheEnd.lua`) is checked here in two
 steps, then installed and play-tested on Milo's Mac:
 
-1. **`harness/`** runs the module's real Luau code against a mock Roblox runtime (the luau CLI) in 28 scenarios: day, night,
+1. **`harness/`** runs the module's real Luau code against a mock Roblox runtime (the luau CLI) in 32 scenarios: day, night,
    glide, air, far, low quality, respawn, six wearers ... It reports what Studio would throw (unknown members, bad types,
    read-only writes, leaks ...), lints THE END's rules (palette, no flicker, opacity, the clock blocking the view), measures
    cost, and writes snapshot frames (JSON: every part, GUI, beam, emitter, light and the posed character at a moment).
@@ -22,15 +22,16 @@ tools/check_aura.sh roblox/ReplicatedStorage/AuraFX/TheEnd.lua /tmp/check      #
 
 | output | what it is |
 |---|---|
-| `/tmp/check/harness/report.md` | the harness report over all 28 scenarios: **read the errors first, then the warnings** |
+| `/tmp/check/harness/report.md` | the harness report over all 32 scenarios: **read the errors first, then the warnings** |
 | `/tmp/check/day_sheet.png`, `night_sheet.png` | the standard views at t = 8 s (fully assembled): studio, front34, back, side, far, closeup and Roblox's default 12.5-stud zoom (`subject:-1,0,0.35,12.5`) |
 | `/tmp/check/renders/*.png` | the same views one by one (1280x608, Studio's 1920x913 aspect) |
 | `/tmp/check/views/` | the harness runs behind those renders (`report.md`, `snapshots/day_idle@front34/...`) |
 
 Exit code: 0 = no module errors, 1 = the module raised errors (fix those first), 2 = harness failure, 3 = rendering failed.
 Options: `--time T` (another moment, e.g. `--time 3` mid-assembly), `--views "studio,front34,orbit:200,10,30"`, `--quick`
-(skip the 28-scenario run), `--no-render`, `--seed N`, `--ss 2` (crisper, slower), `--real-day shot.png --real-night shot.png`
-(Studio screenshots taken with the studio camera -> `compare_day.png` / `compare_night.png`, Studio | preview).
+(skip the 32-scenario run), `--no-render`, `--seed N`, `--ss 2` (crisper, slower), `--real-day shot.png --real-night shot.png`
+(Studio screenshots taken with the studio camera -> `compare_day.png` / `compare_night.png`, Studio | preview),
+`--first-person` (also the owner's first-person view looking left and right, characters hidden -> `OUTDIR/fp/`).
 
 **Why each view is its own harness run:** the harness gives the aura the camera of the view it will be drawn from. That
 matters for anything a module places from the camera, like pass 5's clock that stands behind the wearer as seen by the
@@ -77,9 +78,9 @@ node tools/preview/build-viewer.mjs --snapshot /tmp/run/snapshots --out /tmp/vie
 ## Tests and baselines
 
 ```sh
-python3 tools/harness/tests/run_tests.py     # harness self-tests: specs, 25 broken modules, pass 4 clean, camera overrides,
+python3 tools/harness/tests/run_tests.py     # harness self-tests: specs, 26 broken modules, pass 4 clean, camera overrides,
                                               # and THE END's register headroom (below)
-python3 tools/harness/register_headroom.py roblox/ReplicatedStorage/AuraFX/TheEnd.lua --measure
+python3 tools/harness/register_headroom.py roblox/ReplicatedStorage/AuraFX/TheEnd.lua --measure   # at -O0, -O1, -O2
                                               # how many spare local registers End.build has (Luau's limit is 200 per
                                               # function; one past it and the module does not compile: keep >= 16)
 npm --prefix tools/preview test               # renderer smoke test: conventions and colours by pixel probes
