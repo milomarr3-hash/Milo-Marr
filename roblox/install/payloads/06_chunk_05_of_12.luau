@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 06_chunk_05_of_11.luau | step 6: piece 5 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
+-- AuraRNG Studio install kit | 06_chunk_05_of_12.luau | step 6: piece 5 of 12
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (148303 bytes, checksum 731942170).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "06_chunk_05_of_11.luau"
+local FILE = "06_chunk_05_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-143408-678854451-11-550560669"
-local NEW_LEN, NEW_SUM = 143408, 678854451
+local RUN = "TheEnd-148303-731942170-12-824555251"
+local NEW_LEN, NEW_SUM = 148303, 731942170
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 11
-local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
-local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
+local N = 12
+local LENS = { 13300, 13224, 13240, 13242, 13194, 13235, 13276, 13235, 13290, 13298, 13282, 2487 }
+local SUMS = { 825733820, 782681153, 524531706, 656635892, 998587156, 867606918, 526087852, 254541497, 6651690, 395645774, 897444566, 313496838 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,27 @@ local function chunkOk(h, i)
 end
 
 local K = 5
--- piece 5 of 11 of the new source (13322 bytes, checksum 205776046, long bracket level 1)
+-- piece 5 of 12 of the new source (13194 bytes, checksum 998587156, long bracket level 1)
 local DATA = [=[
+	-- the crown and the bow above XII (kept at every distance: the bow is the clock's silhouette from far away)
+	do
+		local function crownPart(name, shape, size, L)
+			local i = solid(name, "BRIGHT", CORE, GCROWN, shape, size, L)
+			fadeWin(i, 4.2, 4.4)
+			return i
+		end
+		crownPart("Stem", "Cylinder", Vector3.new(1.4, 1.1, 1.1), CFrame.new(0, 14.6, -0.2) * VERT)
+		crownPart("Crown", "Cylinder", Vector3.new(1.5, 2.6, 2.6), CFrame.new(0, 16.0, -0.2) * VERT)
+		if hi then
+			crownPart("Cap", "Ball", Vector3.new(1.2, 1.2, 1.2), CFrame.new(0, 16.85, -0.2))
+			for j = 0, 7 do
+				local b = rad((j + 0.5) * 45)
+				crownPart("Bow", "Cylinder", Vector3.new(2.05, 0.55, 0.55), CFrame.new(2.283 * cos(b), 19.6 + 2.283 * sin(b), -0.2) * CFrame.Angles(0, 0, b + rad(90)))
+			end
+		end
+	end
+
+	-- the night corona: a soft ring of light just outside the bezel (night only, rim-only, behind the clock). Kept at every
 	-- distance: at night it is the clock's glow from across the plaza
 	-- (the corona, the void's horizon glow and the moon halo are sized for te5_halo, whose ring peaks at 0.73 of its
 	-- half-width. Until it is uploaded, or if it fails to load, the pass-2 "rim" texture stands in: hs scales them so its
@@ -278,19 +297,6 @@ local DATA = [=[
 		end
 		local core = carrier("GalaxyCore", CORE, GG2, Vector3.new(12, 0.05, 12))
 		surface(core, Enum.NormalId.Top, midCanvas, 1.5, 2.6, "galaxyCore", 4.0, 4.6)
-		-- the stage: an engraved clock ring 56 studs across round the pool (inked Roman numerals 3 studs tall, a minute track
-		-- with lume ticks), solid ink and white lines on the ground. Kept at every distance: from far away it is the aura's
-		-- footprint. The ink carries the day; it glows at night
-		if hi then
-			local eng = carrier("Engraving", CORE, GENG, Vector3.new(56, 0.05, 56))
-			surface(eng, Enum.NormalId.Top, 1024, 1.0, 2.0, "engraving", 4.2, 5.2)
-		end
-		-- the floor's particles (mist, motes, ash) rise from their own invisible disc just above the top floor layer, so they
-		-- draw over the galaxy whether Roblox sorts a particle by its emitter's part or by the particles themselves
-		-- (STUDIO-VERIFY: by day, close up, the twinkles and ash are never hidden under the floor's SurfaceGuis)
-		hosts.floorFx = carrier("FloorFx", CORE, GG0, Vector3.new(29.6, 0.05, 29.6), CFrame.new(0, 0.8, 0))
-		-- the rim: fluted blocks (bright silver and satin) rising in a wave round the pool on equip
-		local NR = low and 16 or 24
 ]=]
 
 local function main()
@@ -335,7 +341,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "13_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "14_apply.luau"))
 end
 
 local ok, res = pcall(main)

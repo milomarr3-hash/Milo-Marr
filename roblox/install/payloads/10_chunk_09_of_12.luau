@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 10_chunk_09_of_11.luau | step 10: piece 9 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
+-- AuraRNG Studio install kit | 10_chunk_09_of_12.luau | step 10: piece 9 of 12
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (148303 bytes, checksum 731942170).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "10_chunk_09_of_11.luau"
+local FILE = "10_chunk_09_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-143408-678854451-11-550560669"
-local NEW_LEN, NEW_SUM = 143408, 678854451
+local RUN = "TheEnd-148303-731942170-12-824555251"
+local NEW_LEN, NEW_SUM = 148303, 731942170
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 11
-local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
-local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
+local N = 12
+local LENS = { 13300, 13224, 13240, 13242, 13194, 13235, 13276, 13235, 13290, 13298, 13282, 2487 }
+local SUMS = { 825733820, 782681153, 524531706, 656635892, 998587156, 867606918, 526087852, 254541497, 6651690, 395645774, 897444566, 313496838 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,130 @@ local function chunkOk(h, i)
 end
 
 local K = 9
--- piece 9 of 11 of the new source (13254 bytes, checksum 985105631, long bracket level 0)
+-- piece 9 of 12 of the new source (13290 bytes, checksum 6651690, long bracket level 0)
 local DATA = [[
+	-- the Highlight follows its fade (st.hlA: assembly x alpha), the night, the camera closeness and, for another player's
+	-- aura, the far-detail fade; fill and outline are each written only when they moved (snapped exactly at the ends)
+	local function toneLevels(thr)
+		if not tone then return end
+		local fh = st.hlA * (remote and st.lod or 1)
+		local q = max(nq, 0)
+		local fill, out = 1 - hlFill(q) * fh, 1 - hlOut(q) * fh
+		local edge = fh <= 0 or fh >= 1
+		if fill ~= st.hlF and (abs(fill - st.hlF) >= thr or edge) then
+			tone.FillTransparency = fill
+			st.hlF = fill
+		end
+		if out ~= st.hlO and (abs(out - st.hlO) >= thr or edge) then
+			tone.OutlineTransparency = out
+			st.hlO = out
+		end
+	end
+	-- (one rule for the Highlight's slot: off while ghosted, and off for another player's aura once it is far away, which
+	-- frees one of the client's 31 Highlights and its outline pass)
+	local function toneOn()
+		if tone then
+			local on = st.ghostQ <= 0 and (ctx.isLocal or st.lod > 0) -- (off from the first ghost step: it would paint the ghost solid)
+			if tone.Enabled ~= on then tone.Enabled = on end
+		end
+	end
+	local function applyLod()
+		lightLevels()
+		refreshLights()
+		beamSteps(st.fb)
+		toneLevels(0)
+		toneOn()
+	end
+	-- day/night: every glowing value blends with the night factor, written only when the quantised factor changes
+	local function applyNight(q)
+		nq = q
+		for _, b in ipairs(brights) do b[1].Brightness = b[2] + (b[3] - b[2]) * q end
+		for _, e in ipairs(emitNight) do
+			e[1].LightEmission = e[2] + (e[3] - e[2]) * q
+			e[1].Brightness = e[4] + (e[5] - e[4]) * q
+		end
+		for _, b in ipairs(beams) do
+			b[1].LightEmission = b[4] + (b[5] - b[4]) * q
+			b[1].Brightness = b[6] + (b[7] - b[6]) * q
+		end
+		if hosts.beaconBeam then hosts.beaconBeam.Color = ColorSequence.new(INK:Lerp(WHITE, q)) end
+		lightLevels()
+		if em.bokeh then em.bokeh.Rate = 0.5 + 0.7 * q end
+		if haloEntry then haloEntry[2] = 1 - (0.35 + 0.2 * q) * st.haloZ end
+		if corona then
+			coronaEntry[2] = 1 - 0.4 * q
+			corona.Enabled = q > 0.05 and not st.ghostGui
+		end
+		if settled then
+			-- (after the assembly the night values are written straight away; during it the fades pick them up)
+			local a = alphaW
+			if haloEntry then
+				local tr = 1 - (1 - haloEntry[2]) * a
+				if tr ~= haloEntry[5] then
+					haloIm.ImageTransparency = tr
+					haloEntry[5] = tr
+				end
+			end
+			if coronaEntry then
+				local tr = 1 - (1 - coronaEntry[2]) * a
+				if tr ~= coronaEntry[5] then
+					coronaEntry[1].ImageTransparency = tr
+					coronaEntry[5] = tr
+				end
+			end
+		end
+		toneLevels(0)
+		refreshLights()
+	end
+	-- the fades: every part, image, beam and light goes from invisible to its rest value in its own window (times the
+	-- framework's fade-in alpha); a value is written only when it moved enough, and snapped exactly at the ends (no blinking)
+	local function fadeAll(a, asm, thr)
+		for _, i in ipairs(solids) do
+			local f = a
+			if asm then
+				local u = (age - PF0[i]) / (PF1[i] - PF0[i])
+				f *= u <= 0 and 0 or u >= 1 and 1 or u * u * (3 - 2 * u)
+			end
+			local tr = 1 - f
+			local cur = PCUR[i]
+			if tr ~= cur and (abs(tr - cur) >= thr or tr <= 0 or tr >= 1) then
+				PP[i].Transparency = tr
+				PCUR[i] = tr
+			end
+		end
+		for _, e in ipairs(images) do
+			local f = a
+			if asm then f *= smooth((age - e[3]) / (e[4] - e[3])) end
+			local tr = 1 - (1 - e[2]) * f
+			if tr ~= e[5] and (abs(tr - e[5]) >= thr or f <= 0 or f >= 1) then
+				e[1].ImageTransparency = tr
+				e[5] = tr
+			end
+		end
+		beamSteps(a)
+		local kf, wf = a, a
+		if asm then kf, wf = a * smooth((age - 0.6) / 1.0), a * smooth((age - 4.6) / 1.0) end
+		if abs(kf - st.kf) >= thr or abs(wf - st.wf) >= thr or ((kf <= 0 or kf >= 1) and kf ~= st.kf) or ((wf <= 0 or wf >= 1) and wf ~= st.wf) then
+			st.kf, st.wf = kf, wf
+			lightLevels()
+		end
+		-- (the silver tone comes in only once every silver part is solid: a Highlight paints a part that is still fading
+		-- in at full strength, which would make the rising dais rim pop)
+		st.hlA = asm and a * smooth((age - 5.65) / 0.7) or a
+		toneLevels(thr)
+	end
+	-- another wearer's aura between you and your camera: its clock and orbs fade to a ghost in 3 steps (one burst of
+	-- LocalTransparencyModifier writes per step, none while it holds) with their smoke, glints and streams, and its GUIs
+	-- and silver tone switch off meanwhile
+	local function setGhost(q)
+		st.ghostQ = q
+		local m = 0.75 * q
+		for _, p in ipairs(ghostParts) do p.LocalTransparencyModifier = m end
+		if st.fxLtm then
+			for _, e in ipairs(emitters) do
+				if e[6] then e[1].LocalTransparencyModifier = m end
+			end
+			for _, b in ipairs(beams) do
 				if not b[9] then b[1].LocalTransparencyModifier = m end
 			end
 		end
@@ -271,109 +393,6 @@ local DATA = [[
 		if VIEWER then
 			-- the clock swings to the far side of the wearer from this camera through a critically damped spring (no overshoot).
 			-- In first person (the camera inside the wearer) "beyond the wearer" is where the camera looks, so the orbs hang
-			-- beside and behind the view instead of filling it when the player turns; straight above it holds still
-			if dh > 1.5 and dh > 0.2 * abs(v.Y) then
-				yawTarget = atan2(-v.X, -v.Z)
-			elseif cam and abs(v.Y) < 4 then
-				local lk = cam.CFrame.LookVector
-				if abs(lk.Y) < 0.97 then yawTarget = atan2(-lk.X, -lk.Z) end
-			end
-			if snap then psi, psiVel = yawTarget, 0 end
-			local k = CONFIG.YAW_SPRING
-			local x = wrapPi(psi - yawTarget)
-			local e = exp(-k * dt)
-			local tmp = (psiVel + k * x) * dt
-			x = (x + tmp) * e
-			psiVel = (psiVel - k * tmp) * e
-			-- a fast camera swing never throws the clock and the orbs round into the lens: the spring runs on underneath, but
-			-- the lag that is shown eases into a ceiling of YAW_LAG_MAX (and the spring itself stops at twice that)
-			local L = rad(CONFIG.YAW_LAG_MAX)
-			if x > 2 * L then
-				x, psiVel = 2 * L, min(psiVel, 0)
-			elseif x < -2 * L then
-				x, psiVel = -2 * L, max(psiVel, 0)
-			end
-			psi = wrapPi(yawTarget + x)
-			if psi ~= psi or psiVel ~= psiVel then psi, psiVel, x = yawTarget, 0, 0 end
-			V = CFrame.new(O) * CFrame.Angles(0, yawTarget + L * math.tanh(x / L), 0)
-		else
-			V = W * FLIP
-		end
-
-		-- the dais: stays on the ground for walks and jumps (even Roblox's default 7.2-stud jump), floats under a flyer, and on
-		-- a seat sits at the feet line instead of on the seat. It drops at once (no lag walking downhill), rises gently
-		local feetY = cf.Position.Y - s.legLen
-		local gnd = s.ground
-		local hG = gnd and (feetY - gnd.Y)
-		local isGrounded = hG ~= nil and hG < (grounded and CONFIG.AIR_ON or CONFIG.AIR_OFF)
-		local target
-		if isGrounded then
-			if seated then
-				target = min(gnd.Y, feetY)
-			else
-				target = gnd.Y
-				lastGroundY = target
-			end
-		elseif CONFIG.DAIS_FLOAT or not lastGroundY then
-			target = feetY + s.hover - 2.4
-		else
-			target = lastGroundY
-		end
-		if target ~= target then target = daisY or O.Y - 3 end
-		if snap then daisY = nil end
-		if daisY then daisY += (target - daisY) * (1 - exp(-(target < daisY and 30 or 8) * dt)) else daisY = target end
-		local dY = daisY + st.layer
-		-- on a slope (a hillside, a beach, a ramp) the pool lies along the ground: a plane through three rays round the
-		-- wearer, every 0.2 s while standing on it, accepted only when it is a clean slope through the ground under the
-		-- wearer (stairs, cliff edges, other players: it stays level). It tilts over smoothly; flying or seated it is level
-		if isGrounded and not seated then
-			st.gpT -= dt
-			if st.gpT <= 0 then
-				st.gpT = 0.2
-				local nT = Vector3.yAxis
-				local gp = hosts.gp
-				local h1 = workspace:Raycast(Vector3.new(O.X + 9 * sin(yawW), dY + 4, O.Z + 9 * cos(yawW)), DOWN9, gp)
-				local h2 = h1 and workspace:Raycast(Vector3.new(O.X + 9 * sin(yawW + 2.0944), dY + 4, O.Z + 9 * cos(yawW + 2.0944)), DOWN9, gp)
-				local h3 = h2 and workspace:Raycast(Vector3.new(O.X + 9 * sin(yawW + 4.1888), dY + 4, O.Z + 9 * cos(yawW + 4.1888)), DOWN9, gp)
-				if h3 then
-					local p1 = h1.Position
-					local nn = (h2.Position - p1):Cross(h3.Position - p1)
-					if nn.Magnitude > 1e-3 then
-						nn = nn.Unit
-						if nn.Y < 0 then nn = -nn end
-						if nn.Y >= 0.94 and abs((gnd - p1):Dot(nn)) < 0.6 then nT = nn end -- (at most 20°, through the ground underfoot)
-					end
-				end
-				st.gnT = nT
-			end
-		else
-			st.gnT = Vector3.yAxis
-		end
-		local gn = snap and st.gnT or st.gn + (st.gnT - st.gn) * (1 - exp(-4 * dt))
-		gn = gn.Magnitude > 1e-3 and gn.Unit or Vector3.yAxis
-		st.gn = gn
-		local slopeT = gn.Y < 0.99996 and sqrt(1 - gn.Y * gn.Y) / gn.Y or 0 -- (tan of the tilt; under 0.5° it stays level)
-		local Gd = CFrame.new(O.X, dY, O.Z)
-		if slopeT > 0 then Gd *= CFrame.fromAxisAngle(Vector3.yAxis:Cross(gn).Unit, math.acos(gn.Y)) end
-		-- the height the clock and the balance ride: a heavy spring, so a jump (or a step) does not throw a 28-stud watch
-		-- up and down with the body; it catches up fast when flying or sitting
-		if snap or not st.kY then
-			st.kY, st.kYv = O.Y, 0
-		else
-			local kk = (isGrounded and not seated) and 4 or 12
-			local x = st.kY - O.Y
-			local e = exp(-kk * dt)
-			local tmp = (st.kYv + kk * x) * dt
-			x = (x + tmp) * e
-			st.kYv = (st.kYv - kk * tmp) * e
-			st.kY = O.Y + x
-		end
-		local Vk = V + Vector3.new(0, st.kY - O.Y, 0)
-
-		-- the clock: lower, further back and leaning back when the camera is close; behind the seat when sitting; never into
-		-- the dais (its lowest edge stays 0.24 above the dais rim's top, 0.54 above the floating galaxy layers)
-		local sitT = st.sitT
-		local Hc = CONFIG.CLOCK_HEIGHT - 0.5 * g - 3 * cz + 16 * fp - 3 * sitT
 ]]
 
 local function main()
@@ -418,7 +437,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "13_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "14_apply.luau"))
 end
 
 local ok, res = pcall(main)

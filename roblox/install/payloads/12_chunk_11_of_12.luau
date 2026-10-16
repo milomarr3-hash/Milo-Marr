@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 12_chunk_11_of_11.luau | step 12: piece 11 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
+-- AuraRNG Studio install kit | 12_chunk_11_of_12.luau | step 12: piece 11 of 12
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (148303 bytes, checksum 731942170).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "12_chunk_11_of_11.luau"
+local FILE = "12_chunk_11_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-143408-678854451-11-550560669"
-local NEW_LEN, NEW_SUM = 143408, 678854451
+local RUN = "TheEnd-148303-731942170-12-824555251"
+local NEW_LEN, NEW_SUM = 148303, 731942170
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 11
-local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
-local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
+local N = 12
+local LENS = { 13300, 13224, 13240, 13242, 13194, 13235, 13276, 13235, 13290, 13298, 13282, 2487 }
+local SUMS = { 825733820, 782681153, 524531706, 656635892, 998587156, 867606918, 526087852, 254541497, 6651690, 395645774, 897444566, 313496838 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,102 @@ local function chunkOk(h, i)
 end
 
 local K = 11
--- piece 11 of 11 of the new source (10628 bytes, checksum 503004703, long bracket level 1)
+-- piece 11 of 12 of the new source (13282 bytes, checksum 897444566, long bracket level 1)
 local DATA = [=[
+		-- the void's camera-facing details: the photon ring sits on the silhouette circle the camera sees (radius rt)
+		local dv = camPos - voidC
+		local dm = dv.Magnitude
+		local nrm = dm > 1e-3 and dv / dm or -V.LookVector
+		local dc = max(dm, 5)
+		local up = abs(nrm.Y) > 0.98 and Vector3.zAxis or Vector3.yAxis
+		rt = 4 * sqrt(1 - 16 / (dc * dc))
+		-- (the hairlines' distance steps: event writes, only when a band changes)
+		local pb = max(hairBand(dm, st.pBand), low and 2 or 1)
+		if pb ~= st.pBand then
+			st.pBand = pb
+			local hy = HAIR[pb][1]
+			local hl = low and 2.25 or 1.14
+			for _, k in ipairs(hosts.photon) do
+				PP[k].Size = Vector3.new(hl, hy, 0.12)
+				PRR[k] = 0.115 + hy / 2
+			end
+		end
+		local nb = max(hairBand((camPos - K.Position).Magnitude, st.nBand), low and 2 or 1)
+		if nb ~= st.nBand then
+			st.nBand = nb
+			hosts.needle.Size = Vector3.new(HAIR[nb][2], 12.2, 0.08)
+		end
+		GCF[GPF] = CFrame.lookAt(voidC + nrm * (16 / dc), voidC, up)
+		GCF[GHF] = CFrame.lookAt(voidC + nrm * 4.1, voidC, up)
+		local Dk = CFrame.new(voidC) * V.Rotation * TILTACC
+		local dir = CONFIG.ACC_DIR -- (the accretion texture's streaks wind clockwise outward: a counter-clockwise turn makes them trail)
+		if asm then accExtra = (accExtra + rad(360 * exp(-3 * max(0, age - 0.3))) * dt * dir) % TAU end
+		GCF[GACC] = Dk * CFrame.Angles(0, (rad(40) * now * dir + accExtra) % TAU, 0)
+		-- (the swirl's carrier rides 0.3 studs above the accretion disc's plane, toward the viewer: its particles sort over
+		-- the disc and the void however Roblox keys an emitter, at its part or at its particles)
+		GCF[GSWIRL] = Dk * SWIRL_UP * CFrame.Angles(0, (rad(85) * now * dir) % TAU, 0)
+		GCF[GFEED] = CFrame.lookAt(K * FEED_PT, voidC)
+
+		-- 6. the air (turned to face the way the wearer travels: the speed trail streams out behind) and the palms
+		local camDist = (camPos - O).Magnitude
+		local td = st.tdir
+		if td and td.Magnitude > 0.5 then
+			local tu = td.Unit
+			GCF[GAIR] = CFrame.lookAt(O, O + tu, abs(tu.Y) > 0.95 and W.LookVector or Vector3.yAxis) * CFrame.new(0, 4, 0)
+		else
+			GCF[GAIR] = CFrame.new(O + Vector3.new(0, 4, 0))
+		end
+		GCF[GBOKEH] = V * CFrame.new(0, 3.0, min(7.5, camDist - 4))
+		-- (pass 5.1) the star halo turns slowly on its tilt; the helix hub spins round the body from the feet
+		if hosts.halo then GCF[GHALO] = W * HALO_TILT * CFrame.Angles(0, (rad(14) * now) % TAU, 0) end
+		GCF[GHELIX] = CFrame.new(O + HELIX_FEET) * CFrame.Angles(0, (rad(150) * now) % TAU, 0)
+		-- (a hand replaced without a new character, e.g. by ApplyDescription, takes our attachment with it: fall back to the
+		-- intake carriers and re-point the streams)
+		if palmR and palmR.Parent == nil then palmR, st.repoint = nil, true end
+		if palmL and palmL.Parent == nil then palmL, st.repoint = nil, true end
+		local f = W.RightVector:Dot(V.RightVector)
+		local flip = (f > 0.2 and assign ~= 1) and 1 or (f < -0.2 and assign ~= -1) and -1 or nil
+		if flip then assign = flip end
+		local moonSide = -assign
+		local mA, vA = palmFor(moonSide, moonCarA), palmFor(-moonSide, voidCarA)
+		GCF[GPALMM] = mA ~= moonCarA and CFrame.new(mA.WorldPosition) or W * CFrame.new(2.3 * moonSide, -0.3, -0.5)
+		GCF[GPALMV] = vA ~= voidCarA and CFrame.new(vA.WorldPosition) or W * CFrame.new(-2.3 * moonSide, -0.3, -0.5)
+
+		-- near-camera rules (with hysteresis), decided before the move so a group shown again moves this very frame: no rings
+		-- or bokeh blobs across the lens. The rings fade out over 0.25 s in three steps before they leave the world, and come
+		-- back fully see-through and fade in, so scrolling between 9 and 12 studs never snaps the biggest thing near the lens
+		if st.nearHide then
+			local dA = (camPos - A0p).Magnitude
+			if (not st.armWant and dA < CONFIG.NEAR_ARM_HIDE) or (st.armWant and dA > CONFIG.NEAR_ARM_SHOW) then
+				st.armWant = not st.armWant
+			end
+			local tgt = st.armWant and 1 or 0
+			if st.armF ~= tgt or (armHidden and not st.armWant) then
+				if armHidden and not st.armWant then
+					armHidden = false -- (back in the world at full see-through, at this frame's positions)
+					setGroups()
+				end
+				local step = snap and 1 or dt / 0.25
+				st.armF = tgt > st.armF and min(1, st.armF + step) or max(0, st.armF - step)
+				local q = math.floor(st.armF * 3 + 0.5) / 3
+				if q ~= st.armQ then
+					st.armQ = q
+					writeRings()
+				end
+				if st.armF >= 1 and not armHidden then
+					armHidden = true
+					setGroups()
+				end
+			end
+			if (not bokehNear and camDist < CONFIG.NEAR_BOKEH_HIDE) or (bokehNear and camDist > CONFIG.NEAR_BOKEH_SHOW) then
+				bokehNear = not bokehNear
+				refreshEmitters()
+			end
+		end
+		-- far detail (the framework's setDetail past ~110 studs): the lights, the near-only beams and another player's
+		-- silver tone fade over 0.5 s instead of switching in one frame (at night a lit patch of plaza would pop)
+		local lt = near and 1 or 0
+		if st.lodF ~= lt then
 			st.lodF = lt > st.lodF and min(1, st.lodF + dt / 0.5) or max(0, st.lodF - dt / 0.5)
 			local lq = math.floor(st.lodF * 20 + 0.5) / 20
 			if lq ~= st.lod then
@@ -179,6 +273,9 @@ local DATA = [=[
 			if em.smokeMoon then em.smokeMoon.Rate = slow and 0 or 5 end
 			em.dust.Rate = (low and 5 or 10) * (slow and 0.5 or 1)
 			if em.wisps then em.wisps.Rate = slow and 0 or (low and 3 or 7) end
+			-- (the helix's strands: thin while travelling, so they leave a short glittering wake, not a long trail)
+			em.strandMoon.Rate = (low and 12 or 30) * (slow and 0.35 or 1)
+			em.strandVoid.Rate = slow and 0 or (low and 8 or 18)
 		end
 		if remote and cam and ownerHub then
 			-- another wearer's clock or orbs in front of your own clock (a friend beside or behind you): theirs step back
@@ -273,76 +370,6 @@ local DATA = [=[
 	end
 
 	function fx.setVisible(on)
-		if destroyed or on == visible then return end
-		visible = on
-		if on then
-			-- (parented again by the next update, together with that frame's positions; after a long hide it fades back in
-			-- instead of popping, and the body's wisps and sparks wait a second)
-			st.pendingRoot = true
-			st.shownAt = os.clock()
-			st.lastO = nil -- (the distance walked while hidden is not a speed)
-			if st.hiddenAt and st.shownAt - st.hiddenAt > 0.5 then
-				st.revealA, st.snap = 0, true
-				if nq >= 0 then applyNight(nightStep()) end -- (dusk may have passed meanwhile; the reveal starts from nothing)
-			end
-		else
-			root.Parent = nil
-			st.pendingRoot = false
-			st.hiddenAt = os.clock()
-			if not remote then ownerHub = nil end -- (other wearers no longer step back for a clock you cannot see)
-			st.footOk = false
-			if grade then
-				-- (never left on top of a cutscene or a hidden aura)
-				st.gradeOut = true
-				gradeTo(GRADE_OFF, 0.4, true)
-			end
-		end
-		refreshEmitters()
-		refreshLights()
-	end
-
-	function fx.setDetail(isNear)
-		if destroyed then return end
-		near = isNear
-		if isNear then st.pendingGroups = true else setGroups() end -- (shown again by the next update, at fresh positions)
-		refreshEmitters()
-		refreshLights()
-	end
-
-	function fx.destroy()
-		if destroyed then return end
-		destroyed = true
-		if grade then gradeTo(GRADE_OFF, 0.8, true) end -- (the screen eases back instead of snapping)
-		if ctx.isLocal then
-			ownGone, ownGoneChar[1] = os.clock(), char -- (a respawn's rebuild within seconds is not an equip: no grade)
-			ownerHub = nil
-		end
-		for h = 1, 4 do
-			for _, hp in ipairs(holders[h]) do hp[1]:Destroy() end -- (also the groups hidden by far LOD or the near rule)
-		end
-		root:Destroy()
-		for _, o in ipairs(charStuff) do o:Destroy() end
-		for _, tb in ipairs({ charStuff, act, actParts, acf, PP, solids, images, brights, emitters, emitNight, beams, clockParts, ghostParts, ringParts,
-			ghostGuis, gearData }) do
-			table.clear(tb)
-		end
-		nAct = 0
-	end
-
-	applyNight(nightStep())
-	root.Parent = ctx.container
-	preloadUsed() -- (the te5 textures this build draws, asked for once each, in the background)
-	if CONFIG.DEBUG then
-		local nb, ng = 0, 0
-		for _, d in ipairs(root:GetDescendants()) do
-			if d:IsA("BillboardGui") or d:IsA("SurfaceGui") then ng += 1 elseif d:IsA("Beam") then nb += 1 end
-		end
-		print(string.format("TheEnd: %d parts (%d moved), %d emitters, %d GUIs, %d beams", NP, nAct, #emitters, ng, nb))
-	end
-	return fx
-end
-
-return End
 ]=]
 
 local function main()
@@ -387,7 +414,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "13_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "14_apply.luau"))
 end
 
 local ok, res = pcall(main)

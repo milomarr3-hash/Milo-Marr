@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 04_chunk_03_of_11.luau | step 4: piece 3 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
+-- AuraRNG Studio install kit | 04_chunk_03_of_12.luau | step 4: piece 3 of 12
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (148303 bytes, checksum 731942170).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "04_chunk_03_of_11.luau"
+local FILE = "04_chunk_03_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-143408-678854451-11-550560669"
-local NEW_LEN, NEW_SUM = 143408, 678854451
+local RUN = "TheEnd-148303-731942170-12-824555251"
+local NEW_LEN, NEW_SUM = 148303, 731942170
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 11
-local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
-local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
+local N = 12
+local LENS = { 13300, 13224, 13240, 13242, 13194, 13235, 13276, 13235, 13290, 13298, 13282, 2487 }
+local SUMS = { 825733820, 782681153, 524531706, 656635892, 998587156, 867606918, 526087852, 254541497, 6651690, 395645774, 897444566, 313496838 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,13 @@ local function chunkOk(h, i)
 end
 
 local K = 3
--- piece 3 of 11 of the new source (13287 bytes, checksum 221987227, long bracket level 0)
+-- piece 3 of 12 of the new source (13240 bytes, checksum 524531706, long bracket level 0)
 local DATA = [[
+-- where this client's own clock hub is (the owner's build writes it every frame): another wearer's clock and orbs step
+-- back behind it instead of standing in front of your own clock
+local ownerHub = nil
+local GRADE_ON = { Saturation = -0.75, Brightness = -0.1, Contrast = 0.15, TintColor = Color3.fromRGB(232, 238, 255) }
+local GRADE_OFF = { Saturation = 0, Brightness = 0, Contrast = 0, TintColor = Color3.new(1, 1, 1) }
 -- where the time shards leave the bezel on equip (K angles), and the bezel point at eleven the metal shards break off from
 local SHARD_A = {}
 for i = 0, 7 do SHARD_A[i] = math.rad(300 + 20 * i) end
@@ -78,6 +83,10 @@ local FEED_PT = Vector3.new(-10.72, 9.00, 0)
 local MOTE_T = { 0.3, 0.45, 0.6, 0.75 }
 local DOWN9 = Vector3.new(0, -9, 0) -- (the dais's slope rays)
 local SWIRL_UP = CFrame.new(0, 0.3, 0)
+-- (pass 5.1) the star halo's ring leans like a planet's: tipped forward 18 degrees and over 12, so from every side one
+-- half of it passes in front of the wearer and the other behind; the helix hub sits at the feet
+local HALO_TILT = CFrame.new(0, 1.2, 0) * CFrame.Angles(math.rad(18), 0, math.rad(-12))
+local HELIX_FEET = Vector3.new(0, -2.9, 0)
 -- the hairlines (the photon ring's thickness, the seconds needle's width) by distance band: under 50 studs, 50-95, beyond.
 -- A 0.13-stud line is under a pixel past ~85 studs; drawn without anti-aliasing (phones, low graphics) it breaks into a
 -- crawling stair-step, so it thickens in two steps (5 studs of margin each way: no back and forth)
@@ -238,7 +247,8 @@ function End.build(ctx)
 	local GF1, GF2, GF3 = 13, 14, 15
 	local GSHARD0 = 15 -- (the eight time shards are groups GSHARD0 + 1 .. GSHARD0 + 8)
 	local GMOON, GVOID, GPF, GHF, GACC, GSWIRL = 24, 25, 26, 27, 28, 29
-	local GDAIS, GG0, GG1, GG2, GENG, GWHEEL, GFUNNEL = 30, 31, 32, 33, 34, 35, 37 -- (36, 38: unused)
+	local GDAIS, GG0, GG1, GG2, GENG, GWHEEL, GFUNNEL = 30, 31, 32, 33, 34, 35, 37
+	local GHALO, GHELIX = 36, 38 -- (pass 5.1: the star halo's turning ring, the helix hub)
 	local GFEED, GAIR, GBOKEH, GPALMM, GPALMV, GMOONF, GDUST = 39, 40, 41, 42, 43, 44, 45
 	local GCF = table.create(45, IDENT)
 	-- per-frame state that is not a hot inner-loop value lives in one table (End.build is close to Luau's 200-register
@@ -309,29 +319,6 @@ function End.build(ctx)
 	local hiCanvas, midCanvas = low and 512 or 1024, low and 256 or 512
 	local function surface(host, face, canvas, b0, b1, key, f0, f1, color)
 		local g = new("SurfaceGui", { Face = face, SizingMode = Enum.SurfaceGuiSizingMode.FixedSize, CanvasSize = Vector2.new(canvas, canvas),
-			LightInfluence = 0, Brightness = b0, AlwaysOnTop = false }, host)
-		local im = new("ImageLabel", { BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ImageColor3 = color or Color3.new(1, 1, 1),
-			ImageTransparency = 1 }, g)
-		applyTex(im, key)
-		local e = { im, 0, f0, f1, 1 }
-		table.insert(images, e)
-		if b1 then table.insert(brights, { g, b0, b1 }) end
-		return g, e
-	end
-
-	-- the film meshes (CONFIG.USE_FILM_MESHES + one FILM_* flag per element), cloned and scaled to the procedural size
-	local filmTe, filmObl
-	if CONFIG.USE_FILM_MESHES then filmTe, filmObl = filmKit() end
-	local function film(flag, name, oblivion)
-		if not (CONFIG.USE_FILM_MESHES and CONFIG[flag]) then return nil end
-		local m
-		pcall(function()
-			local box = oblivion and filmObl or filmTe
-			m = meshOf(box and box:FindFirstChild(name))
-		end)
-		if goodMesh(m) then return m end
-		return nil
-	end
 ]]
 
 local function main()
@@ -376,7 +363,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "13_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "14_apply.luau"))
 end
 
 local ok, res = pcall(main)

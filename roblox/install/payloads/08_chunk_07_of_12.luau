@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 08_chunk_07_of_11.luau | step 8: piece 7 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
+-- AuraRNG Studio install kit | 08_chunk_07_of_12.luau | step 8: piece 7 of 12
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (148303 bytes, checksum 731942170).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "08_chunk_07_of_11.luau"
+local FILE = "08_chunk_07_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-143408-678854451-11-550560669"
-local NEW_LEN, NEW_SUM = 143408, 678854451
+local RUN = "TheEnd-148303-731942170-12-824555251"
+local NEW_LEN, NEW_SUM = 148303, 731942170
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 11
-local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
-local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
+local N = 12
+local LENS = { 13300, 13224, 13240, 13242, 13194, 13235, 13276, 13235, 13290, 13298, 13282, 2487 }
+local SUMS = { 825733820, 782681153, 524531706, 656635892, 998587156, 867606918, 526087852, 254541497, 6651690, 395645774, 897444566, 313496838 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,31 @@ local function chunkOk(h, i)
 end
 
 local K = 7
--- piece 7 of 11 of the new source (13235 bytes, checksum 843372519, long bracket level 0)
+-- piece 7 of 12 of the new source (13276 bytes, checksum 526087852, long bracket level 0)
 local DATA = [[
+		local SPHERE, CYL, DISCSHAPE, BOX = Enum.ParticleEmitterShape.Sphere, Enum.ParticleEmitterShape.Cylinder, Enum.ParticleEmitterShape.Disc,
+			Enum.ParticleEmitterShape.Box
+		local SURFACE, VOLUME = Enum.ParticleEmitterShapeStyle.Surface, Enum.ParticleEmitterShapeStyle.Volume
+		local INWARD, OUTWARD = Enum.ParticleEmitterShapeInOut.Inward, Enum.ParticleEmitterShapeInOut.Outward
+		local VPAR = Enum.ParticleOrientation.VelocityParallel
+		local N_ = Enum.NormalId
+		-- (white particles glow just above the Bloom threshold by day: small steady glints read as light, not as grey specks.
+		-- They grow, hold and shrink: never a flash)
+		local WHITE_LE, WHITE_BR = { 0.3, 0.9 }, { 2.4, 3.0 }
+		-- the streak texture: te5_streak is a thin capsule in a square cell, so it is drawn bigger than the fallback speck;
+		-- STREAK_FLIP turns streaks that fly tail-first round (STUDIO-VERIFY: VelocityParallel puts the image's TOP forward)
+		local stS = isTe5("streak5") and 2.2 or 1
+		-- (a te5 texture that fails to load in the game: its emitter goes back to the size made for the fallback)
+		local function sizeFix(p, scale, pts)
+			if scale ~= 1 then fixUps[p] = function(o) o.Size = seq(pts) end end
+			return p
+		end
+		local stRot = CONFIG.STREAK_FLIP and n(180) or n(0)
+		-- (SWIRL_POINTS: if Roblox's Cylinder emitters spray over their flat caps, the swirl and the vortex fall back to one
+		-- point emitter on the rim aimed at the axis; the host's spin still curls each particle's path into a spiral arm)
+		local function rimPoint(host, r)
+			return new("Attachment", { Name = "SwirlPoint", CFrame = CFrame.lookAt(Vector3.new(r, 0, 0), Vector3.zero) }, host)
+		end
 		-- P1: matter spirals in along the accretion disc and vanishes into the black core (straight inward motion inside a
 		-- spinning host becomes a spiral). STUDIO-VERIFY: Cylinder + Surface + Inward emits on the curved side toward the
 		-- axis (if not: attribute SWIRL_POINTS), and LockedToPart particles ride a host moved by BulkMoveTo
@@ -138,6 +161,37 @@ local DATA = [[
 		em.bokeh = hi and pe(hosts.bokeh, "bokeh", 3.0, { Shape = BOX, ShapeStyle = VOLUME, Rate = 0.5, Lifetime = n(5, 7), Speed = n(0.1, 0.25),
 			SpreadAngle = Vector2.new(180, 180), Size = n(1.2, 2.4), Transparency = seq({ { 0, 1 }, { 0.25, 0.72 }, { 0.75, 0.72 }, { 1, 1 } }),
 			Color = ColorSequence.new(Color3.fromRGB(232, 236, 246)), Rotation = n(0, 360), RotSpeed = n(-4, 4) }, { 0.3, 0.8 }, { 1.2, 1.8 }, "bokeh")
+		-- P15 (pass 5.1): the star halo: a tilted ring of stardust orbits the wearer between the rings and the orbs, born on
+		-- the outer part of its disc (ShapePartial: the inner radius) and locked to it, so the stars orbit with the ring and
+		-- never trail behind a walking wearer. Half the ring passes in front of the wearer, the dial and the orbs and half
+		-- behind them: a layer of moving depth through the whole aura. Each star is a twinkle (the flipbook blooms, holds and
+		-- shrinks it), so the ring glitters without any brightness pulse
+		if hi then
+			em.halo = pe(hosts.halo, "twinkle", 3.6, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.55, EmissionDirection = N_.Top,
+				Rate = 26, Lifetime = n(6, 8), Speed = n(0.05, 0.2), SpreadAngle = Vector2.new(25, 25),
+				Size = seq({ { 0, 0.62, 0.18 }, { 1, 0.62, 0.18 } }), Transparency = seq({ { 0, 1 }, { 0.1, 0.02 }, { 0.9, 0.02 }, { 1, 1 } }),
+				LockedToPart = true, Rotation = n(0, 90), RotSpeed = n(-8, 8), ZOffset = 0.2 }, WHITE_LE, WHITE_BR, "nearcam")
+		end
+		-- P16 (pass 5.1): the duality helix: two points turn round the body at 150 degrees a second and leave a strand each,
+		-- so a silver strand of light and an ink strand of smoke braid up round the wearer from the feet to above the head
+		-- (not locked: each particle stays where it was born and climbs, which is what draws the spiral). While the wearer
+		-- travels the strands thin out, so they don't hang far behind (see the travelling flip)
+		em.strandMoon = pe(hosts.strandMoon, "twinkle", 5.2, { EmissionDirection = N_.Top, Rate = rate(30, 12), Lifetime = n(2.0, 2.3),
+			Speed = n(2.6, 2.9), SpreadAngle = Vector2.new(4, 4), Drag = 0.3, Size = seq({ { 0, 0.6 }, { 0.6, 0.5 }, { 1, 0.15 } }),
+			Transparency = seq({ { 0, 1 }, { 0.06, 0.02 }, { 0.75, 0.15 }, { 1, 1 } }), Rotation = n(0, 90), RotSpeed = n(-30, 30),
+			ZOffset = 0.4 }, WHITE_LE, WHITE_BR, "nearcam")
+		em.strandVoid = pe(hosts.strandVoid, "wisp", 5.2, { EmissionDirection = N_.Top, Rate = rate(18, 8), Lifetime = n(2.0, 2.3),
+			Speed = n(2.6, 2.9), SpreadAngle = Vector2.new(4, 4), Drag = 0.3, Size = seq({ { 0, 0.8 }, { 0.5, 1.5 }, { 1, 0.7 } }),
+			Transparency = seq({ { 0, 1 }, { 0.1, 0.1 }, { 0.7, 0.35 }, { 1, 1 } }), Color = ColorSequence.new(INK), Rotation = n(0, 360),
+			RotSpeed = n(-40, 40), ZOffset = 0.3 }, nil, nil, "nearcam")
+		-- P17 (pass 5.1): stars twinkle inside the clock's star window, between the rete's bars (locked to the dial, so they
+		-- stay in the face however the clock turns to its viewer)
+		if hi and hosts.inlay then
+			pe(hosts.inlay, "twinkle", 4.4, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0, EmissionDirection = N_.Front,
+				Rate = 5, Lifetime = n(2.6, 3.4), Speed = n(0), Size = seq({ { 0, 1.0, 0.3 }, { 1, 1.0, 0.3 } }),
+				Transparency = seq({ { 0, 1 }, { 0.12, 0 }, { 0.88, 0 }, { 1, 1 } }), LockedToPart = true, Rotation = n(0, 90),
+				ZOffset = 0.6 }, { 0.6, 1 }, { 2.2, 3.0 })
+		end
 		if hi then
 			-- P7: a low mist bank round the pool's rim, only while standing on the ground (ShapePartial 0.8: the outer fifth
 			-- of the disc, so the galaxy inside stays clear)
@@ -160,58 +214,6 @@ local DATA = [[
 			LockedToPart = true, ZOffset = 0.2 }, WHITE_LE, WHITE_BR)
 		if hi then
 			-- (te5_ash is one charred flake; its random rotation and tumble make every particle a different shape)
-			em.ash = pe(hosts.floorFx, "ash5", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.15, EmissionDirection = N_.Top, Rate = 8,
-				Lifetime = n(3, 4.5), Speed = n(0.8, 2.0), Acceleration = Vector3.new(0, 0.3, 0), Drag = 0.4, Size = n(0.4, 0.6),
-				Transparency = seq({ { 0, 1 }, { 0.15, 0.05 }, { 0.75, 0.2 }, { 1, 1 } }), Color = ColorSequence.new(ASH), Rotation = n(0, 360),
-				RotSpeed = n(-90, 90) })
-			-- P9: a vortex funnel: streaks spiral inward and climb into the balance wheel (off in first person: the camera
-			-- sits right inside it)
-			local p9 = { Rate = 16, Lifetime = n(1.7, 2.0), Speed = n(2.8, 3.2), Acceleration = Vector3.new(0, 1.0, 0),
-				Size = seq({ { 0, 0.42 * stS }, { 1, 0.1 * stS } }), Transparency = seq({ { 0, 1 }, { 0.12, 0.05 }, { 0.85, 0.1 }, { 1, 1 } }),
-				LockedToPart = true, Orientation = VPAR, Rotation = stRot }
-			if CONFIG.SWIRL_POINTS then
-				p9.EmissionDirection, p9.SpreadAngle = N_.Front, Vector2.new(0, 10)
-				sizeFix(pe(rimPoint(hosts.funnel, 5.3), "streak5", 4.8, p9, WHITE_LE, WHITE_BR, "nearcam"), stS, { { 0, 0.42 }, { 1, 0.1 } })
-			else
-				p9.Shape, p9.ShapeStyle, p9.ShapeInOut, p9.EmissionDirection = CYL, SURFACE, INWARD, N_.Top
-				sizeFix(pe(hosts.funnel, "streak5", 4.8, p9, WHITE_LE, WHITE_BR, "nearcam"), stS, { { 0, 0.42 }, { 1, 0.1 } })
-			end
-		end
-		-- P10: the palms drink the streams: silver streaks converge into one palm, ink streaks into the other (locked to the
-		-- palm, so they still converge on it while the wearer walks; off in first person, where the palms are just under the
-		-- lens). STUDIO-VERIFY: Sphere + Surface + Inward converges on the centre (fallback: Outward with a negative Speed)
-		local function intake(host, color, le, br)
-			sizeFix(pe(host, "streak5", 5.2, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = INWARD, Rate = rate(14, 6), Lifetime = n(0.85, 0.95),
-				Speed = n(1.35, 1.45), Size = seq({ { 0, 0.3 * stS }, { 1, 0.05 * stS } }), Transparency = seq({ { 0, 1 }, { 0.25, 0.05 }, { 1, 0.2 } }),
-				Color = ColorSequence.new(color), ZOffset = 0.2, Orientation = VPAR, Rotation = stRot, LockedToPart = true }, le, br, "nearcam"),
-				stS, { { 0, 0.3 }, { 1, 0.05 } })
-		end
-		intake(hosts.palmMoon, WHITE, WHITE_LE, WHITE_BR)
-		intake(hosts.palmVoid, INK, nil, nil)
-		-- P11: the wearer burns with the aura: silver wisps rise off the shoulders and back (not while travelling: no smog
-		-- trail), and sparks stream up the body (they keep going while travelling and stream out behind like a comet's
-		-- tail). Silver, not ink: from every camera the wearer stands against the black dial, where ink would vanish. They
-		-- live on the character's torso (destroy() removes them) and switch off in first person
-		do
-			local torso = char:FindFirstChild("UpperTorso") or char:FindFirstChild("Torso")
-			if torso and torso:IsA("BasePart") then
-				em.wisps = pe(torso, "smoke5", 5.2, { Shape = BOX, ShapeStyle = SURFACE, EmissionDirection = N_.Top, Rate = rate(7, 3), Lifetime = n(1.6, 2.2),
-					Speed = n(1.5, 2.5), SpreadAngle = Vector2.new(20, 20), Acceleration = Vector3.new(0, 1, 0), Size = seq({ { 0, 1.2 }, { 1, 3.4 } }),
-					Transparency = seq({ { 0, 1 }, { 0.2, 0.32 }, { 0.6, 0.55 }, { 1, 1 } }), Color = ColorSequence.new(Color3.fromRGB(200, 202, 208)),
-					ZOffset = -1.5, Rotation = n(0, 360), RotSpeed = n(-40, 40) }, { 0.2, 0.6 }, { 1.2, 2.0 }, "body")
-				table.insert(charStuff, em.wisps)
-				table.insert(charStuff, pe(torso, "glint5", 5.2, { Shape = BOX, ShapeStyle = VOLUME, EmissionDirection = N_.Top, Rate = rate(14, 6),
-					Lifetime = n(1.4, 2.0), Speed = n(1.5, 3.0), SpreadAngle = Vector2.new(25, 25), Acceleration = Vector3.new(0, 1.5, 0),
-					Size = seq({ { 0, 0 }, { 0.25, 1.3, 0.3 }, { 0.75, 1.3, 0.3 }, { 1, 0 } }), Transparency = glintT, Rotation = n(0, 90),
-					RotSpeed = n(-30, 30), ZOffset = 0.5 }, { 0.5, 1 }, WHITE_BR, "body"))
-			end
-		end
-		-- P12: while the wearer flies or runs fast, silver streaks stream out behind the body (off when slow)
-		sizeFix(pe(hosts.trail, "streak5", 5.2, { EmissionDirection = N_.Back, Rate = rate(14, 6), Lifetime = n(0.45, 0.6), Speed = n(4, 6),
-			SpreadAngle = Vector2.new(10, 10), Size = seq({ { 0, 0.5 * stS }, { 1, 0.1 * stS } }),
-			Transparency = seq({ { 0, 0.2 }, { 0.6, 0.3 }, { 1, 1 } }), Color = ColorSequence.new(Color3.fromRGB(226, 230, 240)),
-			Orientation = VPAR, Rotation = stRot }, WHITE_LE, WHITE_BR, "speed"), stS, { { 0, 0.5 }, { 1, 0.1 } })
-		-- which emitters belong to the parts that turn see-through while another wearer's aura is in your way (their smoke,
 ]]
 
 local function main()
@@ -256,7 +258,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "13_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "14_apply.luau"))
 end
 
 local ok, res = pcall(main)

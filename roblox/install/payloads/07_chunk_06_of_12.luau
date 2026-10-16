@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 07_chunk_06_of_11.luau | step 7: piece 6 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
+-- AuraRNG Studio install kit | 07_chunk_06_of_12.luau | step 7: piece 6 of 12
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (148303 bytes, checksum 731942170).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "07_chunk_06_of_11.luau"
+local FILE = "07_chunk_06_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-143408-678854451-11-550560669"
-local NEW_LEN, NEW_SUM = 143408, 678854451
+local RUN = "TheEnd-148303-731942170-12-824555251"
+local NEW_LEN, NEW_SUM = 148303, 731942170
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 11
-local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
-local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
+local N = 12
+local LENS = { 13300, 13224, 13240, 13242, 13194, 13235, 13276, 13235, 13290, 13298, 13282, 2487 }
+local SUMS = { 825733820, 782681153, 524531706, 656635892, 998587156, 867606918, 526087852, 254541497, 6651690, 395645774, 897444566, 313496838 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,21 @@ local function chunkOk(h, i)
 end
 
 local K = 6
--- piece 6 of 11 of the new source (13265 bytes, checksum 240581101, long bracket level 0)
+-- piece 6 of 12 of the new source (13235 bytes, checksum 867606918, long bracket level 0)
 local DATA = [[
+		-- the stage: an engraved clock ring 56 studs across round the pool (inked Roman numerals 3 studs tall, a minute track
+		-- with lume ticks), solid ink and white lines on the ground. Kept at every distance: from far away it is the aura's
+		-- footprint. The ink carries the day; it glows at night
+		if hi then
+			local eng = carrier("Engraving", CORE, GENG, Vector3.new(56, 0.05, 56))
+			surface(eng, Enum.NormalId.Top, 1024, 1.0, 2.0, "engraving", 4.2, 5.2)
+		end
+		-- the floor's particles (mist, motes, ash) rise from their own invisible disc just above the top floor layer, so they
+		-- draw over the galaxy whether Roblox sorts a particle by its emitter's part or by the particles themselves
+		-- (STUDIO-VERIFY: by day, close up, the twinkles and ash are never hidden under the floor's SurfaceGuis)
+		hosts.floorFx = carrier("FloorFx", CORE, GG0, Vector3.new(29.6, 0.05, 29.6), CFrame.new(0, 0.8, 0))
+		-- the rim: fluted blocks (bright silver and satin) rising in a wave round the pool on equip
+		local NR = low and 16 or 24
 		for i = 0, NR - 1 do
 			local th = i * 360 / NR
 			local h = i % 2 == 0 and 0.90 or 0.96
@@ -114,6 +127,12 @@ local DATA = [[
 	hosts.bokeh = hi and carrier("BokehHost", DETAIL, GBOKEH, Vector3.new(18, 10, 5))
 	hosts.palmMoon = carrier("PalmMoon", CORE, GPALMM, Vector3.new(2.6, 2.6, 2.6))
 	hosts.palmVoid = carrier("PalmVoid", CORE, GPALMV, Vector3.new(2.6, 2.6, 2.6))
+	-- (pass 5.1) the star halo: a 34-stud ring of stardust turning round the wearer on a tilt (P15); the helix hub: two
+	-- points 3.1 studs out that turn round the body at the feet, each trailing a strand that climbs it (P16)
+	hosts.halo = hi and carrier("StarHalo", CORE, GHALO, Vector3.new(34, 0.3, 34))
+	hosts.helix = carrier("HelixHub", CORE, GHELIX, Vector3.new(1, 1, 1))
+	hosts.strandMoon = new("Attachment", { Name = "StrandMoon", Position = Vector3.new(3.1, 0, 0) }, hosts.helix)
+	hosts.strandVoid = new("Attachment", { Name = "StrandVoid", Position = Vector3.new(-3.1, 0, 0) }, hosts.helix)
 
 	-- the Highlight: one per aura, on the Silver model only (neutral silver by day plus an ink contour on the bright sky).
 	-- STUDIO-VERIFY: a Highlight on a Model of 200+ parts. Its strength is the HIGHLIGHT_FILL / HIGHLIGHT_OUTLINE attributes.
@@ -264,29 +283,6 @@ local DATA = [[
 			return p
 		end
 		local function rate(h, l) return low and l or h end
-		local SPHERE, CYL, DISCSHAPE, BOX = Enum.ParticleEmitterShape.Sphere, Enum.ParticleEmitterShape.Cylinder, Enum.ParticleEmitterShape.Disc,
-			Enum.ParticleEmitterShape.Box
-		local SURFACE, VOLUME = Enum.ParticleEmitterShapeStyle.Surface, Enum.ParticleEmitterShapeStyle.Volume
-		local INWARD, OUTWARD = Enum.ParticleEmitterShapeInOut.Inward, Enum.ParticleEmitterShapeInOut.Outward
-		local VPAR = Enum.ParticleOrientation.VelocityParallel
-		local N_ = Enum.NormalId
-		-- (white particles glow just above the Bloom threshold by day: small steady glints read as light, not as grey specks.
-		-- They grow, hold and shrink: never a flash)
-		local WHITE_LE, WHITE_BR = { 0.3, 0.9 }, { 2.4, 3.0 }
-		-- the streak texture: te5_streak is a thin capsule in a square cell, so it is drawn bigger than the fallback speck;
-		-- STREAK_FLIP turns streaks that fly tail-first round (STUDIO-VERIFY: VelocityParallel puts the image's TOP forward)
-		local stS = isTe5("streak5") and 2.2 or 1
-		-- (a te5 texture that fails to load in the game: its emitter goes back to the size made for the fallback)
-		local function sizeFix(p, scale, pts)
-			if scale ~= 1 then fixUps[p] = function(o) o.Size = seq(pts) end end
-			return p
-		end
-		local stRot = CONFIG.STREAK_FLIP and n(180) or n(0)
-		-- (SWIRL_POINTS: if Roblox's Cylinder emitters spray over their flat caps, the swirl and the vortex fall back to one
-		-- point emitter on the rim aimed at the axis; the host's spin still curls each particle's path into a spiral arm)
-		local function rimPoint(host, r)
-			return new("Attachment", { Name = "SwirlPoint", CFrame = CFrame.lookAt(Vector3.new(r, 0, 0), Vector3.zero) }, host)
-		end
 ]]
 
 local function main()
@@ -331,7 +327,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "13_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "14_apply.luau"))
 end
 
 local ok, res = pcall(main)

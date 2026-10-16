@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 09_chunk_08_of_11.luau | step 9: piece 8 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
+-- AuraRNG Studio install kit | 09_chunk_08_of_12.luau | step 9: piece 8 of 12
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (148303 bytes, checksum 731942170).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "09_chunk_08_of_11.luau"
+local FILE = "09_chunk_08_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-143408-678854451-11-550560669"
-local NEW_LEN, NEW_SUM = 143408, 678854451
+local RUN = "TheEnd-148303-731942170-12-824555251"
+local NEW_LEN, NEW_SUM = 148303, 731942170
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 11
-local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
-local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
+local N = 12
+local LENS = { 13300, 13224, 13240, 13242, 13194, 13235, 13276, 13235, 13290, 13298, 13282, 2487 }
+local SUMS = { 825733820, 782681153, 524531706, 656635892, 998587156, 867606918, 526087852, 254541497, 6651690, 395645774, 897444566, 313496838 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,11 +68,63 @@ local function chunkOk(h, i)
 end
 
 local K = 8
--- piece 8 of 11 of the new source (13284 bytes, checksum 959695815, long bracket level 1)
+-- piece 8 of 12 of the new source (13235 bytes, checksum 254541497, long bracket level 1)
 local DATA = [=[
+			em.ash = pe(hosts.floorFx, "ash5", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.15, EmissionDirection = N_.Top, Rate = 8,
+				Lifetime = n(3, 4.5), Speed = n(0.8, 2.0), Acceleration = Vector3.new(0, 0.3, 0), Drag = 0.4, Size = n(0.4, 0.6),
+				Transparency = seq({ { 0, 1 }, { 0.15, 0.05 }, { 0.75, 0.2 }, { 1, 1 } }), Color = ColorSequence.new(ASH), Rotation = n(0, 360),
+				RotSpeed = n(-90, 90) })
+			-- P9: a vortex funnel: streaks spiral inward and climb into the balance wheel (off in first person: the camera
+			-- sits right inside it)
+			local p9 = { Rate = 16, Lifetime = n(1.7, 2.0), Speed = n(2.8, 3.2), Acceleration = Vector3.new(0, 1.0, 0),
+				Size = seq({ { 0, 0.42 * stS }, { 1, 0.1 * stS } }), Transparency = seq({ { 0, 1 }, { 0.12, 0.05 }, { 0.85, 0.1 }, { 1, 1 } }),
+				LockedToPart = true, Orientation = VPAR, Rotation = stRot }
+			if CONFIG.SWIRL_POINTS then
+				p9.EmissionDirection, p9.SpreadAngle = N_.Front, Vector2.new(0, 10)
+				sizeFix(pe(rimPoint(hosts.funnel, 5.3), "streak5", 4.8, p9, WHITE_LE, WHITE_BR, "nearcam"), stS, { { 0, 0.42 }, { 1, 0.1 } })
+			else
+				p9.Shape, p9.ShapeStyle, p9.ShapeInOut, p9.EmissionDirection = CYL, SURFACE, INWARD, N_.Top
+				sizeFix(pe(hosts.funnel, "streak5", 4.8, p9, WHITE_LE, WHITE_BR, "nearcam"), stS, { { 0, 0.42 }, { 1, 0.1 } })
+			end
+		end
+		-- P10: the palms drink the streams: silver streaks converge into one palm, ink streaks into the other (locked to the
+		-- palm, so they still converge on it while the wearer walks; off in first person, where the palms are just under the
+		-- lens). STUDIO-VERIFY: Sphere + Surface + Inward converges on the centre (fallback: Outward with a negative Speed)
+		local function intake(host, color, le, br)
+			sizeFix(pe(host, "streak5", 5.2, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = INWARD, Rate = rate(14, 6), Lifetime = n(0.85, 0.95),
+				Speed = n(1.35, 1.45), Size = seq({ { 0, 0.3 * stS }, { 1, 0.05 * stS } }), Transparency = seq({ { 0, 1 }, { 0.25, 0.05 }, { 1, 0.2 } }),
+				Color = ColorSequence.new(color), ZOffset = 0.2, Orientation = VPAR, Rotation = stRot, LockedToPart = true }, le, br, "nearcam"),
+				stS, { { 0, 0.3 }, { 1, 0.05 } })
+		end
+		intake(hosts.palmMoon, WHITE, WHITE_LE, WHITE_BR)
+		intake(hosts.palmVoid, INK, nil, nil)
+		-- P11: the wearer burns with the aura: silver wisps rise off the shoulders and back (not while travelling: no smog
+		-- trail), and sparks stream up the body (they keep going while travelling and stream out behind like a comet's
+		-- tail). Silver, not ink: from every camera the wearer stands against the black dial, where ink would vanish. They
+		-- live on the character's torso (destroy() removes them) and switch off in first person
+		do
+			local torso = char:FindFirstChild("UpperTorso") or char:FindFirstChild("Torso")
+			if torso and torso:IsA("BasePart") then
+				em.wisps = pe(torso, "smoke5", 5.2, { Shape = BOX, ShapeStyle = SURFACE, EmissionDirection = N_.Top, Rate = rate(7, 3), Lifetime = n(1.6, 2.2),
+					Speed = n(1.5, 2.5), SpreadAngle = Vector2.new(20, 20), Acceleration = Vector3.new(0, 1, 0), Size = seq({ { 0, 1.2 }, { 1, 3.4 } }),
+					Transparency = seq({ { 0, 1 }, { 0.2, 0.32 }, { 0.6, 0.55 }, { 1, 1 } }), Color = ColorSequence.new(Color3.fromRGB(200, 202, 208)),
+					ZOffset = -1.5, Rotation = n(0, 360), RotSpeed = n(-40, 40) }, { 0.2, 0.6 }, { 1.2, 2.0 }, "body")
+				table.insert(charStuff, em.wisps)
+				table.insert(charStuff, pe(torso, "glint5", 5.2, { Shape = BOX, ShapeStyle = VOLUME, EmissionDirection = N_.Top, Rate = rate(14, 6),
+					Lifetime = n(1.4, 2.0), Speed = n(1.5, 3.0), SpreadAngle = Vector2.new(25, 25), Acceleration = Vector3.new(0, 1.5, 0),
+					Size = seq({ { 0, 0 }, { 0.25, 1.3, 0.3 }, { 0.75, 1.3, 0.3 }, { 1, 0 } }), Transparency = glintT, Rotation = n(0, 90),
+					RotSpeed = n(-30, 30), ZOffset = 0.5 }, { 0.5, 1 }, WHITE_BR, "body"))
+			end
+		end
+		-- P12: while the wearer flies or runs fast, silver streaks stream out behind the body (off when slow)
+		sizeFix(pe(hosts.trail, "streak5", 5.2, { EmissionDirection = N_.Back, Rate = rate(14, 6), Lifetime = n(0.45, 0.6), Speed = n(4, 6),
+			SpreadAngle = Vector2.new(10, 10), Size = seq({ { 0, 0.5 * stS }, { 1, 0.1 * stS } }),
+			Transparency = seq({ { 0, 0.2 }, { 0.6, 0.3 }, { 1, 1 } }), Color = ColorSequence.new(Color3.fromRGB(226, 230, 240)),
+			Orientation = VPAR, Rotation = stRot }, WHITE_LE, WHITE_BR, "speed"), stS, { { 0, 0.5 }, { 1, 0.1 } })
+		-- which emitters belong to the parts that turn see-through while another wearer's aura is in your way (their smoke,
 		-- swirl, dust, shards, glints, horizon and palm streaks must not stay solid across your character)
 		local ghostHost = { [moon] = true, [void] = true }
-		for _, h in ipairs({ "swirl", "shardFeed", "horizon", "timeDust", "palmMoon", "palmVoid" }) do
+		for _, h in ipairs({ "swirl", "shardFeed", "horizon", "timeDust", "palmMoon", "palmVoid", "inlay" }) do
 			if hosts[h] then ghostHost[hosts[h]] = true end
 		end
 		for _, e in ipairs(emitters) do
@@ -271,128 +323,6 @@ local DATA = [=[
 	-- the fill strengthens close up, in the same zoom steps, so the silver stays neutral)
 	local function hlFill(q) return min(1, (1 - CONFIG.HIGHLIGHT_FILL) * (1 + 0.45 * st.czq)) * (1 - q) + 0.20 * q end
 	local function hlOut(q) return (1 - CONFIG.HIGHLIGHT_OUTLINE) * (1 - 0.6 * st.czq) * (1 - q) + 0.30 * q end
-	-- the Highlight follows its fade (st.hlA: assembly x alpha), the night, the camera closeness and, for another player's
-	-- aura, the far-detail fade; fill and outline are each written only when they moved (snapped exactly at the ends)
-	local function toneLevels(thr)
-		if not tone then return end
-		local fh = st.hlA * (remote and st.lod or 1)
-		local q = max(nq, 0)
-		local fill, out = 1 - hlFill(q) * fh, 1 - hlOut(q) * fh
-		local edge = fh <= 0 or fh >= 1
-		if fill ~= st.hlF and (abs(fill - st.hlF) >= thr or edge) then
-			tone.FillTransparency = fill
-			st.hlF = fill
-		end
-		if out ~= st.hlO and (abs(out - st.hlO) >= thr or edge) then
-			tone.OutlineTransparency = out
-			st.hlO = out
-		end
-	end
-	-- (one rule for the Highlight's slot: off while ghosted, and off for another player's aura once it is far away, which
-	-- frees one of the client's 31 Highlights and its outline pass)
-	local function toneOn()
-		if tone then
-			local on = st.ghostQ <= 0 and (ctx.isLocal or st.lod > 0) -- (off from the first ghost step: it would paint the ghost solid)
-			if tone.Enabled ~= on then tone.Enabled = on end
-		end
-	end
-	local function applyLod()
-		lightLevels()
-		refreshLights()
-		beamSteps(st.fb)
-		toneLevels(0)
-		toneOn()
-	end
-	-- day/night: every glowing value blends with the night factor, written only when the quantised factor changes
-	local function applyNight(q)
-		nq = q
-		for _, b in ipairs(brights) do b[1].Brightness = b[2] + (b[3] - b[2]) * q end
-		for _, e in ipairs(emitNight) do
-			e[1].LightEmission = e[2] + (e[3] - e[2]) * q
-			e[1].Brightness = e[4] + (e[5] - e[4]) * q
-		end
-		for _, b in ipairs(beams) do
-			b[1].LightEmission = b[4] + (b[5] - b[4]) * q
-			b[1].Brightness = b[6] + (b[7] - b[6]) * q
-		end
-		if hosts.beaconBeam then hosts.beaconBeam.Color = ColorSequence.new(INK:Lerp(WHITE, q)) end
-		lightLevels()
-		if em.bokeh then em.bokeh.Rate = 0.5 + 0.7 * q end
-		if haloEntry then haloEntry[2] = 1 - (0.35 + 0.2 * q) * st.haloZ end
-		if corona then
-			coronaEntry[2] = 1 - 0.4 * q
-			corona.Enabled = q > 0.05 and not st.ghostGui
-		end
-		if settled then
-			-- (after the assembly the night values are written straight away; during it the fades pick them up)
-			local a = alphaW
-			if haloEntry then
-				local tr = 1 - (1 - haloEntry[2]) * a
-				if tr ~= haloEntry[5] then
-					haloIm.ImageTransparency = tr
-					haloEntry[5] = tr
-				end
-			end
-			if coronaEntry then
-				local tr = 1 - (1 - coronaEntry[2]) * a
-				if tr ~= coronaEntry[5] then
-					coronaEntry[1].ImageTransparency = tr
-					coronaEntry[5] = tr
-				end
-			end
-		end
-		toneLevels(0)
-		refreshLights()
-	end
-	-- the fades: every part, image, beam and light goes from invisible to its rest value in its own window (times the
-	-- framework's fade-in alpha); a value is written only when it moved enough, and snapped exactly at the ends (no blinking)
-	local function fadeAll(a, asm, thr)
-		for _, i in ipairs(solids) do
-			local f = a
-			if asm then
-				local u = (age - PF0[i]) / (PF1[i] - PF0[i])
-				f *= u <= 0 and 0 or u >= 1 and 1 or u * u * (3 - 2 * u)
-			end
-			local tr = 1 - f
-			local cur = PCUR[i]
-			if tr ~= cur and (abs(tr - cur) >= thr or tr <= 0 or tr >= 1) then
-				PP[i].Transparency = tr
-				PCUR[i] = tr
-			end
-		end
-		for _, e in ipairs(images) do
-			local f = a
-			if asm then f *= smooth((age - e[3]) / (e[4] - e[3])) end
-			local tr = 1 - (1 - e[2]) * f
-			if tr ~= e[5] and (abs(tr - e[5]) >= thr or f <= 0 or f >= 1) then
-				e[1].ImageTransparency = tr
-				e[5] = tr
-			end
-		end
-		beamSteps(a)
-		local kf, wf = a, a
-		if asm then kf, wf = a * smooth((age - 0.6) / 1.0), a * smooth((age - 4.6) / 1.0) end
-		if abs(kf - st.kf) >= thr or abs(wf - st.wf) >= thr or ((kf <= 0 or kf >= 1) and kf ~= st.kf) or ((wf <= 0 or wf >= 1) and wf ~= st.wf) then
-			st.kf, st.wf = kf, wf
-			lightLevels()
-		end
-		-- (the silver tone comes in only once every silver part is solid: a Highlight paints a part that is still fading
-		-- in at full strength, which would make the rising dais rim pop)
-		st.hlA = asm and a * smooth((age - 5.65) / 0.7) or a
-		toneLevels(thr)
-	end
-	-- another wearer's aura between you and your camera: its clock and orbs fade to a ghost in 3 steps (one burst of
-	-- LocalTransparencyModifier writes per step, none while it holds) with their smoke, glints and streams, and its GUIs
-	-- and silver tone switch off meanwhile
-	local function setGhost(q)
-		st.ghostQ = q
-		local m = 0.75 * q
-		for _, p in ipairs(ghostParts) do p.LocalTransparencyModifier = m end
-		if st.fxLtm then
-			for _, e in ipairs(emitters) do
-				if e[6] then e[1].LocalTransparencyModifier = m end
-			end
-			for _, b in ipairs(beams) do
 ]=]
 
 local function main()
@@ -437,7 +367,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "13_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "14_apply.luau"))
 end
 
 local ok, res = pcall(main)

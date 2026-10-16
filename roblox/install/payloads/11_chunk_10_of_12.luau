@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 11_chunk_10_of_11.luau | step 11: piece 10 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
+-- AuraRNG Studio install kit | 11_chunk_10_of_12.luau | step 11: piece 10 of 12
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (148303 bytes, checksum 731942170).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "11_chunk_10_of_11.luau"
+local FILE = "11_chunk_10_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-143408-678854451-11-550560669"
-local NEW_LEN, NEW_SUM = 143408, 678854451
+local RUN = "TheEnd-148303-731942170-12-824555251"
+local NEW_LEN, NEW_SUM = 148303, 731942170
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 11
-local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
-local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
+local N = 12
+local LENS = { 13300, 13224, 13240, 13242, 13194, 13235, 13276, 13235, 13290, 13298, 13282, 2487 }
+local SUMS = { 825733820, 782681153, 524531706, 656635892, 998587156, 867606918, 526087852, 254541497, 6651690, 395645774, 897444566, 313496838 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,111 @@ local function chunkOk(h, i)
 end
 
 local K = 10
--- piece 10 of 11 of the new source (13310 bytes, checksum 395268242, long bracket level 0)
+-- piece 10 of 12 of the new source (13298 bytes, checksum 395645774, long bracket level 0)
 local DATA = [[
+			-- beside and behind the view instead of filling it when the player turns; straight above it holds still
+			if dh > 1.5 and dh > 0.2 * abs(v.Y) then
+				yawTarget = atan2(-v.X, -v.Z)
+			elseif cam and abs(v.Y) < 4 then
+				local lk = cam.CFrame.LookVector
+				if abs(lk.Y) < 0.97 then yawTarget = atan2(-lk.X, -lk.Z) end
+			end
+			if snap then psi, psiVel = yawTarget, 0 end
+			local k = CONFIG.YAW_SPRING
+			local x = wrapPi(psi - yawTarget)
+			local e = exp(-k * dt)
+			local tmp = (psiVel + k * x) * dt
+			x = (x + tmp) * e
+			psiVel = (psiVel - k * tmp) * e
+			-- a fast camera swing never throws the clock and the orbs round into the lens: the spring runs on underneath, but
+			-- the lag that is shown eases into a ceiling of YAW_LAG_MAX (and the spring itself stops at twice that)
+			local L = rad(CONFIG.YAW_LAG_MAX)
+			if x > 2 * L then
+				x, psiVel = 2 * L, min(psiVel, 0)
+			elseif x < -2 * L then
+				x, psiVel = -2 * L, max(psiVel, 0)
+			end
+			psi = wrapPi(yawTarget + x)
+			if psi ~= psi or psiVel ~= psiVel then psi, psiVel, x = yawTarget, 0, 0 end
+			V = CFrame.new(O) * CFrame.Angles(0, yawTarget + L * math.tanh(x / L), 0)
+		else
+			V = W * FLIP
+		end
+
+		-- the dais: stays on the ground for walks and jumps (even Roblox's default 7.2-stud jump), floats under a flyer, and on
+		-- a seat sits at the feet line instead of on the seat. It drops at once (no lag walking downhill), rises gently
+		local feetY = cf.Position.Y - s.legLen
+		local gnd = s.ground
+		local hG = gnd and (feetY - gnd.Y)
+		local isGrounded = hG ~= nil and hG < (grounded and CONFIG.AIR_ON or CONFIG.AIR_OFF)
+		local target
+		if isGrounded then
+			if seated then
+				target = min(gnd.Y, feetY)
+			else
+				target = gnd.Y
+				lastGroundY = target
+			end
+		elseif CONFIG.DAIS_FLOAT or not lastGroundY then
+			target = feetY + s.hover - 2.4
+		else
+			target = lastGroundY
+		end
+		if target ~= target then target = daisY or O.Y - 3 end
+		if snap then daisY = nil end
+		if daisY then daisY += (target - daisY) * (1 - exp(-(target < daisY and 30 or 8) * dt)) else daisY = target end
+		local dY = daisY + st.layer
+		-- on a slope (a hillside, a beach, a ramp) the pool lies along the ground: a plane through three rays round the
+		-- wearer, every 0.2 s while standing on it, accepted only when it is a clean slope through the ground under the
+		-- wearer (stairs, cliff edges, other players: it stays level). It tilts over smoothly; flying or seated it is level
+		if isGrounded and not seated then
+			st.gpT -= dt
+			if st.gpT <= 0 then
+				st.gpT = 0.2
+				local nT = Vector3.yAxis
+				local gp = hosts.gp
+				local h1 = workspace:Raycast(Vector3.new(O.X + 9 * sin(yawW), dY + 4, O.Z + 9 * cos(yawW)), DOWN9, gp)
+				local h2 = h1 and workspace:Raycast(Vector3.new(O.X + 9 * sin(yawW + 2.0944), dY + 4, O.Z + 9 * cos(yawW + 2.0944)), DOWN9, gp)
+				local h3 = h2 and workspace:Raycast(Vector3.new(O.X + 9 * sin(yawW + 4.1888), dY + 4, O.Z + 9 * cos(yawW + 4.1888)), DOWN9, gp)
+				if h3 then
+					local p1 = h1.Position
+					local nn = (h2.Position - p1):Cross(h3.Position - p1)
+					if nn.Magnitude > 1e-3 then
+						nn = nn.Unit
+						if nn.Y < 0 then nn = -nn end
+						if nn.Y >= 0.94 and abs((gnd - p1):Dot(nn)) < 0.6 then nT = nn end -- (at most 20°, through the ground underfoot)
+					end
+				end
+				st.gnT = nT
+			end
+		else
+			st.gnT = Vector3.yAxis
+		end
+		local gn = snap and st.gnT or st.gn + (st.gnT - st.gn) * (1 - exp(-4 * dt))
+		gn = gn.Magnitude > 1e-3 and gn.Unit or Vector3.yAxis
+		st.gn = gn
+		local slopeT = gn.Y < 0.99996 and sqrt(1 - gn.Y * gn.Y) / gn.Y or 0 -- (tan of the tilt; under 0.5° it stays level)
+		local Gd = CFrame.new(O.X, dY, O.Z)
+		if slopeT > 0 then Gd *= CFrame.fromAxisAngle(Vector3.yAxis:Cross(gn).Unit, math.acos(gn.Y)) end
+		-- the height the clock and the balance ride: a heavy spring, so a jump (or a step) does not throw a 28-stud watch
+		-- up and down with the body; it catches up fast when flying or sitting
+		if snap or not st.kY then
+			st.kY, st.kYv = O.Y, 0
+		else
+			local kk = (isGrounded and not seated) and 4 or 12
+			local x = st.kY - O.Y
+			local e = exp(-kk * dt)
+			local tmp = (st.kYv + kk * x) * dt
+			x = (x + tmp) * e
+			st.kYv = (st.kYv - kk * tmp) * e
+			st.kY = O.Y + x
+		end
+		local Vk = V + Vector3.new(0, st.kY - O.Y, 0)
+
+		-- the clock: lower, further back and leaning back when the camera is close; behind the seat when sitting; never into
+		-- the dais (its lowest edge stays 0.24 above the dais rim's top, 0.54 above the floating galaxy layers)
+		local sitT = st.sitT
+		local Hc = CONFIG.CLOCK_HEIGHT - 0.5 * g - 3 * cz + 16 * fp - 3 * sitT
 		local Dc = CONFIG.CLOCK_DIST + 2 * g + (remote and CLOSE.distRemote or CLOSE.dist) * cz + 6 * fp - 2 * sitT
 		local tilt = rad(clamp(CONFIG.CLOCK_TILT + 14 * g + 4 * st.speedT + CLOSE.tilt * cz - 32 * fp, -10, 50))
 		-- (its lowest point is the bezel's back edge when it leans back, its front edge when it leans forward)
@@ -216,97 +319,6 @@ local DATA = [[
 			local fpos = moonC + fdir * 4.4
 			GCF[GMOONF] = CFrame.lookAt(fpos, fpos - fdir, abs(fdir.Y) > 0.98 and Vector3.zAxis or Vector3.yAxis)
 		end
-		-- the void's camera-facing details: the photon ring sits on the silhouette circle the camera sees (radius rt)
-		local dv = camPos - voidC
-		local dm = dv.Magnitude
-		local nrm = dm > 1e-3 and dv / dm or -V.LookVector
-		local dc = max(dm, 5)
-		local up = abs(nrm.Y) > 0.98 and Vector3.zAxis or Vector3.yAxis
-		rt = 4 * sqrt(1 - 16 / (dc * dc))
-		-- (the hairlines' distance steps: event writes, only when a band changes)
-		local pb = max(hairBand(dm, st.pBand), low and 2 or 1)
-		if pb ~= st.pBand then
-			st.pBand = pb
-			local hy = HAIR[pb][1]
-			local hl = low and 2.25 or 1.14
-			for _, k in ipairs(hosts.photon) do
-				PP[k].Size = Vector3.new(hl, hy, 0.12)
-				PRR[k] = 0.115 + hy / 2
-			end
-		end
-		local nb = max(hairBand((camPos - K.Position).Magnitude, st.nBand), low and 2 or 1)
-		if nb ~= st.nBand then
-			st.nBand = nb
-			hosts.needle.Size = Vector3.new(HAIR[nb][2], 12.2, 0.08)
-		end
-		GCF[GPF] = CFrame.lookAt(voidC + nrm * (16 / dc), voidC, up)
-		GCF[GHF] = CFrame.lookAt(voidC + nrm * 4.1, voidC, up)
-		local Dk = CFrame.new(voidC) * V.Rotation * TILTACC
-		local dir = CONFIG.ACC_DIR -- (the accretion texture's streaks wind clockwise outward: a counter-clockwise turn makes them trail)
-		if asm then accExtra = (accExtra + rad(360 * exp(-3 * max(0, age - 0.3))) * dt * dir) % TAU end
-		GCF[GACC] = Dk * CFrame.Angles(0, (rad(40) * now * dir + accExtra) % TAU, 0)
-		-- (the swirl's carrier rides 0.3 studs above the accretion disc's plane, toward the viewer: its particles sort over
-		-- the disc and the void however Roblox keys an emitter, at its part or at its particles)
-		GCF[GSWIRL] = Dk * SWIRL_UP * CFrame.Angles(0, (rad(85) * now * dir) % TAU, 0)
-		GCF[GFEED] = CFrame.lookAt(K * FEED_PT, voidC)
-
-		-- 6. the air (turned to face the way the wearer travels: the speed trail streams out behind) and the palms
-		local camDist = (camPos - O).Magnitude
-		local td = st.tdir
-		if td and td.Magnitude > 0.5 then
-			local tu = td.Unit
-			GCF[GAIR] = CFrame.lookAt(O, O + tu, abs(tu.Y) > 0.95 and W.LookVector or Vector3.yAxis) * CFrame.new(0, 4, 0)
-		else
-			GCF[GAIR] = CFrame.new(O + Vector3.new(0, 4, 0))
-		end
-		GCF[GBOKEH] = V * CFrame.new(0, 3.0, min(7.5, camDist - 4))
-		-- (a hand replaced without a new character, e.g. by ApplyDescription, takes our attachment with it: fall back to the
-		-- intake carriers and re-point the streams)
-		if palmR and palmR.Parent == nil then palmR, st.repoint = nil, true end
-		if palmL and palmL.Parent == nil then palmL, st.repoint = nil, true end
-		local f = W.RightVector:Dot(V.RightVector)
-		local flip = (f > 0.2 and assign ~= 1) and 1 or (f < -0.2 and assign ~= -1) and -1 or nil
-		if flip then assign = flip end
-		local moonSide = -assign
-		local mA, vA = palmFor(moonSide, moonCarA), palmFor(-moonSide, voidCarA)
-		GCF[GPALMM] = mA ~= moonCarA and CFrame.new(mA.WorldPosition) or W * CFrame.new(2.3 * moonSide, -0.3, -0.5)
-		GCF[GPALMV] = vA ~= voidCarA and CFrame.new(vA.WorldPosition) or W * CFrame.new(-2.3 * moonSide, -0.3, -0.5)
-
-		-- near-camera rules (with hysteresis), decided before the move so a group shown again moves this very frame: no rings
-		-- or bokeh blobs across the lens. The rings fade out over 0.25 s in three steps before they leave the world, and come
-		-- back fully see-through and fade in, so scrolling between 9 and 12 studs never snaps the biggest thing near the lens
-		if st.nearHide then
-			local dA = (camPos - A0p).Magnitude
-			if (not st.armWant and dA < CONFIG.NEAR_ARM_HIDE) or (st.armWant and dA > CONFIG.NEAR_ARM_SHOW) then
-				st.armWant = not st.armWant
-			end
-			local tgt = st.armWant and 1 or 0
-			if st.armF ~= tgt or (armHidden and not st.armWant) then
-				if armHidden and not st.armWant then
-					armHidden = false -- (back in the world at full see-through, at this frame's positions)
-					setGroups()
-				end
-				local step = snap and 1 or dt / 0.25
-				st.armF = tgt > st.armF and min(1, st.armF + step) or max(0, st.armF - step)
-				local q = math.floor(st.armF * 3 + 0.5) / 3
-				if q ~= st.armQ then
-					st.armQ = q
-					writeRings()
-				end
-				if st.armF >= 1 and not armHidden then
-					armHidden = true
-					setGroups()
-				end
-			end
-			if (not bokehNear and camDist < CONFIG.NEAR_BOKEH_HIDE) or (bokehNear and camDist > CONFIG.NEAR_BOKEH_SHOW) then
-				bokehNear = not bokehNear
-				refreshEmitters()
-			end
-		end
-		-- far detail (the framework's setDetail past ~110 studs): the lights, the near-only beams and another player's
-		-- silver tone fade over 0.5 s instead of switching in one frame (at night a lit patch of plaza would pop)
-		local lt = near and 1 or 0
-		if st.lodF ~= lt then
 ]]
 
 local function main()
@@ -351,7 +363,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "13_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "14_apply.luau"))
 end
 
 local ok, res = pcall(main)

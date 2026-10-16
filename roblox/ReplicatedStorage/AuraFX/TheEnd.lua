@@ -79,15 +79,19 @@ local TEX5 = {
 	dialInlay = "", subdial = "", accretion = "", galaxyFloor = "", galaxyArms = "", galaxyCore = "", engraving = "",
 	halo = "", stream = "", moon = "", starWindow = "",
 	shards5 = "", smoke5 = "", mote = "", glint5 = "", bokeh = "", streak5 = "", ash5 = "",
+	-- (pass 5.1) a star that blooms, holds and shrinks out over its life; lit volumetric smoke; curling wisps
+	twinkle = "", billow = "", wisp = "",
 }
 -- (te5_ash is one 256² flake: random rotation and spin vary it, and it costs a quarter of a 1024² flipbook sheet)
-local TEX5_LAYOUT = { shards5 = { "Grid4x4", "Loop" }, smoke5 = { "Grid4x4", "OneShot" } }
+local TEX5_LAYOUT = { shards5 = { "Grid4x4", "Loop" }, smoke5 = { "Grid4x4", "OneShot" },
+	twinkle = { "Grid4x4", "OneShot" }, billow = { "Grid4x4", "OneShot" }, wisp = { "Grid4x4", "OneShot" } }
 local FALLBACK = { -- key -> { pass-4 TEX key, flipbook layout, mode }
 	dialInlay = { "dialOuter" }, subdial = { "dialInner" }, accretion = { "galaxy4" }, galaxyFloor = { "galaxy4" },
 	galaxyArms = { "galaxy4" }, galaxyCore = { "ornate" }, engraving = { "gring" }, halo = { "rim" },
 	stream = { "line" }, moon = { "moon" }, starWindow = { "galaxy4" },
 	shards5 = { "ash", "None", "Loop" }, smoke5 = { "puff", "Grid4x4", "OneShot" }, mote = { "glow" }, glint5 = { "glint" },
 	bokeh = { "glow" }, streak5 = { "spark" }, ash5 = { "ash", "None", "Loop" },
+	twinkle = { "sparkles", "Grid4x4", "OneShot" }, billow = { "puff", "Grid4x4", "OneShot" }, wisp = { "puff", "Grid4x4", "OneShot" },
 }
 -- (te4_moon is a 512² moon disc, radius 152 px, inside a glow ring. Drawn as the face of the moon's disc it is cropped to
 -- the moon itself and rounded, so no white ring or square corner shows round the face; te5_moon is drawn whole)
@@ -406,6 +410,10 @@ local FEED_PT = Vector3.new(-10.72, 9.00, 0)
 local MOTE_T = { 0.3, 0.45, 0.6, 0.75 }
 local DOWN9 = Vector3.new(0, -9, 0) -- (the dais's slope rays)
 local SWIRL_UP = CFrame.new(0, 0.3, 0)
+-- (pass 5.1) the star halo's ring leans like a planet's: tipped forward 18 degrees and over 12, so from every side one
+-- half of it passes in front of the wearer and the other behind; the helix hub sits at the feet
+local HALO_TILT = CFrame.new(0, 1.2, 0) * CFrame.Angles(math.rad(18), 0, math.rad(-12))
+local HELIX_FEET = Vector3.new(0, -2.9, 0)
 -- the hairlines (the photon ring's thickness, the seconds needle's width) by distance band: under 50 studs, 50-95, beyond.
 -- A 0.13-stud line is under a pixel past ~85 studs; drawn without anti-aliasing (phones, low graphics) it breaks into a
 -- crawling stair-step, so it thickens in two steps (5 studs of margin each way: no back and forth)
@@ -566,7 +574,8 @@ function End.build(ctx)
 	local GF1, GF2, GF3 = 13, 14, 15
 	local GSHARD0 = 15 -- (the eight time shards are groups GSHARD0 + 1 .. GSHARD0 + 8)
 	local GMOON, GVOID, GPF, GHF, GACC, GSWIRL = 24, 25, 26, 27, 28, 29
-	local GDAIS, GG0, GG1, GG2, GENG, GWHEEL, GFUNNEL = 30, 31, 32, 33, 34, 35, 37 -- (36, 38: unused)
+	local GDAIS, GG0, GG1, GG2, GENG, GWHEEL, GFUNNEL = 30, 31, 32, 33, 34, 35, 37
+	local GHALO, GHELIX = 36, 38 -- (pass 5.1: the star halo's turning ring, the helix hub)
 	local GFEED, GAIR, GBOKEH, GPALMM, GPALMV, GMOONF, GDUST = 39, 40, 41, 42, 43, 44, 45
 	local GCF = table.create(45, IDENT)
 	-- per-frame state that is not a hot inner-loop value lives in one table (End.build is close to Luau's 200-register
@@ -1176,6 +1185,12 @@ function End.build(ctx)
 	hosts.bokeh = hi and carrier("BokehHost", DETAIL, GBOKEH, Vector3.new(18, 10, 5))
 	hosts.palmMoon = carrier("PalmMoon", CORE, GPALMM, Vector3.new(2.6, 2.6, 2.6))
 	hosts.palmVoid = carrier("PalmVoid", CORE, GPALMV, Vector3.new(2.6, 2.6, 2.6))
+	-- (pass 5.1) the star halo: a 34-stud ring of stardust turning round the wearer on a tilt (P15); the helix hub: two
+	-- points 3.1 studs out that turn round the body at the feet, each trailing a strand that climbs it (P16)
+	hosts.halo = hi and carrier("StarHalo", CORE, GHALO, Vector3.new(34, 0.3, 34))
+	hosts.helix = carrier("HelixHub", CORE, GHELIX, Vector3.new(1, 1, 1))
+	hosts.strandMoon = new("Attachment", { Name = "StrandMoon", Position = Vector3.new(3.1, 0, 0) }, hosts.helix)
+	hosts.strandVoid = new("Attachment", { Name = "StrandVoid", Position = Vector3.new(-3.1, 0, 0) }, hosts.helix)
 
 	-- the Highlight: one per aura, on the Silver model only (neutral silver by day plus an ink contour on the bright sky).
 	-- STUDIO-VERIFY: a Highlight on a Model of 200+ parts. Its strength is the HIGHLIGHT_FILL / HIGHLIGHT_OUTLINE attributes.
@@ -1417,6 +1432,37 @@ function End.build(ctx)
 		em.bokeh = hi and pe(hosts.bokeh, "bokeh", 3.0, { Shape = BOX, ShapeStyle = VOLUME, Rate = 0.5, Lifetime = n(5, 7), Speed = n(0.1, 0.25),
 			SpreadAngle = Vector2.new(180, 180), Size = n(1.2, 2.4), Transparency = seq({ { 0, 1 }, { 0.25, 0.72 }, { 0.75, 0.72 }, { 1, 1 } }),
 			Color = ColorSequence.new(Color3.fromRGB(232, 236, 246)), Rotation = n(0, 360), RotSpeed = n(-4, 4) }, { 0.3, 0.8 }, { 1.2, 1.8 }, "bokeh")
+		-- P15 (pass 5.1): the star halo: a tilted ring of stardust orbits the wearer between the rings and the orbs, born on
+		-- the outer part of its disc (ShapePartial: the inner radius) and locked to it, so the stars orbit with the ring and
+		-- never trail behind a walking wearer. Half the ring passes in front of the wearer, the dial and the orbs and half
+		-- behind them: a layer of moving depth through the whole aura. Each star is a twinkle (the flipbook blooms, holds and
+		-- shrinks it), so the ring glitters without any brightness pulse
+		if hi then
+			em.halo = pe(hosts.halo, "twinkle", 3.6, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.55, EmissionDirection = N_.Top,
+				Rate = 26, Lifetime = n(6, 8), Speed = n(0.05, 0.2), SpreadAngle = Vector2.new(25, 25),
+				Size = seq({ { 0, 0.62, 0.18 }, { 1, 0.62, 0.18 } }), Transparency = seq({ { 0, 1 }, { 0.1, 0.02 }, { 0.9, 0.02 }, { 1, 1 } }),
+				LockedToPart = true, Rotation = n(0, 90), RotSpeed = n(-8, 8), ZOffset = 0.2 }, WHITE_LE, WHITE_BR, "nearcam")
+		end
+		-- P16 (pass 5.1): the duality helix: two points turn round the body at 150 degrees a second and leave a strand each,
+		-- so a silver strand of light and an ink strand of smoke braid up round the wearer from the feet to above the head
+		-- (not locked: each particle stays where it was born and climbs, which is what draws the spiral). While the wearer
+		-- travels the strands thin out, so they don't hang far behind (see the travelling flip)
+		em.strandMoon = pe(hosts.strandMoon, "twinkle", 5.2, { EmissionDirection = N_.Top, Rate = rate(30, 12), Lifetime = n(2.0, 2.3),
+			Speed = n(2.6, 2.9), SpreadAngle = Vector2.new(4, 4), Drag = 0.3, Size = seq({ { 0, 0.6 }, { 0.6, 0.5 }, { 1, 0.15 } }),
+			Transparency = seq({ { 0, 1 }, { 0.06, 0.02 }, { 0.75, 0.15 }, { 1, 1 } }), Rotation = n(0, 90), RotSpeed = n(-30, 30),
+			ZOffset = 0.4 }, WHITE_LE, WHITE_BR, "nearcam")
+		em.strandVoid = pe(hosts.strandVoid, "wisp", 5.2, { EmissionDirection = N_.Top, Rate = rate(18, 8), Lifetime = n(2.0, 2.3),
+			Speed = n(2.6, 2.9), SpreadAngle = Vector2.new(4, 4), Drag = 0.3, Size = seq({ { 0, 0.8 }, { 0.5, 1.5 }, { 1, 0.7 } }),
+			Transparency = seq({ { 0, 1 }, { 0.1, 0.1 }, { 0.7, 0.35 }, { 1, 1 } }), Color = ColorSequence.new(INK), Rotation = n(0, 360),
+			RotSpeed = n(-40, 40), ZOffset = 0.3 }, nil, nil, "nearcam")
+		-- P17 (pass 5.1): stars twinkle inside the clock's star window, between the rete's bars (locked to the dial, so they
+		-- stay in the face however the clock turns to its viewer)
+		if hi and hosts.inlay then
+			pe(hosts.inlay, "twinkle", 4.4, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0, EmissionDirection = N_.Front,
+				Rate = 5, Lifetime = n(2.6, 3.4), Speed = n(0), Size = seq({ { 0, 1.0, 0.3 }, { 1, 1.0, 0.3 } }),
+				Transparency = seq({ { 0, 1 }, { 0.12, 0 }, { 0.88, 0 }, { 1, 1 } }), LockedToPart = true, Rotation = n(0, 90),
+				ZOffset = 0.6 }, { 0.6, 1 }, { 2.2, 3.0 })
+		end
 		if hi then
 			-- P7: a low mist bank round the pool's rim, only while standing on the ground (ShapePartial 0.8: the outer fifth
 			-- of the disc, so the galaxy inside stays clear)
@@ -1493,7 +1539,7 @@ function End.build(ctx)
 		-- which emitters belong to the parts that turn see-through while another wearer's aura is in your way (their smoke,
 		-- swirl, dust, shards, glints, horizon and palm streaks must not stay solid across your character)
 		local ghostHost = { [moon] = true, [void] = true }
-		for _, h in ipairs({ "swirl", "shardFeed", "horizon", "timeDust", "palmMoon", "palmVoid" }) do
+		for _, h in ipairs({ "swirl", "shardFeed", "horizon", "timeDust", "palmMoon", "palmVoid", "inlay" }) do
 			if hosts[h] then ghostHost[hosts[h]] = true end
 		end
 		for _, e in ipairs(emitters) do
@@ -2308,6 +2354,9 @@ function End.build(ctx)
 			GCF[GAIR] = CFrame.new(O + Vector3.new(0, 4, 0))
 		end
 		GCF[GBOKEH] = V * CFrame.new(0, 3.0, min(7.5, camDist - 4))
+		-- (pass 5.1) the star halo turns slowly on its tilt; the helix hub spins round the body from the feet
+		if hosts.halo then GCF[GHALO] = W * HALO_TILT * CFrame.Angles(0, (rad(14) * now) % TAU, 0) end
+		GCF[GHELIX] = CFrame.new(O + HELIX_FEET) * CFrame.Angles(0, (rad(150) * now) % TAU, 0)
 		-- (a hand replaced without a new character, e.g. by ApplyDescription, takes our attachment with it: fall back to the
 		-- intake carriers and re-point the streams)
 		if palmR and palmR.Parent == nil then palmR, st.repoint = nil, true end
@@ -2464,6 +2513,9 @@ function End.build(ctx)
 			if em.smokeMoon then em.smokeMoon.Rate = slow and 0 or 5 end
 			em.dust.Rate = (low and 5 or 10) * (slow and 0.5 or 1)
 			if em.wisps then em.wisps.Rate = slow and 0 or (low and 3 or 7) end
+			-- (the helix's strands: thin while travelling, so they leave a short glittering wake, not a long trail)
+			em.strandMoon.Rate = (low and 12 or 30) * (slow and 0.35 or 1)
+			em.strandVoid.Rate = slow and 0 or (low and 8 or 18)
 		end
 		if remote and cam and ownerHub then
 			-- another wearer's clock or orbs in front of your own clock (a friend beside or behind you): theirs step back

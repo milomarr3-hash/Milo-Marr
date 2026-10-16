@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 03_chunk_02_of_11.luau | step 3: piece 2 of 11
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (143408 bytes, checksum 678854451).
+-- AuraRNG Studio install kit | 03_chunk_02_of_12.luau | step 3: piece 2 of 12
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (148303 bytes, checksum 731942170).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "03_chunk_02_of_11.luau"
+local FILE = "03_chunk_02_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-143408-678854451-11-550560669"
-local NEW_LEN, NEW_SUM = 143408, 678854451
+local RUN = "TheEnd-148303-731942170-12-824555251"
+local NEW_LEN, NEW_SUM = 148303, 731942170
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 11
-local LENS = { 13324, 13240, 13287, 13259, 13322, 13265, 13235, 13284, 13254, 13310, 10628 }
-local SUMS = { 617994297, 921320026, 221987227, 677570473, 205776046, 240581101, 843372519, 959695815, 985105631, 395268242, 503004703 }
+local N = 12
+local LENS = { 13300, 13224, 13240, 13242, 13194, 13235, 13276, 13235, 13290, 13298, 13282, 2487 }
+local SUMS = { 825733820, 782681153, 524531706, 656635892, 998587156, 867606918, 526087852, 254541497, 6651690, 395645774, 897444566, 313496838 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,19 @@ local function chunkOk(h, i)
 end
 
 local K = 2
--- piece 2 of 11 of the new source (13240 bytes, checksum 921320026, long bracket level 0)
+-- piece 2 of 12 of the new source (13224 bytes, checksum 782681153, long bracket level 0)
 local DATA = [[
+				if fixUps[o] then pcall(fixUps[o], o) end
+			end
+		end
+	end
+	local function onStatus(id, status)
+		local ks = keysOf[id]
+		if not ks or status == Enum.AssetFetchStatus.Success then return end
+		if status ~= Enum.AssetFetchStatus.Failure and not retried[id] then
+			retried[id] = true
+			task.delay(20, function()
+				pcall(function() game:GetService("ContentProvider"):PreloadAsync({ id }, onStatus) end)
 			end)
 			return
 		end
@@ -279,11 +290,6 @@ local liveGrade, liveGradeTween, gradeToken, gradeOwner = nil, nil, 0, nil
 -- when this client's own THE END was last taken away, and from which character (a respawn rebuilds it on a new character
 -- within seconds: that is not an equip, so no grade)
 local ownGone, ownGoneChar = nil, setmetatable({}, { __mode = "v" }) -- (weak: an old character is never kept alive)
--- where this client's own clock hub is (the owner's build writes it every frame): another wearer's clock and orbs step
--- back behind it instead of standing in front of your own clock
-local ownerHub = nil
-local GRADE_ON = { Saturation = -0.75, Brightness = -0.1, Contrast = 0.15, TintColor = Color3.fromRGB(232, 238, 255) }
-local GRADE_OFF = { Saturation = 0, Brightness = 0, Contrast = 0, TintColor = Color3.new(1, 1, 1) }
 ]]
 
 local function main()
@@ -328,7 +334,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "13_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "14_apply.luau"))
 end
 
 local ok, res = pcall(main)
