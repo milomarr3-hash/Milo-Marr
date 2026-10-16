@@ -79,8 +79,8 @@
   "fallbackTexKey": "gring",
   "size": "1024x1024",
   "layout": "None",
-  "purpose": "Engraved clock ring on the ground around the dais (D5, 40 studs)",
-  "notes": "White 240, 2 px ink (20). Numeral strokes are the spec's height-scaled thick/thin plus 12 / 25 % so the thin serifs stay ~2.7 px for the grazing ground view.",
+  "purpose": "The stage: an engraved clock ring on the ground round the dais (D5, 56 studs; review round 3, was 40)",
+  "notes": "r 1 = 28 studs. From just outside the dais rim (r 0.585) to r 0.99: a fine guilloche tick band (r 0.64-0.68), Roman numerals 3 studs tall at r 0.80 with half-hour four-point stars, and an INKED minute track (a solid ink band r 0.925-0.975, alpha 1) with white ticks and lume batons every five minutes. White 240 strokes with a 2 px ink (20) outline at alpha 0.95: nothing semi-transparent. Day Brightness 1.0 (the ink carries the day), night 2.0.",
   "uploadedId": null
  },
  {
@@ -91,7 +91,7 @@
   "fallbackTexKey": "rim",
   "size": "512x512",
   "layout": "None",
-  "purpose": "Rim-only halo: moon halo billboard (13 studs) and night bezel corona (C10, 40 studs)",
+  "purpose": "Rim-only halo: moon halo billboard (15 studs), night bezel corona (C10, 44 studs) and the void's horizon glow particles (11.2 studs); its ring peaks at r 0.73, and the module scales the three by RIM_R while the pass-2 'rim' texture stands in",
   "notes": "White; alpha 0 below r 0.66, 0.95 at 0.74, 0.35 at 0.82, 0.10 at 0.90, 0 at 1.0 (monotone cubic, dithered). Tint with ImageColor3 (236,240,248).",
   "uploadedId": null
  },
@@ -105,18 +105,6 @@
   "layout": "None",
   "purpose": "Palm stream beams B1 (silver) and B3 (ink, via Beam Color)",
   "notes": "Beam texture: image x runs ALONG the beam (seamless every 256 px, TextureMode Wrap), y across. White core with 6 waving filaments, ink edges. Color WHITE = silver stream with ink edges; Color (18,18,24) = all-ink stream.",
-  "uploadedId": null
- },
- {
-  "name": "te5_ribbon",
-  "file": "te5_ribbon.png",
-  "repoPath": "textures/te5/surfaces/te5_ribbon.png",
-  "texKey": "ribbon",
-  "fallbackTexKey": "line",
-  "size": "256x128",
-  "layout": "None",
-  "purpose": "Equinox-style ink ribbon beam B5 from the void into the dais",
-  "notes": "Beam texture (x along, seamless 256 px). Ink body (14,14,18 +-6), white hairlines at |v| 0.415, faint waving centre filament. The white hairlines need a LIGHT Beam Color: use WHITE with te5_ribbon. The spec's B5 Color (12,12,16) multiplies them to black (keep (12,12,16) only for the 'line' fallback).",
   "uploadedId": null
  },
  {

@@ -3,9 +3,9 @@
 #
 # Spec: docs/the-end/pass5-spec.md, section 16.2 (group "particles") and section 9 (the emitters that use them). 7 textures:
 #   te5_shards  (1024^2, Grid4x4 Loop)     P3 metal shards breaking off the bezel and flying into the void
-#   te5_smoke   (1024^2, Grid4x4 OneShot)  P4a/P4b two-tone rim smoke, P7 ground mist
-#   te5_mote    (128^2)                    P1 void swirl, P2 moon dust, P6a air dust, P8a galaxy motes, P11 foot drips
-#   te5_glint   (256^2)                    P5a/P5b glints riding the metal, P6b air glints
+#   te5_smoke   (1024^2, Grid4x4 OneShot)  P4a/P4b two-tone orb smoke, P7 rim mist, P11 the body's silver wisps
+#   te5_mote    (128^2)                    P1 void swirl, P2 moon dust
+#   te5_glint   (256^2)                    P13 time dust, P6a/P6b air sparkles, P8 floor twinkles, P11 the body's sparks
 #   te5_bokeh   (256^2)                    P6c big slow bokeh between the camera and the wearer
 #   te5_streak  (256^2)                    P9 funnel, P10a/b palm intake, P12 speed trail (VelocityParallel; the TOP leads)
 #   te5_ash     (256^2)                    P8b black ash flakes rising off the galaxy (one flake: rotation and spin vary it)
@@ -647,53 +647,59 @@ def make_shards():
 
 
 # ====================================================================================================================
-# te5_smoke  (1024^2, Grid4x4, OneShot): a curling smoke tendril, dense and crisp -> thin and wispy over 16 frames
+# te5_smoke  (1024^2, Grid4x4, OneShot): a dense ink-tight billow filling ~80 % of its cell, wisps only at the edge,
+# dissolving from the edge inward only in frames 12-15 (review round 3)
 # ====================================================================================================================
-
-SMOKE_PEAK = [0.62, 0.76, 0.85, 0.85, 0.85, 0.81, 0.76, 0.70, 0.64, 0.58, 0.53, 0.48, 0.44, 0.40, 0.37, 0.34]
-
 
 SMOKE_SEED = 777
 
 
 def render_smoke_frame(k, no, cell=256):
-    """One frame of the smoke: a 2D slice of a puff that expands, curls and thins. Everything is a smooth function of
-    t = k / 15, so neighbouring frames differ only a little (the OneShot plays ~4 fps over the particle's life)."""
+    """One frame of the smoke: a dense, ink-tight billow (review round 3: the old curl covered ~30 % of its cell and was
+    mostly translucent, so in game the 'ink' smoke read half see-through and teal on the sky). The billow fills ~80 %
+    of the cell: a cauliflower of round lobes round a solid body (alpha >= 0.9 over its inner half), soft creases
+    between the lobes, torn wisps only at its edge. It turns slowly, and dissolves only in frames 12-15, from the edge
+    inward into ragged wisps. Everything is a smooth function of t = k / 15, so neighbouring frames differ only a little
+    (the OneShot plays ~4 fps over the particle's life)."""
     X, Y = cell_xy(cell)
     t = k / 15.0
-    e = 1.0 - (1.0 - t) ** 1.6                       # fast early growth that settles
-    R = 0.22 + 0.20 * e                              # blob radius 0.22 -> 0.42 of the cell
+    e = sstep(0.0, 0.7, t)                           # grows over frames 0-10, then holds
+    R = 0.37 + 0.035 * e                             # body radius 0.37 -> 0.405 of the cell (lobes reach ~0.44)
     r = np.hypot(X, Y)
-    # spiral (curl) warp, growing: the inside turns further than the outside, so lobes wind into curling tendrils
-    W = 0.15 + 1.35 * t ** 1.15                      # radians at the centre
+    # a slow curl: the inside turns a little further than the outside
+    W = 0.10 + 0.55 * t
     phi = W * np.exp(-(r / (0.9 * R)) ** 2)
     c, s = np.cos(-phi), np.sin(-phi)
     xs = X * c - Y * s
     ys = X * s + Y * c
-    S = 1.0 + (R / 0.22 - 1.0) * 0.85                # the features spread with the puff (a bit slower than it)
-    qx, qy = xs / S, ys / S
-    # domain warp (grows): the turbulence that tears the puff into wisps
-    A = 0.02 + 0.07 * e
-    wx = no(qx + 5.2, qy + 1.3, 3.0, n=3)
-    wy = no(qx - 3.7, qy + 8.1, 3.0, n=3)
-    qx2, qy2 = qx + A * wx, qy + A * wy
-    # the puff: a rounded mass with 2-octave lobes, plus 4-octave fbm detail that turns into ridged wisps late
-    lob = no(qx2 + 11.7, qy2 - 2.4, 2.0, n=2)
-    rq = np.hypot(qx2, qy2) / 0.22
-    shape = 1.0 - rq ** 2.2 + 0.25 * lob
-    wisp = sstep(0.4, 1.0, t)
-    det = no(qx2, qy2, 4.5, n=4, gain=0.55, drift=(0.0, -0.05 * t), ridge=0.6 * wisp)
-    dens = shape + 1.3 * det - 0.05 - 0.55 * t ** 1.2
-    gate = 1.0 - sstep(0.85 * R, 1.25 * R, np.hypot(xs, ys))     # no floating islands far from the puff
-    dens = np.maximum(dens, 0.0) * gate
-    win = 1.0 - sstep(0.34, 0.46, r)                  # alpha reaches 0 at 0.46 of the cell (no square edges)
-    dens = dens * win
-    # opacity: Beer-Lambert (soft, never a hard threshold), normalised to the frame's planned peak
-    kap = 3.2 * (1.0 - t) + 2.2 * t
-    a = 1.0 - np.exp(-kap * dens)
-    occ = a[a > 0.02]
-    ref = float(np.percentile(occ, 99.5)) if occ.size else 1.0
-    a = np.clip(a / max(ref, 0.2), 0.0, 1.0) * SMOKE_PEAK[k]
+    # gentle turbulence
+    A = 0.015 + 0.03 * t
+    wx = no(xs + 5.2, ys + 1.3, 3.0, n=3)
+    wy = no(xs - 3.7, ys + 8.1, 3.0, n=3)
+    qx, qy = xs + A * wx, ys + A * wy
+    th = np.arctan2(qy, qx)
+    # the cauliflower outline: 7 and 11 round lobes (their phases drift a little) plus low noise
+    lobes = 0.075 * np.abs(np.sin(3.5 * th + 0.8 + 0.4 * t)) + 0.045 * np.abs(np.sin(5.5 * th + 2.1 - 0.3 * t)) - 0.06
+    lob = no(qx * 0.9 + 11.7, qy * 0.9 - 2.4, 2.4, n=2)
+    rb = R * (1.0 + lobes + 0.22 * lob)
+    rq = np.hypot(qx, qy)
+    rn = rq / np.maximum(rb, 0.05)
+    # torn wisps at the edge only (ridged noise, masked to the rim band)
+    wisp = no(qx, qy, 6.0, n=4, gain=0.55, drift=(0.0, -0.04 * t), ridge=0.6)
+    rim = sstep(0.6, 0.9, rn)
+    edge = sstep(1.12, 0.70, rn + 0.26 * wisp * rim)
+    # soft creases between the lobes and big soft lumps inside (alpha 0.88-0.97)
+    bill = no(qx + 2.2, qy - 7.4, 3.6, n=3)
+    a = edge * (0.93 + 0.08 * bill)
+    # dissolve (frames 12-15 only): it thins from the edge inward and noise tears it into ragged wisps
+    d = min(max((t - 11.0 / 15.0) / (4.0 / 15.0), 0.0), 1.0)    # 0.25 a frame over frames 12-15
+    if d > 0:
+        ero = no(qx - 4.1, qy + 6.6, 4.0, n=3, ridge=0.2) + 0.45 + 0.7 * (1.0 - rn)   # the centre survives longest
+        thr = d * 0.95
+        a = a * sstep(thr - 0.2, thr + 0.2, ero) * (1.0 - 0.2 * d)
+    win = 1.0 - sstep(0.38, 0.46, r)                  # alpha reaches 0 at 0.46 of the cell (no square edges)
+    a = np.clip(a * win, 0.0, 0.97)
+    dens = a
     # internal shading 0.75 - 1.0: self-shadow by marching toward the light (upper left) + a bump on the lumps
     Ld = (-0.55, 0.835)
     step = 2.0 * SS                                   # 2 output px per march step, 12 steps
@@ -703,10 +709,10 @@ def render_smoke_frame(k, no, cell=256):
         dx = int(round(Ld[0] * step * j))
         acc += np.roll(np.roll(dens, -dy, axis=0), -dx, axis=1)
     T = np.exp(-0.5 * acc * (2.0 / 256.0) * 10.0)
-    D = gblur(dens, 3.0 * SS)
-    gy, gx = np.gradient(D)
-    lam = (-gx * Ld[0] + gy * Ld[1]) * 6.0 * SS
-    shade = np.clip(0.75 + 0.25 * np.clip(0.55 * T + 0.45 + lam, 0.0, 1.0), 0.75, 1.0)
+    hgt = gblur(dens, 2.0 * SS) + 0.35 * gblur(np.clip(bill + 0.5, 0, 1) * edge, 4.0 * SS)   # the lumps' relief
+    gy, gx = np.gradient(hgt)
+    lam = (-gx * Ld[0] + gy * Ld[1]) * 9.0 * SS
+    shade = np.clip(0.75 + 0.25 * np.clip(0.5 * T + 0.42 + lam, 0.0, 1.0), 0.75, 1.0)
     return (shade * a).astype(F32), a.astype(F32)
 
 
@@ -835,16 +841,19 @@ MANIFEST = [
      "~0.25-0.4 studs; raise Size ~1.3x if it reads too small. Use FlipbookFramerate 10-14, FlipbookStartRandom "
      "true."),
     ("te5_smoke", "smoke5", "puff", "1024x1024", "Grid4x4", "OneShot",
-     "P4a/P4b two-tone rim smoke and P7 ground mist",
-     "Flipbook 4x4 OneShot. Per-frame peak alpha 0.62 0.76 0.85 0.85 0.85 0.81 0.76 0.70 0.64 0.58 0.53 0.48 0.44 0.40 "
-     "0.37 0.34. RGB 0.75-1.0 internal shading lit from the upper left. Radial window reaches alpha 0 at 0.46 of the "
-     "cell. Frames change gently (OneShot over a 3.5-4.5 s lifetime is ~4 fps), so the flipbook never pops."),
+     "P4a/P4b two-tone orb smoke, P7 rim mist and P11 the body's silver wisps",
+     "Flipbook 4x4 OneShot. Review round 3: a dense billow filling ~80 % of its cell (body radius 0.37 -> 0.405, round "
+     "lobes reaching ~0.44), alpha ~0.93 over its inner half, per-cell mean alpha >= 0.30 in frames 0-11, torn wisps only "
+     "at the edge; it dissolves from the edge inward into ragged wisps in frames 12-15 only (mean alpha 0.36 -> 0.08). "
+     "RGB 0.75-1.0 internal shading lit from the upper left (the lobes' relief). Radial window reaches alpha 0 at 0.46 of "
+     "the cell. Frames 0-11 change gently (OneShot over a 3.5-4.5 s lifetime is ~4 fps); the dissolve frames play while "
+     "the emitter's own Transparency fades the particle out. Drawn at the same size as the pass-4 puff (no 1.3x)."),
     ("te5_mote", "mote", "glow", "128x128", "None", None,
-     "Dust motes: P1 void swirl, P2 moon dust, P6a air dust, P8a galaxy motes, P11 foot drips",
+     "Dust motes: P1 void swirl and P2 moon dust (review round 3: the air dust, floor motes and foot drips became glints)",
      "White core r < 0.22 (alpha 1), ink rim r 0.22-0.30 (RGB 18, alpha 0.85), white glow r 0.30 -> 0.465 "
      "(alpha 0.25 -> 0)."),
     ("te5_glint", "glint5", "glint", "256x256", "None", None,
-     "P5a/P5b glints riding the metal and P6b mid-size air glints",
+     "Four-point glints: P13 time dust round the bezel, P6a/P6b air sparkles, P8 floor twinkles, P11 the body's sparks",
      "4-point glint: H/V spikes 6 -> 0.5 px, alpha 1 -> 0, tips at 0.465 of the cell; 45 deg spikes half length 0.45 at "
      "alpha 0.5; core r 0.05; ink halo r 0.07-0.09 (RGB 15, alpha 0.6)."),
     ("te5_bokeh", "bokeh", "glow", "256x256", "None", None,
@@ -1056,7 +1065,7 @@ def sheet_frames():
             yy = y + (k // 8) * 136
             cp.rgb[yy:yy + 128, x:x + 128] = np.asarray(bg, F32) / 255.0
             cp.put_plain(resize_premult(cell_of(sm, 4, k), 128, 128), x, yy)
-            texts.append((f"{k}  a{SMOKE_PEAK[k]:.2f}", (x + 3, yy + 2)))
+            texts.append((f"{k}  a{float(cell_of(sm, 4, k)[..., 3].mean()) / 255:.2f}", (x + 3, yy + 2)))
         y += 2 * 136
         texts.append(("te5_ash: one flake (256 px), shown at 4 of the particle's random rotations", (8, y + 6)))
         y += 30
@@ -1378,14 +1387,15 @@ def check():
                                                          "(spec 0.25)")
     # --- smoke
     a = imgs["te5_smoke"]
-    peaks, prev, steps = [], None, []
+    means, inner, prev, steps = [], [], None, []
     win_ok, rgb_ok = True, True
     yy, xx = np.mgrid[0:256, 0:256]
     rr = np.hypot(xx + 0.5 - 128, yy + 0.5 - 128) / 256
     for k in range(16):
         c = cell_of(a, 4, k).astype(F32)
         A = c[..., 3] / 255
-        peaks.append(float(np.percentile(A[A > 0.02], 99.5)))
+        means.append(float(A.mean()))
+        inner.append(float(A[rr < 0.21].mean()))
         win_ok &= float(A[rr >= 0.46].max()) == 0.0
         L = c[..., 0][A > 0.08] / 255
         rgb_ok &= bool(L.min() >= 0.74 and L.max() <= 1.0)
@@ -1393,12 +1403,17 @@ def check():
         if prev is not None:
             steps.append(float(np.abs(Al - prev).mean()))
         prev = Al
-    ok(all(abs(peaks[k] - 0.85) < 0.03 for k in (2, 3, 4)), "te5_smoke: alpha peaks at 0.85 in frames 2-4 -> " +
-       " ".join(f"{p:.2f}" for p in peaks[:6]))
-    ok(peaks[15] <= 0.355, f"te5_smoke: frame 15 peak alpha {peaks[15]:.2f} (<= 0.35)")
+    ok(all(m >= 0.30 for m in means[:12]), "te5_smoke: per-cell mean alpha >= 0.30 in frames 0-11 -> " +
+       " ".join(f"{m:.2f}" for m in means[:12]))
+    ok(all(v >= 0.85 for v in inner[:12]), "te5_smoke: alpha >= 0.85 over the inner half of the billow (r < 0.21) in "
+       "frames 0-11 -> " + " ".join(f"{v:.2f}" for v in inner[:12]))
+    ok(means[15] <= 0.5 * means[11], f"te5_smoke: it dissolves in frames 12-15 (mean alpha {means[11]:.2f} -> {means[15]:.2f})")
     ok(win_ok, "te5_smoke: alpha 0 beyond 0.46 of the cell in every frame")
     ok(rgb_ok, "te5_smoke: RGB 0.75-1.0 wherever the smoke is visible")
-    ok(max(steps) < 0.035, f"te5_smoke: frames change gently (max large-scale mean |dA| per frame {max(steps):.3f})")
+    # (frames 0-11 change gently; the dissolve frames 12-15 play over the last second of a particle's life, while the
+    # emitter's own Transparency already fades it out, so they may step a little more)
+    ok(max(steps[:11]) < 0.035 and max(steps[11:]) < 0.10, f"te5_smoke: frames change gently (max large-scale mean |dA| "
+       f"per frame {max(steps[:11]):.3f} in frames 0-11, {max(steps[11:]):.3f} in the dissolve)")
     # --- mote
     a = imgs["te5_mote"].astype(F32) / 255
     vals = [(_radial(a, 3, 0.0, 0.2, 128), 1.0, 0.01, "core alpha"), (_radial(a, 0, 0.0, 0.2, 128), 1.0, 0.01, "core RGB"),

@@ -21,8 +21,8 @@
   "size": "1024x1024",
   "layout": "Grid4x4",
   "flipbookMode": "OneShot",
-  "purpose": "P4a/P4b two-tone rim smoke and P7 ground mist",
-  "notes": "Flipbook 4x4 OneShot. Per-frame peak alpha 0.62 0.76 0.85 0.85 0.85 0.81 0.76 0.70 0.64 0.58 0.53 0.48 0.44 0.40 0.37 0.34. RGB 0.75-1.0 internal shading lit from the upper left. Radial window reaches alpha 0 at 0.46 of the cell. Frames change gently (OneShot over a 3.5-4.5 s lifetime is ~4 fps), so the flipbook never pops.",
+  "purpose": "P4a/P4b two-tone orb smoke, P7 rim mist and P11 the body's silver wisps",
+  "notes": "Flipbook 4x4 OneShot. Review round 3: a dense billow filling ~80 % of its cell (body radius 0.37 -> 0.405, round lobes reaching ~0.44), alpha ~0.93 over its inner half, per-cell mean alpha >= 0.30 in frames 0-11, torn wisps only at the edge; it dissolves from the edge inward into ragged wisps in frames 12-15 only (mean alpha 0.36 -> 0.08). RGB 0.75-1.0 internal shading lit from the upper left (the lobes' relief). Radial window reaches alpha 0 at 0.46 of the cell. Frames 0-11 change gently (OneShot over a 3.5-4.5 s lifetime is ~4 fps); the dissolve frames play while the emitter's own Transparency fades the particle out. Drawn at the same size as the pass-4 puff (no 1.3x).",
   "uploadedId": null
  },
  {
@@ -33,7 +33,7 @@
   "fallbackTexKey": "glow",
   "size": "128x128",
   "layout": "None",
-  "purpose": "Dust motes: P1 void swirl, P2 moon dust, P6a air dust, P8a galaxy motes, P11 foot drips",
+  "purpose": "Dust motes: P1 void swirl and P2 moon dust (review round 3: the air dust, floor motes and foot drips became glints)",
   "notes": "White core r < 0.22 (alpha 1), ink rim r 0.22-0.30 (RGB 18, alpha 0.85), white glow r 0.30 -> 0.465 (alpha 0.25 -> 0).",
   "uploadedId": null
  },
@@ -45,7 +45,7 @@
   "fallbackTexKey": "glint",
   "size": "256x256",
   "layout": "None",
-  "purpose": "P5a/P5b glints riding the metal and P6b mid-size air glints",
+  "purpose": "Four-point glints: P13 time dust round the bezel, P6a/P6b air sparkles, P8 floor twinkles, P11 the body's sparks",
   "notes": "4-point glint: H/V spikes 6 -> 0.5 px, alpha 1 -> 0, tips at 0.465 of the cell; 45 deg spikes half length 0.45 at alpha 0.5; core r 0.05; ink halo r 0.07-0.09 (RGB 15, alpha 0.6).",
   "uploadedId": null
  },

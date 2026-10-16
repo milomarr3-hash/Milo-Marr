@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # THE END (1 in 1,000,000,000) -- equipped aura, pass 5 "The Last Clock" -- texture group "surfaces".
 #
-# Spec: docs/the-end/pass5-spec.md, section 16.2 (group "surfaces"). 12 textures:
+# Spec: docs/the-end/pass5-spec.md, section 16.2 (group "surfaces"). 11 textures:
 #   te5_dial_inlay  te5_subdial  te5_accretion  te5_galaxy_floor  te5_galaxy_arms  te5_galaxy_core
-#   te5_engraving   te5_halo     te5_stream           te5_ribbon
+#   te5_engraving   te5_halo     te5_stream
 #   te5_moon        te5_star_window  (added in review round 1: docs/the-end/pass5-build-notes.md)
+#   (te5_ribbon was dropped in review round 3: the void's ink ribbon became the lensed band, two beams that use
+#   te5_stream. Its generator is in the git history.)
 #
 # Only python3 + numpy + PIL (runs the same on Milo's Mac and in the cloud). Deterministic: every random source is
 # seeded, so a re-run gives byte-identical PNGs.
@@ -543,29 +545,45 @@ def make_subdial():
 
 
 # --------------------------------------------------------------------------------------------------------------------
-# 7. te5_engraving  (1024^2, ground ring 40 studs, r 1 = 20 studs)
+# 7. te5_engraving  (1024^2, the stage: a ground ring 56 studs across, r 1 = 28 studs; review round 3: it was 40 studs and
+#    barely cleared the dais rim, a faint thin ring of tiny numerals. Now it runs from just outside the rim (r 0.57 =
+#    15.95 studs) to r 0.99: fine guilloche ticks, Roman numerals 3 studs tall, an INKED minute track (a solid dark band
+#    with white ticks, lume batons at the five-minute marks) that reads on bright sand by day. Opaque: every stroke is
+#    white with an ink outline at alpha >= 0.9, the band is solid ink; nothing is semi-transparent)
 # --------------------------------------------------------------------------------------------------------------------
 
 def make_engraving():
     n = 1024; cv = Canvas(n)
+    r = cv.r_px / cv.k
+    # the inked minute track: a solid dark band (alpha 1, anti-aliased edges)
+    band = sstep(0.922, 0.926, r) * sstep(0.978, 0.974, r)
+    track = solid([16, 16, 20], band.astype(F32))
     L = Layer(cv, pad_out=4.0)
-    for R, w in ((0.78, 3.0), (0.80, 2.0), (0.965, 2.0), (0.985, 4.0)):
+    # inner frame just outside the dais rim, and a fine guilloche tick band
+    for R, w in ((0.585, 3.0), (0.605, 1.6), (0.632, 1.6), (0.688, 1.6)):
         L.ring(R, w)
     for k in range(120):
         phi = math.radians(k * 3.0)
-        if k % 10 == 0:
-            L.radial_tick(phi, 0.92, 0.965, 4.0)
-        else:
-            L.radial_tick(phi, 0.94, 0.965, 1.5)
-    H = 0.08                                               # same glyph builder, height 0.08, same thick:thin ratio
-    radial_numerals(L, 0.87, H, 0.016 * H / 0.13 * 1.12, 0.007 * H / 0.13 * 1.25)
-    for h in range(12):                                    # half-hour diamonds
+        L.radial_tick(phi, 0.638, 0.682, 2.6 if k % 10 == 0 else 1.2)
+    # the numerals (3 studs tall) and half-hour four-point stars
+    H = 0.107
+    radial_numerals(L, 0.80, H, 0.016 * H / 0.13 * 1.05, 0.007 * H / 0.13 * 1.2)
+    for h in range(12):
         phi = math.radians(h * 30.0 + 15.0)
-        s, c = math.sin(phi), math.cos(phi)
-        cx, cy = 0.87 * s, 0.87 * c
-        lr, lt = 0.019, 0.0105
-        L.poly([(cx + s * lr, cy + c * lr), (cx + c * lt, cy - s * lt), (cx - s * lr, cy - c * lr), (cx - c * lt, cy + s * lt)])
-    P, A = inked(L, fill=240, ink_out=2.0, ink=(20, 20, 22), ink_a=0.92)
+        star4(L, (0.80 * math.sin(phi), 0.80 * math.cos(phi)), phi, 0.026)
+    L.ring(0.725, 2.0)
+    L.ring(0.875, 2.0)
+    # the minute track's white frame and its ticks (inside the dark band), lume batons every five minutes
+    L.ring(0.918, 2.4)
+    L.ring(0.982, 3.0)
+    for m in range(60):
+        phi = math.radians(m * 6.0)
+        if m % 5 == 0:
+            L.radial_tick(phi, 0.929, 0.971, 6.0)
+        else:
+            L.radial_tick(phi, 0.938, 0.962, 2.0)
+    marks = inked(L, fill=240, ink_out=2.0, ink=(20, 20, 22), ink_a=0.95)
+    P, A = over(marks, track)
     return finish("te5_engraving", P, A)
 
 
@@ -1072,8 +1090,8 @@ def make_star_window():
 
 
 # --------------------------------------------------------------------------------------------------------------------
-# 10. te5_stream  (256x64, beam band tiled in U): ink edges, white core with waving filaments
-# 11. te5_ribbon  (256x128): ink ribbon, white hairlines, faint waving centre filament
+# 10. te5_stream  (256x64, beam band tiled in U): ink edges, white core with waving filaments (the palm streams and the
+#     void's lensed band)
 # Image x runs along the beam (U, seamless with period 256 px); y runs across it (v in [-0.5, 0.5]).
 # --------------------------------------------------------------------------------------------------------------------
 
@@ -1124,34 +1142,6 @@ def make_stream():
     L = np.clip(L, 0.0, 1.0).astype(F32)
     rgb = np.dstack([L, L, np.minimum(1.0, L + 0.006)])
     return finish_band("te5_stream", rgb, A)
-
-
-def make_ribbon():
-    W, H = 256, 128
-    u, v, Ws, Hs = band_grid(W, H)
-    px = 1.0 / H
-    av = np.abs(v)
-    A = np.broadcast_to(np.clip((0.46 - av) / (1.5 * px) + 0.5, 0.0, 1.0), (Hs, Ws)).astype(F32)
-    # ink body with +-6-level longitudinal streaks (vary across, drift slowly along; integer harmonics: seamless)
-    rng = np.random.default_rng(1101)
-    streak = np.zeros((Hs, Ws), F32)
-    for i in range(14):
-        f = rng.uniform(3, 22)
-        ph = rng.random() * 2 * math.pi
-        m = rng.integers(1, 3)
-        streak += np.cos(2 * math.pi * f * (v + 0.012 * np.sin(2 * math.pi * m * u + rng.random() * 6)) + ph) / math.sqrt(f)
-    streak = streak / (np.abs(streak).max() + 1e-6)
-    body = (14.0 + 6.0 * streak) / 255.0
-    # white hairlines 245, 2 px, centred in |v| 0.40-0.43
-    hair = lines_x(u, v, [-0.415, 0.415], 1.0 * px, 1.0 / Hs * 1.0)
-    # faint white centre filament, 1 px, L 0.6, waving with the 256 px period
-    cen = 0.045 * np.sin(2 * math.pi * u + 0.7)
-    fcov = np.clip(0.5 - (np.abs(v - cen) - 0.65 * px) / (1.0 / Hs), 0.0, 1.0)
-    L = body * (1 - hair) + (245.0 / 255.0) * hair
-    L = L * (1 - fcov * 0.92) + 0.6 * fcov * 0.92
-    L = np.clip(L, 0.0, 1.0).astype(F32)
-    rgb = np.dstack([L, L, np.minimum(1.0, L + 4.0 / 255.0)])
-    return finish_band("te5_ribbon", rgb, A)
 
 
 def finish_band(name, rgb, A):
@@ -1269,7 +1259,7 @@ def label(im, text, xy, sz=15, fill=(235, 235, 240)):
 
 
 SHEET_ORDER = ["te5_dial_inlay", "te5_subdial", "te5_accretion", "te5_galaxy_floor", "te5_galaxy_arms", "te5_galaxy_core",
-               "te5_engraving", "te5_halo", "te5_stream", "te5_ribbon", "te5_moon", "te5_star_window"]
+               "te5_engraving", "te5_halo", "te5_stream", "te5_moon", "te5_star_window"]
 
 
 def sheet_overview():
@@ -1310,7 +1300,7 @@ def sheet_zoom():
              ("te5_accretion", (600, 40, 1000, 300), 1),
              ("te5_galaxy_floor", (380, 380, 780, 640), 1), ("te5_galaxy_arms", (100, 300, 500, 560), 1),
              ("te5_galaxy_core", (160, 160, 352, 352), 2), ("te5_halo", (256, 0, 512, 256), 1),
-             ("te5_stream", (0, 0, 256, 64), 3), ("te5_ribbon", (0, 0, 256, 128), 2),
+             ("te5_stream", (0, 0, 256, 64), 3),
              ("te5_moon", (300, 300, 700, 560), 1), ("te5_star_window", (380, 380, 636, 636), 1)]
     paths = []
     for bgname, bg in (("dark", BG_DARK), ("sky", BG_SKY)):
@@ -1371,10 +1361,10 @@ def _ground_quad(cx, cy, R, elev_deg, W, H, persp=0.18):
 
 
 def insitu_dais(t=3.0):
-    """The dais stack at in-game scale: engraving (40) on the plaza, dark base (29.6) + te5_galaxy_floor, the floating
+    """The dais stack at in-game scale: engraving (56) on the plaza, dark base (29.6) + te5_galaxy_floor, the floating
     arms (21, +0.42) and core (12, +0.66) at their relative spins after t seconds, silver rim (31.1). Top-down and from a
     32-degree camera, by day and by night."""
-    S = 13.0                                   # px per stud
+    S = 10.0                                   # px per stud (the 56-stud stage fits the 600 px tile)
     out = []
     eng = load("te5_engraving"); flo = load("te5_galaxy_floor"); arm = load("te5_galaxy_arms")
     cor = load("te5_galaxy_core")
@@ -1386,8 +1376,7 @@ def insitu_dais(t=3.0):
             cx, cy = W / 2, H / 2 if view == "top" else H * 0.52
             elev = 90 if view == "top" else 32
             day = mode == "day"
-            layers = [(eng, 40.0, 2.5, 1.2 if day else 2.0, 0.0), ]
-            for img, dia, rate, br, lift in [(eng, 40.0, 2.5, 1.2 if day else 2.0, 0.0),
+            for img, dia, rate, br, lift in [(eng, 56.0, 2.5, 1.0 if day else 2.0, 0.0),
                                              (None, 29.6, 0, 0, 0.06),
                                              (flo, 29.6, -6.0, 1.3 if day else 2.4, 0.15),
                                              (None, 31.1, 0, 0, 0.9),
@@ -1467,7 +1456,7 @@ def insitu_void():
 def insitu_halo_beams():
     """Moon halo (13 studs around the 9-stud moon; ImageTransparency 0.65 day / 0.45 night), the night corona (40 studs
     around the 28-stud bezel, 0.6), and the beams at in-game width: B1 stream (WHITE), B3 stream (Color 18,18,24),
-    B5 ribbon (WHITE and the spec's Color 12,12,16), each with the spec's Wrap repeat count."""
+    and the void's lensed band (te5_stream, WHITE), each with its Wrap repeat count."""
     S = 18.0
     halo = load("te5_halo")
     tiles = []
@@ -1502,8 +1491,7 @@ def insitu_halo_beams():
         cp = Comp(W, H, BG_SKY if day else (20, 22, 30))
         specs = [("te5_stream", "B1 stream WHITE, Wrap 5", (248, 249, 255), 1.6 if day else 2.4, 1.4, 0.30, 5, 40),
                  ("te5_stream", "B3 stream Color 18,18,24", (18, 18, 24), 1.0, 1.6, 0.35, 5, 110),
-                 ("te5_ribbon", "B5 ribbon WHITE (te5)", (248, 249, 255), 1.0, 2.2, 0.9, 8, 180),
-                 ("te5_ribbon", "B5 ribbon Color 12,12,16 (spec)", (12, 12, 16), 1.0, 2.2, 0.9, 8, 250)]
+                 ("te5_stream", "lensed band WHITE, Wrap 6", (248, 249, 255), 2.0 if day else 3.0, 1.5, 1.5, 6, 180)]
         labels_ = []
         for nm, lab, col, br, w0, w1, wrap, y in specs:
             tex = load(nm)
@@ -1567,22 +1555,21 @@ MANIFEST = [
      "White core + 4 tightly wound (10 deg) arms with black lanes, same winding as the floor; each arm has its own length "
      "(0.68-0.80) and strength so it reads as a vortex, not rings."),
     ("te5_engraving", "engraving", "gring", "1024x1024",
-     "Engraved clock ring on the ground around the dais (D5, 40 studs)",
-     "White 240, 2 px ink (20). Numeral strokes are the spec's height-scaled thick/thin plus 12 / 25 % so the thin "
-     "serifs stay ~2.7 px for the grazing ground view."),
+     "The stage: an engraved clock ring on the ground round the dais (D5, 56 studs; review round 3, was 40)",
+     "r 1 = 28 studs. From just outside the dais rim (r 0.585) to r 0.99: a fine guilloche tick band (r 0.64-0.68), "
+     "Roman numerals 3 studs tall at r 0.80 with half-hour four-point stars, and an INKED minute track (a solid ink band "
+     "r 0.925-0.975, alpha 1) with white ticks and lume batons every five minutes. White 240 strokes with a 2 px ink (20) "
+     "outline at alpha 0.95: nothing semi-transparent. Day Brightness 1.0 (the ink carries the day), night 2.0."),
     ("te5_halo", "halo", "rim", "512x512",
-     "Rim-only halo: moon halo billboard (13 studs) and night bezel corona (C10, 40 studs)",
+     "Rim-only halo: moon halo billboard (15 studs), night bezel corona (C10, 44 studs) and the void's horizon glow "
+     "particles (11.2 studs); its ring peaks at r 0.73, and the module scales the three by RIM_R while the pass-2 'rim' "
+     "texture stands in",
      "White; alpha 0 below r 0.66, 0.95 at 0.74, 0.35 at 0.82, 0.10 at 0.90, 0 at 1.0 (monotone cubic, dithered). "
      "Tint with ImageColor3 (236,240,248)."),
     ("te5_stream", "stream", "line", "256x64",
      "Palm stream beams B1 (silver) and B3 (ink, via Beam Color)",
      "Beam texture: image x runs ALONG the beam (seamless every 256 px, TextureMode Wrap), y across. White core with 6 "
      "waving filaments, ink edges. Color WHITE = silver stream with ink edges; Color (18,18,24) = all-ink stream."),
-    ("te5_ribbon", "ribbon", "line", "256x128",
-     "Equinox-style ink ribbon beam B5 from the void into the dais",
-     "Beam texture (x along, seamless 256 px). Ink body (14,14,18 +-6), white hairlines at |v| 0.415, faint waving centre "
-     "filament. The white hairlines need a LIGHT Beam Color: use WHITE with te5_ribbon. The spec's B5 Color (12,12,16) "
-     "multiplies them to black (keep (12,12,16) only for the 'line' fallback)."),
     ("te5_moon", "moon", "moon", "1024x1024",
      "Photographic full-moon face for the moon's camera-facing sprite (review round 1, AD4; 9-stud BillboardGui)",
      "North up, Earth-facing side: maria at grey 95-145 where the real ones are, highlands 212-240, ~60 craters with "
@@ -1625,7 +1612,7 @@ def check():
     sizes = {"te5_dial_inlay": (1024, 1024), "te5_subdial": (512, 512), "te5_accretion": (1024, 1024),
              "te5_galaxy_floor": (1024, 1024), "te5_galaxy_arms": (1024, 1024), "te5_galaxy_core": (512, 512),
              "te5_engraving": (1024, 1024), "te5_halo": (512, 512),
-             "te5_stream": (256, 64), "te5_ribbon": (256, 128), "te5_moon": (1024, 1024), "te5_star_window": (1024, 1024)}
+             "te5_stream": (256, 64), "te5_moon": (1024, 1024), "te5_star_window": (1024, 1024)}
     for nm, (w, h) in sizes.items():
         im = Image.open(os.path.join(OUT, nm + ".png"))
         a = np.asarray(im.convert("RGBA")).astype(np.int32)
@@ -1701,7 +1688,6 @@ job("te5_galaxy_core", make_galaxy_core)
 job("te5_engraving", make_engraving)
 job("te5_halo", make_halo)
 job("te5_stream", make_stream)
-job("te5_ribbon", make_ribbon)
 job("te5_moon", make_moon)
 job("te5_star_window", make_star_window)
 
