@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 09_chunk_08_of_12.luau | step 9: piece 8 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (148303 bytes, checksum 731942170).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (151582 bytes, checksum 322184148).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "09_chunk_08_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-148303-731942170-12-824555251"
-local NEW_LEN, NEW_SUM = 148303, 731942170
+local RUN = "TheEnd-151582-322184148-12-938307881"
+local NEW_LEN, NEW_SUM = 151582, 322184148
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 12
-local LENS = { 13300, 13224, 13240, 13242, 13194, 13235, 13276, 13235, 13290, 13298, 13282, 2487 }
-local SUMS = { 825733820, 782681153, 524531706, 656635892, 998587156, 867606918, 526087852, 254541497, 6651690, 395645774, 897444566, 313496838 }
+local LENS = { 13269, 13222, 13287, 13307, 13252, 13232, 13230, 13284, 13301, 13300, 13204, 5694 }
+local SUMS = { 882737169, 754366057, 266404745, 785979457, 290862805, 645616522, 300795074, 332029237, 56580994, 674174262, 959073682, 306083532 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,12 +68,54 @@ local function chunkOk(h, i)
 end
 
 local K = 8
--- piece 8 of 12 of the new source (13235 bytes, checksum 254541497, long bracket level 1)
+-- piece 8 of 12 of the new source (13284 bytes, checksum 332029237, long bracket level 1)
 local DATA = [=[
+		-- P17 (pass 5.1): stars twinkle inside the clock's star window, between the rete's bars (locked to the dial, so they
+		-- stay in the face however the clock turns to its viewer)
+		if hi and hosts.inlay then
+			pe(hosts.inlay, "twinkle", 4.4, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0, EmissionDirection = N_.Front,
+				Rate = 5, Lifetime = n(2.6, 3.4), Speed = n(0), Size = seq({ { 0, 1.0, 0.3 }, { 1, 1.0, 0.3 } }),
+				Transparency = seq({ { 0, 1 }, { 0.12, 0 }, { 0.88, 0 }, { 1, 1 } }), LockedToPart = true, Rotation = n(0, 90),
+				ZOffset = 0.6 }, { 0.6, 1 }, { 2.2, 3.0 })
+		end
+		if hi then
+			-- P7: a low mist bank round the pool's rim, only while standing on the ground (ShapePartial 0.8: the outer fifth
+			-- of the disc, so the galaxy inside stays clear)
+			pe(hosts.floorFx, "smoke5", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.8, EmissionDirection = N_.Top, Rate = 2.5,
+				Lifetime = n(6, 8), Speed = n(0.1, 0.25), Size = seq({ { 0, 8 }, { 1, 14 } }), Transparency = seq({ { 0, 1 }, { 0.3, 0.80 }, { 0.7, 0.82 }, { 1, 1 } }),
+				Color = ColorSequence.new(MIST), LockedToPart = true, Rotation = n(0, 360), RotSpeed = n(-6, 6) }, nil, nil, "ground")
+		end
+		-- P8: starlight rises off the turning arms and swirls with them, in slow four-point twinkles (grow, hold, shrink);
+		-- black ash flakes rise against them. At Roblox's default zoom, where the floor is a few studs from the lens, the
+		-- twinkles are drawn smaller (five sizes made here, each step under 20 %, changed only when the zoom moves a step
+		-- past a threshold: never a jump or a pulse on the floor)
+		hosts.moteSizes = {}
+		for k = 1, 5 do
+			local pk = 1.3 - 0.1625 * (k - 1) -- (1.3, 1.14, 0.98, 0.81, 0.65)
+			hosts.moteSizes[k] = seq({ { 0, 0 }, { 0.25, pk, 0.3 * pk / 1.3 }, { 0.75, pk, 0.3 * pk / 1.3 }, { 1, 0 } })
+		end
+		em.motes = pe(hosts.floorFx, "glint5", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.15, EmissionDirection = N_.Top,
+			Rate = rate(18, 8), Lifetime = n(2.6, 3.6), Speed = n(0.5, 1.2), Acceleration = Vector3.new(0, 0.35, 0), Drag = 0.2,
+			Size = hosts.moteSizes[1], Transparency = glintT, Rotation = n(0, 90), RotSpeed = n(-20, 20),
+			LockedToPart = true, ZOffset = 0.2 }, WHITE_LE, WHITE_BR)
+		if hi then
+			-- (pass 5.1: te5_ash is an ember flake tumbling through 16 frames: charred black, burning white-hot along one
+			-- side, so it is drawn white (an ASH tint would put the burn out); the pass-4 ash it falls back to is drawn ASH)
+			local ember = isTe5("ash5")
 			em.ash = pe(hosts.floorFx, "ash5", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.15, EmissionDirection = N_.Top, Rate = 8,
-				Lifetime = n(3, 4.5), Speed = n(0.8, 2.0), Acceleration = Vector3.new(0, 0.3, 0), Drag = 0.4, Size = n(0.4, 0.6),
-				Transparency = seq({ { 0, 1 }, { 0.15, 0.05 }, { 0.75, 0.2 }, { 1, 1 } }), Color = ColorSequence.new(ASH), Rotation = n(0, 360),
-				RotSpeed = n(-90, 90) })
+				Lifetime = n(3, 4.5), Speed = n(0.8, 2.0), Acceleration = Vector3.new(0, 0.3, 0), Drag = 0.4,
+				Size = ember and n(0.56, 0.84) or n(0.4, 0.6), Transparency = seq({ { 0, 1 }, { 0.15, 0.05 }, { 0.75, 0.2 }, { 1, 1 } }),
+				Color = ColorSequence.new(ember and WHITE or ASH), Rotation = n(0, 360), RotSpeed = n(-90, 90), FlipbookFramerate = n(8, 12),
+				FlipbookStartRandom = true }, ember and { 0, 0 } or nil, ember and { 1.6, 3.2 } or nil)
+			if ember then
+				-- (if the ember fails to load in the game, the pass-4 ash comes back black, unlit and its old size)
+				fixUps[em.ash] = function(o)
+					o.Color, o.Size, o.Brightness = ColorSequence.new(ASH), seq({ { 0, 0.5, 0.1 }, { 1, 0.5, 0.1 } }), 1
+					for _, e in ipairs(emitNight) do
+						if e[1] == o then e[4], e[5] = 1, 1 end
+					end
+				end
+			end
 			-- P9: a vortex funnel: streaks spiral inward and climb into the balance wheel (off in first person: the camera
 			-- sits right inside it)
 			local p9 = { Rate = 16, Lifetime = n(1.7, 2.0), Speed = n(2.8, 3.2), Acceleration = Vector3.new(0, 1.0, 0),
@@ -110,10 +152,11 @@ local DATA = [=[
 					Transparency = seq({ { 0, 1 }, { 0.2, 0.32 }, { 0.6, 0.55 }, { 1, 1 } }), Color = ColorSequence.new(Color3.fromRGB(200, 202, 208)),
 					ZOffset = -1.5, Rotation = n(0, 360), RotSpeed = n(-40, 40) }, { 0.2, 0.6 }, { 1.2, 2.0 }, "body")
 				table.insert(charStuff, em.wisps)
-				table.insert(charStuff, pe(torso, "glint5", 5.2, { Shape = BOX, ShapeStyle = VOLUME, EmissionDirection = N_.Top, Rate = rate(14, 6),
-					Lifetime = n(1.4, 2.0), Speed = n(1.5, 3.0), SpreadAngle = Vector2.new(25, 25), Acceleration = Vector3.new(0, 1.5, 0),
-					Size = seq({ { 0, 0 }, { 0.25, 1.3, 0.3 }, { 0.75, 1.3, 0.3 }, { 1, 0 } }), Transparency = glintT, Rotation = n(0, 90),
-					RotSpeed = n(-30, 30), ZOffset = 0.5 }, { 0.5, 1 }, WHITE_BR, "body"))
+				-- (pass 5.1: the body's sparks are hot flecks with hairline tails, streaking up the body the way they fly)
+				table.insert(charStuff, pe(torso, "spark5", 5.2, { Shape = BOX, ShapeStyle = VOLUME, EmissionDirection = N_.Top, Rate = rate(16, 6),
+					Lifetime = n(0.8, 1.2), Speed = n(2.5, 4.5), SpreadAngle = Vector2.new(25, 25), Acceleration = Vector3.new(0, 2.5, 0),
+					Size = seq({ { 0, 0.75 }, { 1, 0.35 } }), Transparency = seq({ { 0, 0.05 }, { 0.7, 0.15 }, { 1, 1 } }), Orientation = VPAR,
+					Rotation = stRot, ZOffset = 0.5 }, { 0.5, 1 }, WHITE_BR, "body"))
 			end
 		end
 		-- P12: while the wearer flies or runs fast, silver streaks stream out behind the body (off when slow)
@@ -239,90 +282,6 @@ local DATA = [=[
 			elseif kind == "speed" then want = want and st.speedOn end
 			if e[6] and st.ghostGui and not st.fxLtm then want = false end -- (a ghosted aura without emitter LTM: smoke off)
 			if want ~= e[5] then
-				e[1].Enabled = want
-				e[5] = want
-			end
-		end
-	end
-	-- the beams: the near-only ones fade out past ~110 studs (and the far beacon in), the palm streams switch off in first
-	-- person (they would converge on hands just under the lens); written only when they change
-	local function refreshBeams()
-		local lod = st.lod
-		for _, b in ipairs(beams) do
-			local want = true
-			if b[8] then want = lod > 0 elseif b[9] then want = lod < 1 end
-			if b[10] and st.fpOn then want = false end
-			if not b[9] and st.ghostGui and not st.fxLtm then want = false end
-			if want ~= b[11] then
-				b[1].Enabled = want
-				b[11] = want
-			end
-		end
-	end
-	-- the beam fade steps: each beam's Transparency is one of its 21 precomputed sequences (no allocation); fa is the
-	-- framework's fade, and while the aura assembles each beam fades in over 0.8 s from its own time
-	local function beamSteps(fa)
-		st.fb = fa
-		local lod = st.lod
-		local asm = age < ASM_END
-		for _, b in ipairs(beams) do
-			local f = fa
-			if asm then f *= smooth((age - b[12]) / 0.8) end
-			if b[8] then f *= lod elseif b[9] then f *= 1 - lod end
-			local q = clamp(math.floor(f * 20 + 0.5), 0, 20)
-			if q ~= b[3] then
-				b[1].Transparency = b[2][q]
-				b[3] = q
-			end
-		end
-	end
-	-- the lights: brightness fades with the assembly, the night, the framework's alpha and the far-detail fade; written
-	-- only when it changes; switched on and off only while dark (Brightness 0), so a light never pops
-	local function lightLevels()
-		local l = max(nq, 0) * st.lod
-		if keyLight then
-			local b = 1.5 * l * max(st.kf, 0)
-			if b ~= st.kB then
-				keyLight.Brightness = b
-				st.kB = b
-			end
-		end
-		if wheelLight then
-			local b = 0.9 * l * max(st.wf, 0)
-			if b ~= st.wB then
-				wheelLight.Brightness = b
-				st.wB = b
-			end
-		end
-	end
-	local function refreshLights()
-		local on = visible and nq > 0 and st.lod > 0
-		if on ~= st.lightsOn then
-			st.lightsOn = on
-			if keyLight then keyLight.Enabled = on end
-			if wheelLight then wheelLight.Enabled = on end
-		end
-		refreshBeams()
-	end
-	local function setGroups()
-		local changed = false
-		for h = 1, 4 do
-			local show = not (hideD[h] and not near) and not (hideA[h] and armHidden)
-			if show ~= shownH[h] then
-				shownH[h] = show
-				changed = true
-				for _, hp in ipairs(holders[h]) do hp[1].Parent = show and hp[2] or nil end
-			end
-		end
-		if changed then rebuildActive() end
-	end
-	-- the Highlight's fill and outline strength (1 - transparency) at night factor q. The ink outline is for the bright sky
-	-- at a distance: close up (Roblox's default zoom) the metal fills the view and reads by its own shading, so the outline
-	-- eases off (czq: the camera-closeness factor in 0.05 steps)
-	-- (by day the close camera sees the rings and bezel against the cyan sky and grass, which lift green as much as blue:
-	-- the fill strengthens close up, in the same zoom steps, so the silver stays neutral)
-	local function hlFill(q) return min(1, (1 - CONFIG.HIGHLIGHT_FILL) * (1 + 0.45 * st.czq)) * (1 - q) + 0.20 * q end
-	local function hlOut(q) return (1 - CONFIG.HIGHLIGHT_OUTLINE) * (1 - 0.6 * st.czq) * (1 - q) + 0.30 * q end
 ]=]
 
 local function main()

@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 07_chunk_06_of_12.luau | step 7: piece 6 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (148303 bytes, checksum 731942170).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (151582 bytes, checksum 322184148).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "07_chunk_06_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-148303-731942170-12-824555251"
-local NEW_LEN, NEW_SUM = 148303, 731942170
+local RUN = "TheEnd-151582-322184148-12-938307881"
+local NEW_LEN, NEW_SUM = 151582, 322184148
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 12
-local LENS = { 13300, 13224, 13240, 13242, 13194, 13235, 13276, 13235, 13290, 13298, 13282, 2487 }
-local SUMS = { 825733820, 782681153, 524531706, 656635892, 998587156, 867606918, 526087852, 254541497, 6651690, 395645774, 897444566, 313496838 }
+local LENS = { 13269, 13222, 13287, 13307, 13252, 13232, 13230, 13284, 13301, 13300, 13204, 5694 }
+local SUMS = { 882737169, 754366057, 266404745, 785979457, 290862805, 645616522, 300795074, 332029237, 56580994, 674174262, 959073682, 306083532 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,10 @@ local function chunkOk(h, i)
 end
 
 local K = 6
--- piece 6 of 12 of the new source (13235 bytes, checksum 867606918, long bracket level 0)
+-- piece 6 of 12 of the new source (13232 bytes, checksum 645616522, long bracket level 0)
 local DATA = [[
+		local core = carrier("GalaxyCore", CORE, GG2, Vector3.new(12, 0.05, 12))
+		surface(core, Enum.NormalId.Top, midCanvas, 1.5, 2.6, "galaxyCore", 4.0, 4.6)
 		-- the stage: an engraved clock ring 56 studs across round the pool (inked Roman numerals 3 studs tall, a minute track
 		-- with lume ticks), solid ink and white lines on the ground. Kept at every distance: from far away it is the aura's
 		-- footprint. The ink carries the day; it glows at night
@@ -127,9 +129,10 @@ local DATA = [[
 	hosts.bokeh = hi and carrier("BokehHost", DETAIL, GBOKEH, Vector3.new(18, 10, 5))
 	hosts.palmMoon = carrier("PalmMoon", CORE, GPALMM, Vector3.new(2.6, 2.6, 2.6))
 	hosts.palmVoid = carrier("PalmVoid", CORE, GPALMV, Vector3.new(2.6, 2.6, 2.6))
-	-- (pass 5.1) the star halo: a 34-stud ring of stardust turning round the wearer on a tilt (P15); the helix hub: two
-	-- points 3.1 studs out that turn round the body at the feet, each trailing a strand that climbs it (P16)
-	hosts.halo = hi and carrier("StarHalo", CORE, GHALO, Vector3.new(34, 0.3, 34))
+	-- (pass 5.1) the star halo: a ring of stardust 32 to 42 studs across turning round the whole aura on a tilt (P15:
+	-- out beyond Roblox's default follow camera, 12.5-16 studs back, so its stars never sail past the lens); the helix hub:
+	-- two points 3.1 studs out that turn round the body at the feet, each trailing a strand that climbs it (P16)
+	hosts.halo = hi and carrier("StarHalo", CORE, GHALO, Vector3.new(42, 0.3, 42))
 	hosts.helix = carrier("HelixHub", CORE, GHELIX, Vector3.new(1, 1, 1))
 	hosts.strandMoon = new("Attachment", { Name = "StrandMoon", Position = Vector3.new(3.1, 0, 0) }, hosts.helix)
 	hosts.strandVoid = new("Attachment", { Name = "StrandVoid", Position = Vector3.new(-3.1, 0, 0) }, hosts.helix)
@@ -277,12 +280,6 @@ local DATA = [[
 			for k, v in pairs(props) do p[k] = v end
 			p.LightEmission = le and le[1] or 0
 			p.Brightness = br and br[1] or 1
-			if le or br then table.insert(emitNight, { p, le and le[1] or 0, le and le[2] or 0, br and br[1] or 1, br and br[2] or 1 }) end
-			p.Parent = parent
-			table.insert(emitters, { p, tOn, kind, false, false })
-			return p
-		end
-		local function rate(h, l) return low and l or h end
 ]]
 
 local function main()

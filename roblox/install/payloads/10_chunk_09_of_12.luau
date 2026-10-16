@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 10_chunk_09_of_12.luau | step 10: piece 9 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (148303 bytes, checksum 731942170).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (151582 bytes, checksum 322184148).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "10_chunk_09_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-148303-731942170-12-824555251"
-local NEW_LEN, NEW_SUM = 148303, 731942170
+local RUN = "TheEnd-151582-322184148-12-938307881"
+local NEW_LEN, NEW_SUM = 151582, 322184148
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 12
-local LENS = { 13300, 13224, 13240, 13242, 13194, 13235, 13276, 13235, 13290, 13298, 13282, 2487 }
-local SUMS = { 825733820, 782681153, 524531706, 656635892, 998587156, 867606918, 526087852, 254541497, 6651690, 395645774, 897444566, 313496838 }
+local LENS = { 13269, 13222, 13287, 13307, 13252, 13232, 13230, 13284, 13301, 13300, 13204, 5694 }
+local SUMS = { 882737169, 754366057, 266404745, 785979457, 290862805, 645616522, 300795074, 332029237, 56580994, 674174262, 959073682, 306083532 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,92 @@ local function chunkOk(h, i)
 end
 
 local K = 9
--- piece 9 of 12 of the new source (13290 bytes, checksum 6651690, long bracket level 0)
+-- piece 9 of 12 of the new source (13301 bytes, checksum 56580994, long bracket level 0)
 local DATA = [[
+				e[1].Enabled = want
+				e[5] = want
+			end
+		end
+	end
+	-- the beams: the near-only ones fade out past ~110 studs (and the far beacon in), the palm streams switch off in first
+	-- person (they would converge on hands just under the lens); written only when they change
+	local function refreshBeams()
+		local lod = st.lod
+		for _, b in ipairs(beams) do
+			local want = true
+			if b[8] then want = lod > 0 elseif b[9] then want = lod < 1 end
+			if b[10] and st.fpOn then want = false end
+			if not b[9] and st.ghostGui and not st.fxLtm then want = false end
+			if want ~= b[11] then
+				b[1].Enabled = want
+				b[11] = want
+			end
+		end
+	end
+	-- the beam fade steps: each beam's Transparency is one of its 21 precomputed sequences (no allocation); fa is the
+	-- framework's fade, and while the aura assembles each beam fades in over 0.8 s from its own time
+	local function beamSteps(fa)
+		st.fb = fa
+		local lod = st.lod
+		local asm = age < ASM_END
+		for _, b in ipairs(beams) do
+			local f = fa
+			if asm then f *= smooth((age - b[12]) / 0.8) end
+			if b[8] then f *= lod elseif b[9] then f *= 1 - lod end
+			local q = clamp(math.floor(f * 20 + 0.5), 0, 20)
+			if q ~= b[3] then
+				b[1].Transparency = b[2][q]
+				b[3] = q
+			end
+		end
+	end
+	-- the lights: brightness fades with the assembly, the night, the framework's alpha and the far-detail fade; written
+	-- only when it changes; switched on and off only while dark (Brightness 0), so a light never pops
+	local function lightLevels()
+		local l = max(nq, 0) * st.lod
+		if keyLight then
+			local b = 1.5 * l * max(st.kf, 0)
+			if b ~= st.kB then
+				keyLight.Brightness = b
+				st.kB = b
+			end
+		end
+		if wheelLight then
+			local b = 0.9 * l * max(st.wf, 0)
+			if b ~= st.wB then
+				wheelLight.Brightness = b
+				st.wB = b
+			end
+		end
+	end
+	local function refreshLights()
+		local on = visible and nq > 0 and st.lod > 0
+		if on ~= st.lightsOn then
+			st.lightsOn = on
+			if keyLight then keyLight.Enabled = on end
+			if wheelLight then wheelLight.Enabled = on end
+		end
+		refreshBeams()
+	end
+	local function setGroups()
+		local changed = false
+		for h = 1, 4 do
+			local show = not (hideD[h] and not near) and not (hideA[h] and armHidden)
+			if show ~= shownH[h] then
+				shownH[h] = show
+				changed = true
+				for _, hp in ipairs(holders[h]) do hp[1].Parent = show and hp[2] or nil end
+			end
+		end
+		if changed then rebuildActive() end
+	end
+	-- the Highlight's fill and outline strength (1 - transparency) at night factor q. The ink outline is for the bright sky
+	-- at a distance: close up (Roblox's default zoom) the metal fills the view and reads by its own shading, so the outline
+	-- eases off (czq: the camera-closeness factor in 0.05 steps)
+	-- (by day the close camera sees the rings and bezel against the cyan sky and grass, which lift green as much as blue:
+	-- the fill strengthens close up, in the same zoom steps, so the silver stays neutral)
+	local function hlFill(q) return min(1, (1 - CONFIG.HIGHLIGHT_FILL) * (1 + 0.45 * st.czq)) * (1 - q) + 0.20 * q end
+	local function hlOut(q) return (1 - CONFIG.HIGHLIGHT_OUTLINE) * (1 - 0.6 * st.czq) * (1 - q) + 0.30 * q end
 	-- the Highlight follows its fade (st.hlA: assembly x alpha), the night, the camera closeness and, for another player's
 	-- aura, the far-detail fade; fill and outline are each written only when they moved (snapped exactly at the ends)
 	local function toneLevels(thr)
@@ -319,80 +403,6 @@ local DATA = [[
 				st.speed += (d / dt - st.speed) * (1 - exp(-6 * dt))
 				if d / dt > 4 then
 					local u = dO / d
-					st.tdir = st.tdir and (st.tdir + (u - st.tdir) * (1 - exp(-4 * dt))) or u
-				end
-			end
-		end
-		local fast = (st.speedOn and st.speed > 8) or st.speed > 12
-		if fast ~= st.speedOn then
-			st.speedOn = fast
-			refreshEmitters()
-		end
-		st.speedT += ((fast and 1 or 0) - st.speedT) * (1 - exp(-3 * dt))
-		local seated = ctx.hum ~= nil and ctx.hum.Sit == true
-		if seated ~= st.seated then
-			st.seated = seated
-			refreshEmitters()
-		end
-		st.sitT += ((seated and 1 or 0) - st.sitT) * (1 - exp(-5 * dt))
-
-		-- 1. frames: the wearer (W), this client's viewer (V), the dais, the clock (K)
-		local lv = cf.LookVector
-		yawW = wrapPi(yawW + wrapPi(atan2(-lv.X, -lv.Z) - yawW) * (1 - exp(-5 * dt)))
-		local W = CFrame.new(O) * CFrame.Angles(0, yawW, 0)
-		local cam = workspace.CurrentCamera
-		local camPos = lastCamPos
-		if cam then
-			local cp = cam.CFrame.Position
-			if cp.X == cp.X and cp.Y == cp.Y and cp.Z == cp.Z then
-				camPos = cp
-				lastCamPos = cp
-			end
-		end
-		local v = O - camPos
-		local dh = sqrt(v.X * v.X + v.Z * v.Z)
-		-- how close the camera is (smoothed): under ZOOM_FAR studs the layout eases into its close-camera form, so at Roblox's
-		-- default zoom the whole dial and both orbs are on screen; in first person the owner's clock rises into the sky
-		st.zoomD = snap and dh or st.zoomD + (dh - st.zoomD) * (1 - exp(-3 * dt))
-		local cz = smooth((CONFIG.ZOOM_FAR - st.zoomD) / (CONFIG.ZOOM_FAR - CONFIG.ZOOM_NEAR))
-		local fp = (ctx.isLocal and CONFIG.FIRST_PERSON_LIFT) and smooth((4 - st.zoomD) / 2.5) or 0
-		local czq = math.floor(cz * 20 + 0.5) / 20
-		if czq ~= st.czq then
-			st.czq = czq
-			toneLevels(0) -- (close up the ink outline eases off and the silver fill strengthens)
-			-- (the floor's twinkles: one size step at a time, each a band past its threshold, so a camera resting near one
-			-- never flips them back and forth)
-			local mi = st.moteI
-			while mi < 5 and czq >= MOTE_T[mi] + 0.05 do mi += 1 end
-			while mi > 1 and czq <= MOTE_T[mi - 1] - 0.05 do mi -= 1 end
-			if mi ~= st.moteI then
-				st.moteI = mi
-				em.motes.Size = hosts.moteSizes[mi]
-			end
-			if hosts.lensTop then
-				-- (the lensed band slims as the camera comes close: at the default zoom a full-width band reads as a crescent)
-				local k = 1 - 0.45 * czq
-				hosts.lensTop.Width0, hosts.lensTop.Width1 = 1.5 * k, 1.5 * k
-				hosts.lensBot.Width0, hosts.lensBot.Width1 = 0.8 * k, 0.8 * k
-			end
-		end
-		if haloEntry then
-			-- (the white ball's soft halo fades out as the camera comes close, where the leaning dial plane would cut it)
-			local hz = math.floor((1 - smooth((cz - 0.3) / 0.4)) * 10 + 0.5) / 10
-			if hz ~= st.haloZ then
-				st.haloZ = hz
-				haloEntry[2] = 1 - (0.35 + 0.2 * max(nq, 0)) * hz
-				if settled then
-					local tr = 1 - (1 - haloEntry[2]) * alphaW
-					haloIm.ImageTransparency = tr
-					haloEntry[5] = tr
-				end
-			end
-		end
-		local V
-		if VIEWER then
-			-- the clock swings to the far side of the wearer from this camera through a critically damped spring (no overshoot).
-			-- In first person (the camera inside the wearer) "beyond the wearer" is where the camera looks, so the orbs hang
 ]]
 
 local function main()

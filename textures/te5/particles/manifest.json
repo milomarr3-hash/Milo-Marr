@@ -7,9 +7,10 @@
   "fallbackTexKey": "ash",
   "size": "1024x1024",
   "layout": "Grid4x4",
+  "mode": "Loop",
   "flipbookMode": "Loop",
   "purpose": "P3 metal shards breaking off the bezel and flying into the void",
-  "notes": "Flipbook 4x4 Loop (16 frames x 22.5 deg about normalize(0.35,1,0.2); frame 16 = frame 0). Front face L 0.86, back 0.25, sides 0.55 (flat values, with faint brushed grain and a soft sky-reflection band that sweeps the face and loops with the frames), 1 px specular line on the lit crease, 2 px ink (10) outline. The spec's 'x0.8 of the cell' and '>= 20 % padding' conflict (x0.8 puts the corners 8 % from the edge); padding wins, so the sliver is scaled to the largest size that keeps 20 % on every side in every frame (face-on it is ~48 % of the cell tall, at most ~54 % in any frame): at the spec's Size 0.5-0.75 the visible shard is ~0.25-0.4 studs; raise Size ~1.3x if it reads too small. Use FlipbookFramerate 10-14, FlipbookStartRandom true.",
+  "notes": "Pass 6 (film quality): a real render, 16 frames of one smooth tumble (22.5 deg a frame about a tilted axis; frame 16 = frame 0). The shard is a convex polyhedron ray-cast per sample at 4x4 supersampling: a broken blade of polished steel (irregular 7-sided outline, a wedge with a shallow ridge on each face, every real edge chamfered, rough fracture walls, brushed grain on the faces). Shading: Fresnel between a photo studio reflected in the metal (grey room, dark floor band under a bright horizon line, overhead softbox, rectangular key softbox up-left, fill card, rim strip lights behind, a lit floor sweep) and a little satin diffuse, plus the key light's glint; the faces bulge very slightly, so the reflections glide across them as it turns (no whole-face pop: per-frame mean L 0.31-0.63, max frame-to-frame brightness step 0.33). Every frame keeps >= 20 % padding (the shard spans 0.24-0.57 of its cell); with the turn's edge-on frames it covers less area than pass 5's flat quad, so draw it ~1.6x the fallback's size (pass 5 used 1.3x). FlipbookFramerate 10-14 (one turn in ~1.3 s), FlipbookStartRandom true. Opaque (alpha 1 inside, AA rim).",
   "uploadedId": null
  },
  {
@@ -20,6 +21,7 @@
   "fallbackTexKey": "puff",
   "size": "1024x1024",
   "layout": "Grid4x4",
+  "mode": "OneShot",
   "flipbookMode": "OneShot",
   "purpose": "P4a/P4b two-tone orb smoke, P7 rim mist and P11 the body's silver wisps",
   "notes": "Flipbook 4x4 OneShot. Review round 3: a dense billow filling ~80 % of its cell (body radius 0.37 -> 0.405, round lobes reaching ~0.44), alpha ~0.93 over its inner half, per-cell mean alpha >= 0.30 in frames 0-11, torn wisps only at the edge; it dissolves from the edge inward into ragged wisps in frames 12-15 only (mean alpha 0.36 -> 0.08). RGB 0.75-1.0 internal shading lit from the upper left (the lobes' relief). Radial window reaches alpha 0 at 0.46 of the cell. Frames 0-11 change gently (OneShot over a 3.5-4.5 s lifetime is ~4 fps); the dissolve frames play while the emitter's own Transparency fades the particle out. Drawn at the same size as the pass-4 puff (no 1.3x).",
@@ -33,8 +35,9 @@
   "fallbackTexKey": "glow",
   "size": "128x128",
   "layout": "None",
+  "mode": null,
   "purpose": "Dust motes: P1 void swirl and P2 moon dust (review round 3: the air dust, floor motes and foot drips became glints)",
-  "notes": "White core r < 0.22 (alpha 1), ink rim r 0.22-0.30 (RGB 18, alpha 0.85), white glow r 0.30 -> 0.465 (alpha 0.25 -> 0).",
+  "notes": "Pass 6: a soft photographic point of light, no ring: a hot core (alpha 1 to r ~0.05, half at 0.06), a gaussian glow (sigma 0.08, alpha 0.62) and a short scattered halo (~1/r^2.3) fading to 0 by r 0.44. RGB white everywhere. Its bright core is smaller than pass 5's opaque disc (r 0.22), so it reads as light rather than a pearl; draw it ~1.25x the pass-5 size if the swirl looks thinner.",
   "uploadedId": null
  },
  {
@@ -45,8 +48,9 @@
   "fallbackTexKey": "glint",
   "size": "256x256",
   "layout": "None",
+  "mode": null,
   "purpose": "Four-point glints: P13 time dust round the bezel, P6a/P6b air sparkles, P8 floor twinkles, P11 the body's sparks",
-  "notes": "4-point glint: H/V spikes 6 -> 0.5 px, alpha 1 -> 0, tips at 0.465 of the cell; 45 deg spikes half length 0.45 at alpha 0.5; core r 0.05; ink halo r 0.07-0.09 (RGB 15, alpha 0.6).",
+  "notes": "Pass 6: a photographic star (white light, no ink): hot core (r ~0.02), gaussian glow (sigma 0.034) and a scattered halo (~1/r^2.3, gone by r 0.40); four diffraction spikes tips at 0.44-0.455, 5 px wide at the core tapering to 0.6 px, alpha falling from a core peak along a slow taper to 0 at the tip, with faint chirped interference beads (+-7 %) and faint side fringes; four thin secondary spikes at 45 deg (length 0.23-0.27, alpha 0.6); the faintest Airy ring (r 0.105, alpha 0.025). Reads on the day sky through Brightness 2.4 (white over cyan), glows at night.",
   "uploadedId": null
  },
  {
@@ -57,8 +61,9 @@
   "fallbackTexKey": "glow",
   "size": "256x256",
   "layout": "None",
+  "mode": null,
   "purpose": "P6c big slow bokeh between camera and wearer (L7)",
-  "notes": "Rounded hexagon (circumradius 0.46, corners 15 %), interior alpha 0.55 (L 0.9 -> 1.0 outward), rim band (outer 8 %) alpha 0.85, 2 px AA, onion rings +-0.03 alpha. White.",
+  "notes": "Pass 6: an out-of-focus light, not a glass panel: a soft-edged disc (r 0.405, ~4 px edge) from a nine-blade iris (round, with the faintest polygon), interior alpha ~0.42 brightening toward a thin bright rim (~0.75, spherical aberration), faint aspheric onion rings, six soft specks of lens dust, a whisper of scatter outside the edge. RGB 0.94-1.0. Subtle by design (Transparency 0.6-0.72): drop it by day if it reads as a smudge in Studio.",
   "uploadedId": null
  },
  {
@@ -69,8 +74,9 @@
   "fallbackTexKey": "spark",
   "size": "256x256",
   "layout": "None",
-  "purpose": "Matter streaks with VelocityParallel: P9 funnel and P10a/b palm intake",
-  "notes": "Square 256 px (Roblox draws particles square). Vertical capsule y 0.04-0.96, 22 px wide (1:10): white core ~13 px (alpha 1), ~4 px ink edges (RGB 15, alpha 0.9); the module draws it 2.2x the spark fallback's size. The TOP end leads (brightest); the tail fades over the lower 40 %. If streaks fly tail-first in Studio, flip the image vertically before upload (VelocityParallel orientation check).",
+  "mode": null,
+  "purpose": "Matter streaks with VelocityParallel: P9 funnel, P10a/b palm intake and P12 speed trail",
+  "notes": "Pass 6: a comet of matter for VelocityParallel, the TOP leads (unchanged convention): a hot head 0.105 from the top (core r 0.021, glow, a tiny four-point glint), a tapering luminous tail to 0.94 (12 px wide at the head -> sub-pixel, alpha falling with distance; it fades in under the head) with a soft sheath and six fine filaments that peel off, wander and brighten and fade along it. No ink edge (it reads as light by day through Brightness 2.4; with the INK Color, P10b is a soft dark comet). If streaks fly tail-first in Studio, set STREAK_FLIP (or flip the PNG vertically).",
   "uploadedId": null
  },
  {
@@ -79,10 +85,53 @@
   "repoPath": "textures/te5/particles/te5_ash.png",
   "texKey": "ash5",
   "fallbackTexKey": "ash",
+  "size": "1024x1024",
+  "layout": "Grid4x4",
+  "mode": "Loop",
+  "flipbookMode": "Loop",
+  "purpose": "P8b ember flakes rising off the galaxy (was: black ash)",
+  "notes": "Pass 6: LAYOUT CHANGED to a flipbook (Grid4x4, Loop): a glowing ember flake tumbling through one turn in 16 frames, drawn foreshortened as it turns (edge-on it shows its thin burning rim). Charred black body (RGB ~8-11) with a faint fibrous grain and a dull sheen; it burns from one side: there the torn edge is white-hot (a thin hot line, then a burn zone soaking inward), cooling round the flake to a nearly cold edge opposite; wavy fissures glow in from the edge. So at night it reads as a burning fragment, not a ring. >= 14 % padding (the flake spans 0.48-0.65 of its cell). Needs TEX5_LAYOUT ash5 = { Grid4x4, Loop } and a WHITE particle Color (the old ASH Color would turn the glow black), LightEmission 0, Brightness 1.6 by day (black char, a bright edge) and 3.2 at night (the edge passes the Bloom threshold, the smoulder shows). FlipbookFramerate 8-12, FlipbookStartRandom true; draw ~1.4x the old size.",
+  "uploadedId": null
+ },
+ {
+  "name": "te5_twinkle",
+  "file": "te5_twinkle.png",
+  "repoPath": "textures/te5/particles/te5_twinkle.png",
+  "texKey": "twinkle",
+  "fallbackTexKey": "sparkles",
+  "size": "1024x1024",
+  "layout": "Grid4x4",
+  "mode": "OneShot",
+  "flipbookMode": "OneShot",
+  "purpose": "NEW (pass 5.1's twinkle slot): a star that blooms, holds and shrinks out over its life: P15 star halo, P16 the duality helix's silver strand, P17 the dial's twinkles (and a drop-in for the glint5 systems)",
+  "notes": "Flipbook 4x4 OneShot over the particle's life: the glint5 star (same core, halo, tapering diffraction spikes) blooming from a small point (an ease-out over frames 0-5), holding (6-9) while its spikes turn (~14 deg over the life), the H and V arms breathe in counterphase and the thin diagonals come in, then drawing back to a point (10-15, the mirror image). Energy per frame 0.15 -> 1 -> 0.15, the steps shrinking toward the hold (0.25, 0.21, 0.17, 0.12, 0.08, 0.02), so even over the halo's 6-8 s life (~0.45 s a frame) it never pops; the first steps play while the emitter fades the particle in. Keep Size and Transparency steady (the twinkle is in the texture, not a transparency pulse); 1.6-3.4 s lifetimes look smoothest (5-10 frames a second). The fallback (kit sparkles, also 4x4) plays the same way.",
+  "uploadedId": null
+ },
+ {
+  "name": "te5_spark",
+  "file": "te5_spark.png",
+  "repoPath": "textures/te5/particles/te5_spark.png",
+  "texKey": "spark5",
+  "fallbackTexKey": "spark",
   "size": "256x256",
   "layout": "None",
-  "purpose": "P8b black ash flakes rising off the galaxy",
-  "notes": "One charred flake, 256x256 (no flipbook: the emitter's random Rotation and RotSpeed -90..90 make every particle a different shape). 9 main corners with torn edges, extent 0.74, >= 12 % padding. Body RGB 14-22 alpha 1 with fibre grain and a soft fold; 1 px silver (190) highlight on the upper-left edges.",
+  "mode": null,
+  "purpose": "NEW: hot metal sparks with a motion-blur tail (VelocityParallel, the TOP leads): where the shards break off the bezel, and the body's rising sparks",
+  "notes": "A hot fleck (core r 0.013, glow, a tiny glint) 0.16 from the top with a long hairline tail to 0.94 (2.5 px at the head -> sub-pixel, on one pixel column, alpha falling as (1-s)^1.6) and a faint sheath. Thinner and hotter than the streak. Square 256 px (Roblox draws particles square).",
+  "uploadedId": null
+ },
+ {
+  "name": "te5_stardust",
+  "file": "te5_stardust.png",
+  "repoPath": "textures/te5/particles/te5_stardust.png",
+  "texKey": "stardust",
+  "fallbackTexKey": "sparkles",
+  "size": "1024x1024",
+  "layout": "Grid4x4",
+  "mode": "Loop",
+  "flipbookMode": "Loop",
+  "purpose": "NEW: a pinch of silver glitter (a third, finest scale of dust: in the air round the wearer, or trailing the moon)",
+  "notes": "Flipbook 4x4 Loop: 30 sharp grains of three sizes (three are tiny four-point stars) in a loose cluster (r < 0.36). Every grain swells and fades once per loop on a smooth cosine (never off: 35-100 %) and drifts round a tiny circle, each at its own phase: a glitter with no blinks. FlipbookFramerate 6-10, FlipbookStartRandom true. Fallback: the kit 'sparkles' sheet (also 4x4).",
   "uploadedId": null
  }
 ]

@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 04_chunk_03_of_12.luau | step 4: piece 3 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (148303 bytes, checksum 731942170).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (151582 bytes, checksum 322184148).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "04_chunk_03_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-148303-731942170-12-824555251"
-local NEW_LEN, NEW_SUM = 148303, 731942170
+local RUN = "TheEnd-151582-322184148-12-938307881"
+local NEW_LEN, NEW_SUM = 151582, 322184148
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 12
-local LENS = { 13300, 13224, 13240, 13242, 13194, 13235, 13276, 13235, 13290, 13298, 13282, 2487 }
-local SUMS = { 825733820, 782681153, 524531706, 656635892, 998587156, 867606918, 526087852, 254541497, 6651690, 395645774, 897444566, 313496838 }
+local LENS = { 13269, 13222, 13287, 13307, 13252, 13232, 13230, 13284, 13301, 13300, 13204, 5694 }
+local SUMS = { 882737169, 754366057, 266404745, 785979457, 290862805, 645616522, 300795074, 332029237, 56580994, 674174262, 959073682, 306083532 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,11 @@ local function chunkOk(h, i)
 end
 
 local K = 3
--- piece 3 of 12 of the new source (13240 bytes, checksum 524531706, long bracket level 0)
+-- piece 3 of 12 of the new source (13287 bytes, checksum 266404745, long bracket level 0)
 local DATA = [[
+-- when this client's own THE END was last taken away, and from which character (a respawn rebuilds it on a new character
+-- within seconds: that is not an equip, so no grade)
+local ownGone, ownGoneChar = nil, setmetatable({}, { __mode = "v" }) -- (weak: an old character is never kept alive)
 -- where this client's own clock hub is (the owner's build writes it every frame): another wearer's clock and orbs step
 -- back behind it instead of standing in front of your own clock
 local ownerHub = nil
@@ -83,9 +86,10 @@ local FEED_PT = Vector3.new(-10.72, 9.00, 0)
 local MOTE_T = { 0.3, 0.45, 0.6, 0.75 }
 local DOWN9 = Vector3.new(0, -9, 0) -- (the dais's slope rays)
 local SWIRL_UP = CFrame.new(0, 0.3, 0)
--- (pass 5.1) the star halo's ring leans like a planet's: tipped forward 18 degrees and over 12, so from every side one
--- half of it passes in front of the wearer and the other behind; the helix hub sits at the feet
-local HALO_TILT = CFrame.new(0, 1.2, 0) * CFrame.Angles(math.rad(18), 0, math.rad(-12))
+-- (pass 5.1) the star halo's ring leans like a planet's: tipped forward 12 degrees and over 8 (its far edge clears the
+-- ground), so from every side one half of it passes in front of the aura and the other behind; the helix hub sits at
+-- the feet
+local HALO_TILT = CFrame.new(0, 1.2, 0) * CFrame.Angles(math.rad(12), 0, math.rad(-8))
 local HELIX_FEET = Vector3.new(0, -2.9, 0)
 -- the hairlines (the photon ring's thickness, the seconds needle's width) by distance band: under 50 studs, 50-95, beyond.
 -- A 0.13-stud line is under a pixel past ~85 studs; drawn without anti-aliasing (phones, low graphics) it breaks into a
@@ -316,9 +320,6 @@ function End.build(ctx)
 
 	-- GUIs: images fade in once; their Brightness only changes on the night tick
 	local images, brights = {}, {} -- { image, rest transparency, fade from, fade to, written }, { gui, day, night }
-	local hiCanvas, midCanvas = low and 512 or 1024, low and 256 or 512
-	local function surface(host, face, canvas, b0, b1, key, f0, f1, color)
-		local g = new("SurfaceGui", { Face = face, SizingMode = Enum.SurfaceGuiSizingMode.FixedSize, CanvasSize = Vector2.new(canvas, canvas),
 ]]
 
 local function main()

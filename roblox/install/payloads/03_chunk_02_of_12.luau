@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 03_chunk_02_of_12.luau | step 3: piece 2 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (148303 bytes, checksum 731942170).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (151582 bytes, checksum 322184148).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "03_chunk_02_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-148303-731942170-12-824555251"
-local NEW_LEN, NEW_SUM = 148303, 731942170
+local RUN = "TheEnd-151582-322184148-12-938307881"
+local NEW_LEN, NEW_SUM = 151582, 322184148
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 12
-local LENS = { 13300, 13224, 13240, 13242, 13194, 13235, 13276, 13235, 13290, 13298, 13282, 2487 }
-local SUMS = { 825733820, 782681153, 524531706, 656635892, 998587156, 867606918, 526087852, 254541497, 6651690, 395645774, 897444566, 313496838 }
+local LENS = { 13269, 13222, 13287, 13307, 13252, 13232, 13230, 13284, 13301, 13300, 13204, 5694 }
+local SUMS = { 882737169, 754366057, 266404745, 785979457, 290862805, 645616522, 300795074, 332029237, 56580994, 674174262, 959073682, 306083532 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,15 @@ local function chunkOk(h, i)
 end
 
 local K = 2
--- piece 2 of 12 of the new source (13224 bytes, checksum 782681153, long bracket level 0)
+-- piece 2 of 12 of the new source (13222 bytes, checksum 754366057, long bracket level 0)
 local DATA = [[
+	local function failKey(k, id, status)
+		if failed[k] then return end
+		failed[k] = true
+		warn(string.format("TheEnd: te5 texture %s (%s) did not load (%s); using its pass-4 fallback", k, id, tostring(status)))
+		for o, ok in pairs(texUsers) do
+			if ok == k then
+				pcall(applyTex, o, k)
 				if fixUps[o] then pcall(fixUps[o], o) end
 			end
 		end
@@ -287,9 +294,6 @@ end
 -- the wearer's equip grade lives here (one per client), so a quick re-equip takes it over instead of stacking a second one;
 -- gradeOwner is the build that took it last (only that one eases it out)
 local liveGrade, liveGradeTween, gradeToken, gradeOwner = nil, nil, 0, nil
--- when this client's own THE END was last taken away, and from which character (a respawn rebuilds it on a new character
--- within seconds: that is not an equip, so no grade)
-local ownGone, ownGoneChar = nil, setmetatable({}, { __mode = "v" }) -- (weak: an old character is never kept alive)
 ]]
 
 local function main()

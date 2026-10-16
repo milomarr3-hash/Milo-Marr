@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 13_chunk_12_of_12.luau | step 13: piece 12 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (148303 bytes, checksum 731942170).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (151582 bytes, checksum 322184148).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "13_chunk_12_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-148303-731942170-12-824555251"
-local NEW_LEN, NEW_SUM = 148303, 731942170
+local RUN = "TheEnd-151582-322184148-12-938307881"
+local NEW_LEN, NEW_SUM = 151582, 322184148
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 12
-local LENS = { 13300, 13224, 13240, 13242, 13194, 13235, 13276, 13235, 13290, 13298, 13282, 2487 }
-local SUMS = { 825733820, 782681153, 524531706, 656635892, 998587156, 867606918, 526087852, 254541497, 6651690, 395645774, 897444566, 313496838 }
+local LENS = { 13269, 13222, 13287, 13307, 13252, 13232, 13230, 13284, 13301, 13300, 13204, 5694 }
+local SUMS = { 882737169, 754366057, 266404745, 785979457, 290862805, 645616522, 300795074, 332029237, 56580994, 674174262, 959073682, 306083532 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,76 @@ local function chunkOk(h, i)
 end
 
 local K = 12
--- piece 12 of 12 of the new source (2487 bytes, checksum 313496838, long bracket level 0)
+-- piece 12 of 12 of the new source (5694 bytes, checksum 306083532, long bracket level 0)
 local DATA = [[
+			-- their clock disc and their orbs (those ghost together, with their GUIs, smoke and streams; enter at once, leave
+			-- after 1.2 s clear) and, separately, against their rings (only the rings ghost: a friend standing beside the
+			-- wearer looks through the rings, never through the clock; 0.6 s)
+			local head = cam.Focus.Position
+			local ab = head - camPos
+			local len2 = ab:Dot(ab)
+			local occ, occA = false, false
+			if len2 > 1 then
+				local Kp, nz = K.Position, K.LookVector
+				local d0, d1 = (camPos - Kp):Dot(nz), (head - Kp):Dot(nz)
+				if d0 * d1 < 0 then occ = (camPos + ab * (d0 / (d0 - d1)) - Kp).Magnitude < 14.5 end
+				occ = occ or segDist(moonC, camPos, ab, len2) < 5.5 or segDist(voidC, camPos, ab, len2) < 7.0
+				occA = segDist(A0p, camPos, ab, len2) < 6.5
+			end
+			if occ then st.ghostHold = 1.2 elseif st.ghostHold > 0 then st.ghostHold -= dt end
+			local tgt = st.ghostHold > 0 and 1 or 0
+			if st.ghost ~= tgt then
+				st.ghost = tgt > st.ghost and min(1, st.ghost + 5 * dt) or max(0, st.ghost - 5 * dt)
+				local q = math.floor(st.ghost * 3 + 0.5) / 3
+				if q ~= st.ghostQ then setGhost(q) end
+			end
+			if occA then st.armHold = 0.6 elseif st.armHold > 0 then st.armHold -= dt end
+			local tgtA = st.armHold > 0 and 1 or 0
+			if st.armG ~= tgtA then
+				st.armG = tgtA > st.armG and min(1, st.armG + 5 * dt) or max(0, st.armG - 5 * dt)
+				local qa = math.floor(st.armG * 3 + 0.5) / 3
+				if qa ~= st.armGQ then
+					st.armGQ = qa
+					writeRings()
+				end
+			end
+		elseif not VIEWER and ctx.isLocal then
+			-- body-anchored fallback: the owner sees through the clock while it stands between the camera and the head
+			local head = O + Vector3.new(0, 2, 0)
+			local nz = K.LookVector
+			local d0, d1 = (camPos - K.Position):Dot(nz), (head - K.Position):Dot(nz)
+			local cross = false
+			if d0 * d1 < 0 then
+				local hit = camPos + (head - camPos) * (d0 / (d0 - d1))
+				cross = (hit - K.Position).Magnitude < 14
+			end
+			if cross ~= st.ltmOn then
+				st.ltmOn = cross
+				for _, p in ipairs(clockParts) do p.LocalTransparencyModifier = cross and 0.5 or 0 end
+				-- (GUIs ignore LocalTransparencyModifier: the dial's inlay, star window and sub-dial switch off meanwhile)
+				hosts.inlayGui.Enabled, hosts.subdialGui.Enabled, hosts.plateGui.Enabled = not cross, not cross, not cross
+			end
+		end
+		-- (a state that went NaN anyway, e.g. a physics fling the guard above did not catch: start everything again where it
+		-- belongs next frame, instead of every part drifting off for the rest of the session)
+		if st.zoomD ~= st.zoomD or st.kY ~= st.kY or daisY ~= daisY or st.lift ~= st.lift or st.fitD ~= st.fitD or st.yieldD ~= st.yieldD
+			or st.gn.Y ~= st.gn.Y then
+			st.snap, st.fitD, st.yieldD, st.yieldT, st.gn, st.gnT = true, 0, 0, 0, Vector3.yAxis, Vector3.yAxis
+		end
+		nightClock += dt
+		if nightClock >= CONFIG.NIGHT_INTERVAL then
+			nightClock = 0
+			local q = nightStep()
+			if q ~= nq then
+				-- (at most 0.05 per tick, so dusk never steps)
+				if q > nq + 0.05 then q = math.floor((nq + 0.05) * 20 + 0.5) / 20
+				elseif q < nq - 0.05 then q = math.floor((nq - 0.05) * 20 + 0.5) / 20 end
+				applyNight(q)
+			end
+		end
+	end
+
+	function fx.setVisible(on)
 		if destroyed or on == visible then return end
 		visible = on
 		if on then

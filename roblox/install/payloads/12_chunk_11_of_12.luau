@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 12_chunk_11_of_12.luau | step 12: piece 11 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (148303 bytes, checksum 731942170).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (151582 bytes, checksum 322184148).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "12_chunk_11_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-148303-731942170-12-824555251"
-local NEW_LEN, NEW_SUM = 148303, 731942170
+local RUN = "TheEnd-151582-322184148-12-938307881"
+local NEW_LEN, NEW_SUM = 151582, 322184148
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 12
-local LENS = { 13300, 13224, 13240, 13242, 13194, 13235, 13276, 13235, 13290, 13298, 13282, 2487 }
-local SUMS = { 825733820, 782681153, 524531706, 656635892, 998587156, 867606918, 526087852, 254541497, 6651690, 395645774, 897444566, 313496838 }
+local LENS = { 13269, 13222, 13287, 13307, 13252, 13232, 13230, 13284, 13301, 13300, 13204, 5694 }
+local SUMS = { 882737169, 754366057, 266404745, 785979457, 290862805, 645616522, 300795074, 332029237, 56580994, 674174262, 959073682, 306083532 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,64 @@ local function chunkOk(h, i)
 end
 
 local K = 11
--- piece 11 of 12 of the new source (13282 bytes, checksum 897444566, long bracket level 1)
+-- piece 11 of 12 of the new source (13204 bytes, checksum 959073682, long bracket level 1)
 local DATA = [=[
+		GCF[GF1], GCF[GF2], GCF[GF3] = F1, F2, F3
+		if asm then
+			-- (for the owner's close camera the rings wait flat on the dais until the hands have locked at XII, then close
+			-- round the wearer as the finale: risen earlier, the meridian would stand across the dial during the lock.
+			-- Decided once, at the first frame the player sees, so a zoom during the assembly never makes them jump)
+			if st.r0 == nil then st.r0 = (ctx.isLocal and cz > 0.5) and 3.5 or 0 end
+			local r0 = st.r0
+			local flat = Gd * FLAT
+			if age < 2.4 + r0 then GCF[GF1] = lerpCF(flat, F1, easeOutBack((age - 1.0 - r0) / 1.4)) end
+			if age < 2.7 + r0 then GCF[GF2] = lerpCF(flat, F2, easeOutBack((age - 1.3 - r0) / 1.4)) end
+			if age < 3.0 + r0 then GCF[GF3] = lerpCF(flat, F3, easeOutBack((age - 1.6 - r0) / 1.4)) end
+		end
+		if hi then
+			local F3c = GCF[GF3] -- (the shards ride the ecliptic where it is, rising or not)
+			for i = 0, 7 do
+				local c = F3c * CFrame.Angles(0, 0, -((rad(i * 45 + 22.5) + rad(22) * t) % TAU)) * CFrame.new(0, 4.0, 0)
+					* CFrame.Angles((t * rad(50 + 15 * i)) % TAU, (t * rad(35 - 7 * i)) % TAU, 0)
+				if asm then
+					local u = (age - 5.0 - 0.06 * i) / 0.8
+					if u < 1 then
+						local ang = SHARD_A[i]
+						local sp = K * Vector3.new(14 * sin(ang), 14 * cos(ang), 0)
+						c = CFrame.new(sp + (c.Position - sp) * easeOutBack(u)) * c.Rotation
+					end
+				end
+				GCF[GSHARD0 + 1 + i] = c
+			end
+		end
+
+		-- 5. the balance: moon and void on the viewer's left and right of an invisible beam, rocking like scales (lower, a
+		-- little wider and well behind the wearer when the camera is close, so the moon sits beside the dial at about its
+		-- size, clear of the HUD; another wearer's step back behind your clock with it)
+		local sway = asm and smooth((age - 1.8) / 1.2) or 1
+		-- (the void's centre stays >= 13.4 studs out horizontally, so its 13-stud disc always clears the rings' 6.3 reach)
+		-- (in first person they move back beside the view: about 97° off the line of sight, outside the 102° field of view)
+		local arm = 12.5 - CLOSE.arm * cz
+		local orbZ = 1.5 - CLOSE.orbZ * cz * (1 - fp) + 1.5 * fp - st.yieldD
+		local Pv = Vk * CFrame.new(0, 6.0 - CLOSE.orbY * cz, orbZ) * CFrame.Angles(0, 0, rad(10) * sin(TAU * t / 10) * sway)
+		local moonC = Pv * Vector3.new(-arm, 0, 0)
+		local voidC = Pv * Vector3.new(arm, 0, 0)
+		local focus = O + Vector3.new(0, 1, 0)
+		if asm and age < 1.8 then
+			local sp = Vk * Vector3.new(-arm, -9, orbZ) -- (the moon rises out of the dais)
+			moonC = sp + (moonC - sp) * easeOutBack((age - 0.6) / 1.2)
+		end
+		GCF[GMOON] = CFrame.lookAt(moonC, focus)
+		GCF[GVOID] = CFrame.lookAt(voidC, focus)
+		if moonFace then
+			-- (the face rides the camera ray, 4.4 studs in front of the moon's centre, turned to face the camera: +z toward
+			-- it, as the clock frame, so the disc's Left face looks at the camera)
+			local dmv = camPos - moonC
+			local dmm = dmv.Magnitude
+			local fdir = dmm > 1e-3 and dmv / dmm or -V.LookVector
+			local fpos = moonC + fdir * 4.4
+			GCF[GMOONF] = CFrame.lookAt(fpos, fpos - fdir, abs(fdir.Y) > 0.98 and Vector3.zAxis or Vector3.yAxis)
+		end
 		-- the void's camera-facing details: the photon ring sits on the silhouette circle the camera sees (radius rt)
 		local dv = camPos - voidC
 		local dm = dv.Magnitude
@@ -116,7 +172,7 @@ local DATA = [=[
 		GCF[GBOKEH] = V * CFrame.new(0, 3.0, min(7.5, camDist - 4))
 		-- (pass 5.1) the star halo turns slowly on its tilt; the helix hub spins round the body from the feet
 		if hosts.halo then GCF[GHALO] = W * HALO_TILT * CFrame.Angles(0, (rad(14) * now) % TAU, 0) end
-		GCF[GHELIX] = CFrame.new(O + HELIX_FEET) * CFrame.Angles(0, (rad(150) * now) % TAU, 0)
+		GCF[GHELIX] = CFrame.new(O + HELIX_FEET) * CFrame.Angles(0, (rad(220) * now) % TAU, 0)
 		-- (a hand replaced without a new character, e.g. by ApplyDescription, takes our attachment with it: fall back to the
 		-- intake carriers and re-point the streams)
 		if palmR and palmR.Parent == nil then palmR, st.repoint = nil, true end
@@ -274,7 +330,7 @@ local DATA = [=[
 			em.dust.Rate = (low and 5 or 10) * (slow and 0.5 or 1)
 			if em.wisps then em.wisps.Rate = slow and 0 or (low and 3 or 7) end
 			-- (the helix's strands: thin while travelling, so they leave a short glittering wake, not a long trail)
-			em.strandMoon.Rate = (low and 12 or 30) * (slow and 0.35 or 1)
+			em.strandMoon.Rate = (low and 14 or 34) * (slow and 0.35 or 1)
 			em.strandVoid.Rate = slow and 0 or (low and 8 or 18)
 		end
 		if remote and cam and ownerHub then
@@ -302,74 +358,6 @@ local DATA = [=[
 		end
 		if remote and st.ghostRemote and cam then
 			-- someone else's aura between you and your camera: test the segment from the camera to your own focus against
-			-- their clock disc and their orbs (those ghost together, with their GUIs, smoke and streams; enter at once, leave
-			-- after 1.2 s clear) and, separately, against their rings (only the rings ghost: a friend standing beside the
-			-- wearer looks through the rings, never through the clock; 0.6 s)
-			local head = cam.Focus.Position
-			local ab = head - camPos
-			local len2 = ab:Dot(ab)
-			local occ, occA = false, false
-			if len2 > 1 then
-				local Kp, nz = K.Position, K.LookVector
-				local d0, d1 = (camPos - Kp):Dot(nz), (head - Kp):Dot(nz)
-				if d0 * d1 < 0 then occ = (camPos + ab * (d0 / (d0 - d1)) - Kp).Magnitude < 14.5 end
-				occ = occ or segDist(moonC, camPos, ab, len2) < 5.5 or segDist(voidC, camPos, ab, len2) < 7.0
-				occA = segDist(A0p, camPos, ab, len2) < 6.5
-			end
-			if occ then st.ghostHold = 1.2 elseif st.ghostHold > 0 then st.ghostHold -= dt end
-			local tgt = st.ghostHold > 0 and 1 or 0
-			if st.ghost ~= tgt then
-				st.ghost = tgt > st.ghost and min(1, st.ghost + 5 * dt) or max(0, st.ghost - 5 * dt)
-				local q = math.floor(st.ghost * 3 + 0.5) / 3
-				if q ~= st.ghostQ then setGhost(q) end
-			end
-			if occA then st.armHold = 0.6 elseif st.armHold > 0 then st.armHold -= dt end
-			local tgtA = st.armHold > 0 and 1 or 0
-			if st.armG ~= tgtA then
-				st.armG = tgtA > st.armG and min(1, st.armG + 5 * dt) or max(0, st.armG - 5 * dt)
-				local qa = math.floor(st.armG * 3 + 0.5) / 3
-				if qa ~= st.armGQ then
-					st.armGQ = qa
-					writeRings()
-				end
-			end
-		elseif not VIEWER and ctx.isLocal then
-			-- body-anchored fallback: the owner sees through the clock while it stands between the camera and the head
-			local head = O + Vector3.new(0, 2, 0)
-			local nz = K.LookVector
-			local d0, d1 = (camPos - K.Position):Dot(nz), (head - K.Position):Dot(nz)
-			local cross = false
-			if d0 * d1 < 0 then
-				local hit = camPos + (head - camPos) * (d0 / (d0 - d1))
-				cross = (hit - K.Position).Magnitude < 14
-			end
-			if cross ~= st.ltmOn then
-				st.ltmOn = cross
-				for _, p in ipairs(clockParts) do p.LocalTransparencyModifier = cross and 0.5 or 0 end
-				-- (GUIs ignore LocalTransparencyModifier: the dial's inlay, star window and sub-dial switch off meanwhile)
-				hosts.inlayGui.Enabled, hosts.subdialGui.Enabled, hosts.plateGui.Enabled = not cross, not cross, not cross
-			end
-		end
-		-- (a state that went NaN anyway, e.g. a physics fling the guard above did not catch: start everything again where it
-		-- belongs next frame, instead of every part drifting off for the rest of the session)
-		if st.zoomD ~= st.zoomD or st.kY ~= st.kY or daisY ~= daisY or st.lift ~= st.lift or st.fitD ~= st.fitD or st.yieldD ~= st.yieldD
-			or st.gn.Y ~= st.gn.Y then
-			st.snap, st.fitD, st.yieldD, st.yieldT, st.gn, st.gnT = true, 0, 0, 0, Vector3.yAxis, Vector3.yAxis
-		end
-		nightClock += dt
-		if nightClock >= CONFIG.NIGHT_INTERVAL then
-			nightClock = 0
-			local q = nightStep()
-			if q ~= nq then
-				-- (at most 0.05 per tick, so dusk never steps)
-				if q > nq + 0.05 then q = math.floor((nq + 0.05) * 20 + 0.5) / 20
-				elseif q < nq - 0.05 then q = math.floor((nq - 0.05) * 20 + 0.5) / 20 end
-				applyNight(q)
-			end
-		end
-	end
-
-	function fx.setVisible(on)
 ]=]
 
 local function main()

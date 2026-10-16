@@ -977,7 +977,8 @@ task.spawn(function()
 end)
 """
 	fails = []
-	for quality, rig, is_local, parts in (("low", "clone", "false", 150), ("high", "r6", "true", 360)):
+	# (pass 5.1: +2 carriers on high, the star halo and the helix hub; +1 on low, the helix hub)
+	for quality, rig, is_local, parts in (("low", "clone", "false", 151), ("high", "r6", "true", 362)):
 		d = os.path.join(tempfile.mkdtemp(dir=TMP), "h")
 		os.makedirs(d)
 		text = (body + "\n-- test: studio_checks.md snippets driven inside the harness\n"
@@ -1002,7 +1003,7 @@ end)
 			"BENCH": rf"^bench: 1 stand-in\(s\) \({rig}, quality {quality}, isLocal {is_local}\)",
 			"INSPECT": rf"^TheEnd_TheEndBench1: {parts} parts.*clock on the far side: true, moon left: true, void right: true \| grade: "
 					   + ("on" if is_local == "true" else "none"),
-			"INSPECTME": r"^TheEnd_Player1: 360 parts.*clock on the far side: true, moon left: true, void right: true",
+			"INSPECTME": r"^TheEnd_Player1: 362 parts.*clock on the far side: true, moon left: true, void right: true",
 			# (review round 2: on low quality only the owner's aura has a Highlight, so the low remote stand-in has none)
 			"HIGHLIGHT": r"^TheEndTone OFF on %d aura\(s\)" % (2 if quality == "high" else 1),
 			"STOP": r"^removed 1 stand-in\(s\)$",

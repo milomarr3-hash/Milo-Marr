@@ -1,12 +1,12 @@
 -- AuraRNG Studio install kit | 11_chunk_10_of_12.luau | step 11: piece 10 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (148303 bytes, checksum 731942170).
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (151582 bytes, checksum 322184148).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
 local FILE = "11_chunk_10_of_12.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-148303-731942170-12-824555251"
-local NEW_LEN, NEW_SUM = 148303, 731942170
+local RUN = "TheEnd-151582-322184148-12-938307881"
+local NEW_LEN, NEW_SUM = 151582, 322184148
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -45,8 +45,8 @@ local function describe(len, cs)
 end
 
 local N = 12
-local LENS = { 13300, 13224, 13240, 13242, 13194, 13235, 13276, 13235, 13290, 13298, 13282, 2487 }
-local SUMS = { 825733820, 782681153, 524531706, 656635892, 998587156, 867606918, 526087852, 254541497, 6651690, 395645774, 897444566, 313496838 }
+local LENS = { 13269, 13222, 13287, 13307, 13252, 13232, 13230, 13284, 13301, 13300, 13204, 5694 }
+local SUMS = { 882737169, 754366057, 266404745, 785979457, 290862805, 645616522, 300795074, 332029237, 56580994, 674174262, 959073682, 306083532 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,82 @@ local function chunkOk(h, i)
 end
 
 local K = 10
--- piece 10 of 12 of the new source (13298 bytes, checksum 395645774, long bracket level 0)
+-- piece 10 of 12 of the new source (13300 bytes, checksum 674174262, long bracket level 0)
 local DATA = [[
+					st.tdir = st.tdir and (st.tdir + (u - st.tdir) * (1 - exp(-4 * dt))) or u
+				end
+			end
+		end
+		local fast = (st.speedOn and st.speed > 8) or st.speed > 12
+		if fast ~= st.speedOn then
+			st.speedOn = fast
+			refreshEmitters()
+		end
+		st.speedT += ((fast and 1 or 0) - st.speedT) * (1 - exp(-3 * dt))
+		local seated = ctx.hum ~= nil and ctx.hum.Sit == true
+		if seated ~= st.seated then
+			st.seated = seated
+			refreshEmitters()
+		end
+		st.sitT += ((seated and 1 or 0) - st.sitT) * (1 - exp(-5 * dt))
+
+		-- 1. frames: the wearer (W), this client's viewer (V), the dais, the clock (K)
+		local lv = cf.LookVector
+		yawW = wrapPi(yawW + wrapPi(atan2(-lv.X, -lv.Z) - yawW) * (1 - exp(-5 * dt)))
+		local W = CFrame.new(O) * CFrame.Angles(0, yawW, 0)
+		local cam = workspace.CurrentCamera
+		local camPos = lastCamPos
+		if cam then
+			local cp = cam.CFrame.Position
+			if cp.X == cp.X and cp.Y == cp.Y and cp.Z == cp.Z then
+				camPos = cp
+				lastCamPos = cp
+			end
+		end
+		local v = O - camPos
+		local dh = sqrt(v.X * v.X + v.Z * v.Z)
+		-- how close the camera is (smoothed): under ZOOM_FAR studs the layout eases into its close-camera form, so at Roblox's
+		-- default zoom the whole dial and both orbs are on screen; in first person the owner's clock rises into the sky
+		st.zoomD = snap and dh or st.zoomD + (dh - st.zoomD) * (1 - exp(-3 * dt))
+		local cz = smooth((CONFIG.ZOOM_FAR - st.zoomD) / (CONFIG.ZOOM_FAR - CONFIG.ZOOM_NEAR))
+		local fp = (ctx.isLocal and CONFIG.FIRST_PERSON_LIFT) and smooth((4 - st.zoomD) / 2.5) or 0
+		local czq = math.floor(cz * 20 + 0.5) / 20
+		if czq ~= st.czq then
+			st.czq = czq
+			toneLevels(0) -- (close up the ink outline eases off and the silver fill strengthens)
+			-- (the floor's twinkles: one size step at a time, each a band past its threshold, so a camera resting near one
+			-- never flips them back and forth)
+			local mi = st.moteI
+			while mi < 5 and czq >= MOTE_T[mi] + 0.05 do mi += 1 end
+			while mi > 1 and czq <= MOTE_T[mi - 1] - 0.05 do mi -= 1 end
+			if mi ~= st.moteI then
+				st.moteI = mi
+				em.motes.Size = hosts.moteSizes[mi]
+			end
+			if hosts.lensTop then
+				-- (the lensed band slims as the camera comes close: at the default zoom a full-width band reads as a crescent)
+				local k = 1 - 0.45 * czq
+				hosts.lensTop.Width0, hosts.lensTop.Width1 = 1.5 * k, 1.5 * k
+				hosts.lensBot.Width0, hosts.lensBot.Width1 = 0.8 * k, 0.8 * k
+			end
+		end
+		if haloEntry then
+			-- (the white ball's soft halo fades out as the camera comes close, where the leaning dial plane would cut it)
+			local hz = math.floor((1 - smooth((cz - 0.3) / 0.4)) * 10 + 0.5) / 10
+			if hz ~= st.haloZ then
+				st.haloZ = hz
+				haloEntry[2] = 1 - (0.35 + 0.2 * max(nq, 0)) * hz
+				if settled then
+					local tr = 1 - (1 - haloEntry[2]) * alphaW
+					haloIm.ImageTransparency = tr
+					haloEntry[5] = tr
+				end
+			end
+		end
+		local V
+		if VIEWER then
+			-- the clock swings to the far side of the wearer from this camera through a critically damped spring (no overshoot).
+			-- In first person (the camera inside the wearer) "beyond the wearer" is where the camera looks, so the orbs hang
 			-- beside and behind the view instead of filling it when the player turns; straight above it holds still
 			if dh > 1.5 and dh > 0.2 * abs(v.Y) then
 				yawTarget = atan2(-v.X, -v.Z)
@@ -263,62 +337,6 @@ local DATA = [[
 		local F1 = CFrame.new(A0p) * R1
 		local F2 = CFrame.new(A0p) * R2
 		local F3 = CFrame.new(A0p) * R3
-		GCF[GF1], GCF[GF2], GCF[GF3] = F1, F2, F3
-		if asm then
-			-- (for the owner's close camera the rings wait flat on the dais until the hands have locked at XII, then close
-			-- round the wearer as the finale: risen earlier, the meridian would stand across the dial during the lock.
-			-- Decided once, at the first frame the player sees, so a zoom during the assembly never makes them jump)
-			if st.r0 == nil then st.r0 = (ctx.isLocal and cz > 0.5) and 3.5 or 0 end
-			local r0 = st.r0
-			local flat = Gd * FLAT
-			if age < 2.4 + r0 then GCF[GF1] = lerpCF(flat, F1, easeOutBack((age - 1.0 - r0) / 1.4)) end
-			if age < 2.7 + r0 then GCF[GF2] = lerpCF(flat, F2, easeOutBack((age - 1.3 - r0) / 1.4)) end
-			if age < 3.0 + r0 then GCF[GF3] = lerpCF(flat, F3, easeOutBack((age - 1.6 - r0) / 1.4)) end
-		end
-		if hi then
-			local F3c = GCF[GF3] -- (the shards ride the ecliptic where it is, rising or not)
-			for i = 0, 7 do
-				local c = F3c * CFrame.Angles(0, 0, -((rad(i * 45 + 22.5) + rad(22) * t) % TAU)) * CFrame.new(0, 4.0, 0)
-					* CFrame.Angles((t * rad(50 + 15 * i)) % TAU, (t * rad(35 - 7 * i)) % TAU, 0)
-				if asm then
-					local u = (age - 5.0 - 0.06 * i) / 0.8
-					if u < 1 then
-						local ang = SHARD_A[i]
-						local sp = K * Vector3.new(14 * sin(ang), 14 * cos(ang), 0)
-						c = CFrame.new(sp + (c.Position - sp) * easeOutBack(u)) * c.Rotation
-					end
-				end
-				GCF[GSHARD0 + 1 + i] = c
-			end
-		end
-
-		-- 5. the balance: moon and void on the viewer's left and right of an invisible beam, rocking like scales (lower, a
-		-- little wider and well behind the wearer when the camera is close, so the moon sits beside the dial at about its
-		-- size, clear of the HUD; another wearer's step back behind your clock with it)
-		local sway = asm and smooth((age - 1.8) / 1.2) or 1
-		-- (the void's centre stays >= 13.4 studs out horizontally, so its 13-stud disc always clears the rings' 6.3 reach)
-		-- (in first person they move back beside the view: about 97° off the line of sight, outside the 102° field of view)
-		local arm = 12.5 - CLOSE.arm * cz
-		local orbZ = 1.5 - CLOSE.orbZ * cz * (1 - fp) + 1.5 * fp - st.yieldD
-		local Pv = Vk * CFrame.new(0, 6.0 - CLOSE.orbY * cz, orbZ) * CFrame.Angles(0, 0, rad(10) * sin(TAU * t / 10) * sway)
-		local moonC = Pv * Vector3.new(-arm, 0, 0)
-		local voidC = Pv * Vector3.new(arm, 0, 0)
-		local focus = O + Vector3.new(0, 1, 0)
-		if asm and age < 1.8 then
-			local sp = Vk * Vector3.new(-arm, -9, orbZ) -- (the moon rises out of the dais)
-			moonC = sp + (moonC - sp) * easeOutBack((age - 0.6) / 1.2)
-		end
-		GCF[GMOON] = CFrame.lookAt(moonC, focus)
-		GCF[GVOID] = CFrame.lookAt(voidC, focus)
-		if moonFace then
-			-- (the face rides the camera ray, 4.4 studs in front of the moon's centre, turned to face the camera: +z toward
-			-- it, as the clock frame, so the disc's Left face looks at the camera)
-			local dmv = camPos - moonC
-			local dmm = dmv.Magnitude
-			local fdir = dmm > 1e-3 and dmv / dmm or -V.LookVector
-			local fpos = moonC + fdir * 4.4
-			GCF[GMOONF] = CFrame.lookAt(fpos, fpos - fdir, abs(fdir.Y) > 0.98 and Vector3.zAxis or Vector3.yAxis)
-		end
 ]]
 
 local function main()
