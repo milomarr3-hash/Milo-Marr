@@ -192,7 +192,8 @@ export function buildEmitters(snapshot, ctx, opts = {}) {
 			const rnd = rng(hash2(seed, k >>> 0));
 			const tau = burstT != null ? burstT : (k + rnd()) / rate;
 			if (tau > T) continue;
-			if (hist ? !hist.enabled(tau) : (!e.enabled && burstT == null)) continue;
+			// (a burst is drawn whatever Enabled was: Roblox's :Emit() spawns particles from a disabled emitter too)
+			if (burstT == null && (hist ? !hist.enabled(tau) : !e.enabled)) continue;
 			const L = la + (lb - la) * rnd();
 			const age = (T - tau) * ts;
 			if (age >= L || age < 0) continue;

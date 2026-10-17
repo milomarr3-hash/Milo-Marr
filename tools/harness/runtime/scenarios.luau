@@ -438,12 +438,13 @@ do
 		followCam(S.rec, 16, 6, dt)
 		assemblyCheck(S, t)
 	end
+	-- (the reveal waits for the player: it starts at 5 s and settles at ~15 s, so these run to 17 s, steady after 15.2)
 	def("equip_in_cutscene", "Equipped at 0.1 s while the roll cutscene holds a Scriptable camera (0-5 s); the framework KEEPS calling update while the aura is hidden",
-		{ duration = 16, clock = 14, steadyAfter = 12 },
+		{ duration = 17, clock = 14, steadyAfter = 15.2 },
 		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } H.UPDATE_WHILE_HIDDEN = true end,
 		cutscene)
 	def("equip_in_cutscene_paused", "As equip_in_cutscene, but the framework does not call update while the aura is hidden",
-		{ duration = 16, clock = 14, steadyAfter = 12 },
+		{ duration = 17, clock = 14, steadyAfter = 15.2 },
 		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } H.UPDATE_WHILE_HIDDEN = false end,
 		cutscene)
 	def("pair_side", "Local wearer idle, follow camera 16/6; another wearer stands 5 studs to your right (friends side by side)",
@@ -578,7 +579,7 @@ do
 			setCamera(focus + v3(0, 6, 16), focus)
 		end)
 	def("nan_frame", "Idle; at t = 8 one frame hands the aura a NaN hover and at t = 9 a NaN HumanoidRootPart position (a physics fling): it skips them and carries on",
-		{ duration = 11, clock = 14, steadyAfter = 9.5 },
+		{ duration = 12, clock = 14, steadyAfter = 10 },
 		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
 		function(S, t, dt)
 			local nan = 0 / 0

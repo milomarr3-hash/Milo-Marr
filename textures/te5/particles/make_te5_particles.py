@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # THE END (1 in 1,000,000,000) -- equipped aura -- texture group "particles" (pass 6: film-quality particles).
 #
-# 10 textures (keys stay valid for the module's TEX5 slots; 3 are new):
+# 12 textures (keys stay valid for the module's TEX5 slots; 5 are new):
 #   te5_glint     (256^2)                    glint5    a photographic star: hot core, soft halo, four tapering
 #                                                      diffraction spikes with faint interference, four thin diagonals
 #   te5_twinkle   (1024^2, Grid4x4 OneShot)  twinkle   NEW: that star blooming from a point, turning, drawing back
@@ -12,6 +12,10 @@
 #   te5_shards    (1024^2, Grid4x4 Loop)     shards5   a ray-traced shard of polished steel, one tumble in 16 frames
 #   te5_ash       (1024^2, Grid4x4 Loop)     ash5      a glowing ember flake tumbling, foreshortened (was one flake)
 #   te5_bokeh     (256^2)                    bokeh     an out-of-focus light disc (nine-blade iris)
+#   te5_link      (512x128, a Beam texture)  link      NEW: a thread of light with one pearl of light per image (x runs
+#                                                      along the beam, seamless for TextureMode Wrap; mirror-symmetric)
+#   te5_shockwave (512^2)                    shockwave NEW: one expanding wave: a crisp bright front at r 0.86 (r 1 = the
+#                                                      image edge) and a soft wake streaked with faint radial rays
 #   te5_smoke     (1024^2, Grid4x4 OneShot)  RETIRED   pass 5.1 draws lit volumetric smoke from textures/te5/smoke
 #                                                      (billow, wisp, mistbank). te5_smoke is still made, byte-identical,
 #                                                      into retired/ for these sheets, but it is not in the manifest, so
@@ -39,6 +43,8 @@
 #   * Monochrome: every pixel is neutral grey (R = G = B). The particle Color supplies the faint cool tint.
 #   * Flipbooks are exactly 1024x1024 (Roblox refuses any other size); cells are laid out row-major from the top-left
 #     (Roblox order); alpha is exactly 0 within 4 % of every cell edge; colour bleeding never crosses a cell border.
+#   * The beam texture (te5_link) is the exception: it tiles along x (its left and right edges join seamlessly, every
+#     function of x is periodic), so only its top and bottom rows are exactly 0.
 #   * The contact sheets composite like tools/preview: sRGB textures in linear light, out = src*a + dst*(1 - a*(1 -
 #     LightEmission)), the place's Bloom (threshold 2) and the preview's filmic curve. NOT Studio: a sheet is evidence.
 import argparse, json, math, os, sys, time
@@ -1023,6 +1029,111 @@ def make_stardust():
 
 
 # ====================================================================================================================
+# te5_link  (512x128, a Beam texture: TextureMode Wrap, TextureLength ~7 studs, TextureSpeed ~0.5): the energy links
+# from the moon to the clock, the clock to the void and the clock down to the floor's galaxy vortex. Image x runs ALONG
+# the beam (seamless every 512 px), y across it (the profile is centred between rows 63 and 64, so the beam's tapering
+# Width scales it; alpha 0 on the top and bottom rows). A faint thread of light through the whole length (a 2-3 px core
+# breathing gently in brightness and width, never broken into dashes, in a soft glow) and ONE pearl of light per image
+# at x 0.5: a hot spindle of light, a glow and a soft halo, three pairs of fine grains glittering round it. The whole
+# image is mirror-symmetric about x 0.5, so it reads the same whichever way the beam scrolls.
+# ====================================================================================================================
+
+LINK_W, LINK_H = 512, 128
+# the pearl: core / glow / halo lengths (gaussian sigma along the beam, in images); the core's half-height (px) is h0 at
+# its ends and h0 + h1 at its middle; the glow's and halo's alpha and sigma across (px)
+LINK_PEARL = dict(core_s=0.040, glow_s=0.055, halo_s=0.070, core_h0=1.25, core_h1=0.75, glow_a=0.55, glow_h=3.6,
+                  halo_a=0.30, halo_h=10.5)
+LINK_GRAINS = [(0.026, 6.5, 0.42, 0.60), (0.058, -8.0, 0.46, 0.55), (0.096, 10.0, 0.42, 0.60)]  # |dx|, dy px, alpha, sigma px
+
+
+def cos_series(x, seed, f0, f1, sym=0.5):
+    """Smooth periodic variation along a tile: whole frequencies f0..f1 per tile (so it tiles), amplitudes ~1/sqrt(f),
+    mirror-symmetric about x = sym (cosine terms only). Mean 0, max |value| 1 over the tile."""
+    rng = np.random.default_rng(seed)
+    x = np.asarray(x, np.float64)
+    acc = np.zeros_like(x)
+    for f in range(f0, f1 + 1):
+        acc = acc + rng.standard_normal() / math.sqrt(f) * np.cos(2 * math.pi * f * (x - sym))
+    return (acc / np.abs(acc).max()).astype(F32)
+
+
+def make_link():
+    W, H = LINK_W, LINK_H
+    u = ((np.arange(W * SS, dtype=np.float64) + 0.5) / (W * SS))[None, :]               # along the beam, in images
+    dy = (((np.arange(H * SS, dtype=np.float64) + 0.5) / (H * SS) - 0.5) * H)[:, None]   # across, px off the centre line
+    dx = u - 0.5                                                                         # from the pearl, in images
+    # the thread: a 2-3 px core breathing gently in brightness (+-10 %) and width along its length, a soft glow
+    nb, nw = cos_series(u, 501, 2, 9), cos_series(u, 502, 2, 6)
+    fw = 2.5 + 0.5 * nw                                                  # the core's FWHM, 2..3 px
+    thread = 0.39 * (1.0 + 0.10 * nb) * np.exp(-0.5 * (dy / (fw / 2.3548)) ** 2)
+    glow = 0.10 * (1.0 + 0.10 * nb) * np.exp(-0.5 * (dy / 5.0) ** 2)
+    # the pearl: a hot spindle (alpha 1, 4 px tall at its middle, thinning into the thread), a glow and a soft halo, all
+    # gaussian along the beam, and three pairs of fine grains round it (in mirror pairs, so it stays symmetric)
+    p = LINK_PEARL
+
+    def along(s):
+        return np.exp(-0.5 * (dx / s) ** 2)
+
+    h = p["core_h0"] + p["core_h1"] * along(0.050)
+    layers = [thread, glow,
+              along(p["core_s"]) / (1.0 + (dy / h) ** 6),
+              p["glow_a"] * along(p["glow_s"]) * np.exp(-0.5 * (dy / p["glow_h"]) ** 2),
+              p["halo_a"] * along(p["halo_s"]) * np.exp(-0.5 * (dy / p["halo_h"]) ** 2)]
+    for gx, gy, ga, gs in LINK_GRAINS:
+        for side in (-1.0, 1.0):
+            d2 = ((dx - side * gx) * W) ** 2 + (dy - gy) ** 2
+            layers += [ga * np.exp(-0.5 * d2 / gs ** 2), 0.08 * ga * np.exp(-0.5 * d2 / (3.0 * gs) ** 2)]
+    A = (union(layers) * sstep(58.0, 52.0, np.abs(dy))).astype(F32)      # 0 from 58 px off the centre line
+    return finish("te5_link", A.copy(), A, dither=True, seed=24)
+
+
+# ====================================================================================================================
+# te5_shockwave  (512^2): one expanding wave of energy, a single particle growing ~3 -> 58 studs across, flat on the
+# floor (and once camera-facing, a pulse round the moon). r = distance from the centre, 1 at the image edge. A thin
+# bright front at r 0.86 (alpha 1, ~3 % of r wide) with a crisp outer edge (1 -> 0 over 2 px) and a softer inner side;
+# behind it a soft wake fading inward (smoothstep) to nothing at r 0.55, streaked with faint, fine radial rays that give
+# it motion. Alpha 0 inside r 0.55 and outside r 0.88. Rotationally even: no bright lobe.
+# ====================================================================================================================
+
+
+def polar_streaks(seed, fth=(40.0, 140.0), frmax=5.0, slope=0.5, nth=4096, nr=512, r0=0.40, r1=1.0):
+    """Faint radial streaks: band-limited noise on a polar grid (nr radii over r0..r1, nth angles round a turn), fine
+    round the turn (fth cycles a turn, amplitude ~f^-slope, tapering to 0 by 1.3 x fth[1]) and long along the radius
+    (up to frmax cycles per unit r). Softly compressed (tanh), then band-limited again: no low orders (no bright lobe),
+    nothing finer than the band (no aliasing). Mean 0 at every radius, max |S| 1. Returns (S, r0, r1)."""
+    rng = np.random.default_rng(seed)
+    ft = np.fft.rfftfreq(nth) * nth
+    fr = np.abs(np.fft.fftfreq(nr) * nr / (r1 - r0))
+    band = sstep(fth[0] * 0.7, fth[0], ft) * (1.0 - sstep(fth[1], fth[1] * 1.3, ft))
+    amp = (1.0 - sstep(frmax, frmax * 1.6, fr))[:, None] * (band * np.maximum(ft, 1.0) ** -slope)[None, :]
+    spec = (rng.standard_normal(amp.shape) + 1j * rng.standard_normal(amp.shape)) * amp
+    S = np.fft.irfft2(spec, s=(nr, nth))
+    S = np.tanh(S / S.std())
+    S = np.fft.irfft(np.fft.rfft(S, axis=1) * band[None, :], n=nth, axis=1)
+    return (S / np.abs(S).max()).astype(F32), r0, r1
+
+
+SHOCK_FRONT = 0.875         # the front's outer edge (half-max); its core is solid alpha 1 from r 0.861
+SHOCK_WAKE = (0.55, 0.85, 0.285, 0.22)   # the wake: smoothstep from r 0.55 to 0.85, alpha 0.285, rays +-22 %
+
+
+def make_shockwave():
+    n = 512
+    X, Y = cell_xy(n)
+    r = 2.0 * np.hypot(X, Y).astype(np.float64)                        # 1 at the image edge
+    px = 2.0 / n                                                        # one output px, in r
+    front = sstep(SHOCK_FRONT + px, SHOCK_FRONT - px, r)                # the crisp outer edge: 1 -> 0 over 2 px
+    ring = sstep(0.840, 0.861, r)                                       # the front's softer inner side
+    S, r0, r1 = polar_streaks(6060)
+    th = (np.arctan2(Y, X).astype(np.float64) / (2 * math.pi)) % 1.0
+    s = sample_wrap(S, (np.clip(r, r0, r1 - 1e-6) - r0) / (r1 - r0) * S.shape[0], th * S.shape[1])
+    w0, w1, wa, wm = SHOCK_WAKE
+    wake = wa * sstep(w0, w1, r) * (1.0 + wm * s * sstep(0.845, 0.80, r))   # the rays fade out just behind the front
+    A = (union([ring, wake]) * front).astype(F32)
+    return finish("te5_shockwave", A.copy(), A, dither=True, seed=25)
+
+
+# ====================================================================================================================
 # registry, manifest
 # ====================================================================================================================
 
@@ -1037,6 +1148,8 @@ JOBS = {
     "te5_twinkle": make_twinkle,
     "te5_spark": make_spark,
     "te5_stardust": make_stardust,
+    "te5_link": make_link,
+    "te5_shockwave": make_shockwave,
 }
 
 MANIFEST = [
@@ -1114,6 +1227,34 @@ MANIFEST = [
      "Every grain swells and fades once per loop on a smooth cosine (never off: 35-100 %) and drifts round a tiny "
      "circle, each at its own phase: a glitter with no blinks. FlipbookFramerate 6-10, FlipbookStartRandom true. "
      "Fallback: the kit 'sparkles' sheet (also 4x4)."),
+    ("te5_link", "link", "streak", "512x128", "None", None,
+     "NEW: the energy links (Beams): the moon's light into the clock, out of the clock to the void, and down to the "
+     "floor's galaxy vortex",
+     "A Beam texture. Image x runs ALONG the beam and tiles seamlessly every 512 px (TextureMode Wrap; TextureLength ~7 "
+     "studs = one pearl every 7 studs; TextureSpeed ~0.5); y runs across it, the profile centred between rows 63 and 64, "
+     "so the beam's tapering Width0/Width1 scales it (alpha 0 beyond +-33 px: only the middle half of the Width ever "
+     "shows; the thread is visible within the middle ~20 %, the pearl's halo within the middle ~40 %). A faint thread of light "
+     "through the whole length: a 2-3 px core (~2 % of the Width) at alpha ~0.40, breathing +-10 % in brightness and "
+     "between 2 and 3 px in width along the image (never dashed), in a soft gaussian glow (sigma 5 px, alpha 0.10). ONE "
+     "pearl of light per image, centred at x 0.5: a hot spindle (alpha 1, 4 px tall at its middle, thinning into the "
+     "thread), a glow and a soft halo reaching ~+-20 % of the Width (alpha <= 0.35 off the core), all gaussian along "
+     "the beam (the pearl spans ~30 % of the image: ~2 studs at TextureLength 7), and three pairs of fine grains round "
+     "it (alpha <= 0.6). The whole image is mirror-symmetric about x 0.5, so it reads the same whichever way it scrolls "
+     "(TextureSpeed's sign and the attachments' order don't matter). RGB white everywhere: the Beam's Color tints it "
+     "(a white -> ink ColorSequence works). At Width 0.9 -> 0.3 studs the thread is a ~0.1-stud glowing line and the "
+     "pearl's halo is what reads from far away."),
+    ("te5_shockwave", "shockwave", "rim", "512x512", "None", None,
+     "NEW: one expanding wave of energy: the floor's wave at midnight (VelocityPerpendicular, flat on the floor) and the "
+     "pulse ring off the moon (camera-facing)",
+     "A single wave, centred (r = distance from the centre, 1 at the image edge): a thin bright front at r 0.86 (alpha "
+     "1 from r 0.861 to 0.871; half-max r 0.848-0.875, ~3 % of r) with a crisp outer edge (1 -> 0 over 2 px, nothing "
+     "past r 0.88) and a softer inner side; behind it a soft wake fading inward (smoothstep from r 0.85 down to 0 at r "
+     "0.55; alpha ~0.28 just behind the front, <= 0.35 everywhere) streaked with faint, fine radial rays (+-22 % of the "
+     "wake, so alpha +-0.06; spectral noise on a polar grid, 40-140 cycles a turn, so the rays stay below the pixel "
+     "limit down to a third of full size and the mip-maps take them smoothly below that). Alpha 0 inside r 0.55 (the "
+     "moon shows through the pulse). Rotationally even (no low orders: no bright lobe), so any Rotation works. Sizes: "
+     "the front's DIAMETER is 0.86 x Size and its radius 0.43 x Size (Size 58 -> a 50-stud wave; for a 56-stud front "
+     "use Size 65); the wake's inner end is at radius 0.275 x Size. RGB white everywhere."),
 ]
 
 
@@ -1139,10 +1280,11 @@ def write_manifest():
 # ====================================================================================================================
 
 SHEET_ORDER = ["te5_glint", "te5_twinkle", "te5_mote", "te5_stardust", "te5_streak", "te5_spark", "te5_shards",
-               "te5_ash", "te5_bokeh", "te5_smoke"]
+               "te5_ash", "te5_bokeh", "te5_link", "te5_shockwave", "te5_smoke"]
 GRIDS = {"te5_shards": 4, "te5_smoke": 4, "te5_twinkle": 4, "te5_ash": 4, "te5_stardust": 4}
+BEAMS = {"te5_link"}        # beam textures: x runs along the beam and tiles (TextureMode Wrap), so x has no edge margin
 LAYOUT_LABEL = {"te5_shards": "Grid4x4 Loop", "te5_smoke": "Grid4x4 OneShot", "te5_twinkle": "Grid4x4 OneShot",
-                "te5_ash": "Grid4x4 Loop", "te5_stardust": "Grid4x4 Loop"}
+                "te5_ash": "Grid4x4 Loop", "te5_stardust": "Grid4x4 Loop", "te5_link": "Beam, Wrap"}
 GIF_FPS = {"te5_shards": 12, "te5_twinkle": 8, "te5_ash": 10, "te5_stardust": 8, "te5_smoke": 4}
 
 
@@ -1399,7 +1541,8 @@ def sheet_zoom():
              ("te5_streak", (100, 150, 156, 250), 3), ("te5_spark", (104, 20, 152, 84), 4),
              ("te5_shards", (60, 50, 200, 210), 2), ("te5_ash", (40, 40, 216, 216), 2),
              ("te5_twinkle", (256 * 2 + 72, 72, 256 * 2 + 184, 184), 3), ("te5_stardust", (60, 60, 196, 196), 3),
-             ("te5_bokeh", (0, 60, 110, 170), 3), ("te5_smoke", (256, 0, 512, 256), 2)]
+             ("te5_bokeh", (0, 60, 110, 170), 3), ("te5_smoke", (256, 0, 512, 256), 2),
+             ("te5_link", (176, 30, 336, 98), 3), ("te5_shockwave", (420, 196, 500, 316), 3)]
     paths = []
     for bgname, bg in (("dark", BG_DARK), ("sky", BG_SKY)):
         tiles = []
@@ -1451,6 +1594,33 @@ def sheet_gifs():
     return paths
 
 
+def sheet_motion():
+    """The two textures that are all about motion, as GIFs (day | night, linear light + Bloom, 10 fps): the links
+    scrolling at TextureSpeed 0.5 (one image every 2 s, so 20 frames loop seamlessly), and the floor's wave over its
+    1.7 s life with the module's Size and Transparency curves (then a short pause)."""
+    paths = []
+    tex = load("te5_link")
+    frames = []
+    for k in range(20):
+        fr = Image.new("RGB", (848, 260), (30, 31, 36))
+        for i, night in enumerate((False, True)):
+            fr.paste(link_scene(night, 420, 260, tex, k / 20.0), (i * 428, 0))
+        frames.append(fr.convert("P", palette=Image.ADAPTIVE, colors=255))
+    tex = load("te5_shockwave")
+    wave = []
+    for k in range(20):
+        f = min(1.0, k * 0.1 / WAVE_LIFE)                        # 0.1 s a frame (at the end Transparency is 1)
+        fr = Image.new("RGB", (848, 200), (30, 31, 36))
+        for i, night in enumerate((False, True)):
+            fr.paste(wave_scene(night, 420, 200, tex, f, 7.0), (i * 428, 0))
+        wave.append(fr.convert("P", palette=Image.ADAPTIVE, colors=255))
+    for nm, fs in (("te5_link", frames), ("te5_shockwave", wave)):
+        p_ = os.path.join(SHEETS, f"gif_{nm}.gif")
+        fs[0].save(p_, save_all=True, append_images=fs[1:], duration=100, loop=0, optimize=False, disposal=1)
+        paths.append(p_)
+    return paths
+
+
 # THE END's particle colours (the module's constants)
 WHITE, SILVER_P, INK, SMOKE, MIST, ASH = (248, 249, 255), (214, 218, 226), (5, 5, 8), (14, 14, 19), (205, 209, 220), (16, 16, 20)
 WHITE_LE, WHITE_BR = (0.3, 0.9), (2.4, 3.0)
@@ -1470,9 +1640,132 @@ def _life_size(f, peak, rise=0.3):
     return peak
 
 
+def seq_at(points, t):
+    """A NumberSequence [(time, value), ...] at time(s) t."""
+    p = np.asarray(points, np.float64)
+    return np.interp(t, p[:, 0], p[:, 1])
+
+
+def beam_map(ctrl, w0, w1, W, H, n=240):
+    """Where a Beam lies on a W x H canvas: ctrl = its cubic Bezier (4 points in canvas px: the attachments and the two
+    points CurveSize0/1 put along their axes), its width tapering w0 -> w1 px (Width0 -> Width1). Returns the pixels it
+    covers (ys, xs), with their distance along the curve s (px), their place across it v (0..1, 0.5 on the curve) and
+    t (0..1 along), and the curve's length."""
+    P = np.asarray(ctrl, np.float64)
+    t = np.linspace(0.0, 1.0, n)[:, None]
+    C = (1 - t) ** 3 * P[0] + 3 * (1 - t) ** 2 * t * P[1] + 3 * (1 - t) * t * t * P[2] + t ** 3 * P[3]
+    seg = np.diff(C, axis=0)
+    slen = np.hypot(seg[:, 0], seg[:, 1])
+    s0 = np.concatenate([[0.0], np.cumsum(slen)])
+    pad = 0.5 * max(w0, w1) + 2
+    x0, x1 = max(0, int(C[:, 0].min() - pad)), min(W, int(C[:, 0].max() + pad) + 1)
+    y0, y1 = max(0, int(C[:, 1].min() - pad)), min(H, int(C[:, 1].max() + pad) + 1)
+    yy, xx = np.mgrid[y0:y1, x0:x1]
+    q0 = np.stack([xx.ravel() + 0.5, yy.ravel() + 0.5], axis=1)
+    best = np.full(len(q0), np.inf)
+    s_b = np.zeros(len(q0))
+    d_b = np.zeros(len(q0))
+    for i in range(n - 1):                                   # the nearest point on each segment of the polyline
+        q = q0 - C[i]
+        e = seg[i]
+        u = np.clip((q @ e) / max(slen[i] ** 2, 1e-12), 0.0, 1.0)
+        d2 = (q[:, 0] - u * e[0]) ** 2 + (q[:, 1] - u * e[1]) ** 2
+        m = d2 < best
+        best = np.where(m, d2, best)
+        s_b = np.where(m, s0[i] + u * slen[i], s_b)
+        d_b = np.where(m, (q[:, 0] * e[1] - q[:, 1] * e[0]) / max(slen[i], 1e-12), d_b)    # signed, across
+    tt = s_b / s0[-1]
+    v = 0.5 + d_b / (w0 + (w1 - w0) * tt)
+    inside = (v > 0.0) & (v < 1.0) & (tt > 0.0) & (tt < 1.0)
+    return yy.ravel()[inside], xx.ravel()[inside], s_b[inside], v[inside], tt[inside], s0[-1]
+
+
+def draw_beam(c, tex, bm, tex_len, offset, w_mean, color, le, br, tr):
+    """Composite a Beam (bm from beam_map) on an HDRComp the way Roblox blends it: TextureMode Wrap (one image per
+    tex_len px along it, scrolled by offset images), Color (an RGB, or [(t, RGB), ...] along it), LightEmission le,
+    Brightness br, Transparency tr ([(t, value), ...]). The texture is first box-filtered to its on-screen footprint
+    (one texel per screen px along and across: an ideal anisotropic mip), then sampled bilinearly."""
+    ys, xs, s, v, tt, _ = bm
+    tw, th = max(2, int(round(tex_len))), max(2, int(round(w_mean)))
+    t = resize_premult(tex, tw, th)
+    pm = np.dstack([t[..., :3] * t[..., 3:4], t[..., 3:4]])
+    X = (s * tw / tex_len - offset * tw) % tw - 0.5
+    Y = np.clip(v * th - 0.5, 0.0, th - 1.0)
+    x0 = np.floor(X).astype(np.int64)
+    y0 = np.floor(Y).astype(np.int64)
+    fx, fy = (X - x0)[:, None], (Y - y0)[:, None]
+    x0, x1 = x0 % tw, (x0 + 1) % tw
+    y1 = np.minimum(y0 + 1, th - 1)
+    smp = (pm[y0, x0] * (1 - fx) * (1 - fy) + pm[y0, x1] * fx * (1 - fy) + pm[y1, x0] * (1 - fx) * fy
+           + pm[y1, x1] * fx * fy)
+    a = smp[:, 3] * (1.0 - seq_at(tr, tt))
+    rgb = np.where(smp[:, 3:4] > 1e-5, smp[:, :3] / np.maximum(smp[:, 3:4], 1e-5), 0.0)
+    if isinstance(color[0], (tuple, list)):
+        keys = np.asarray([k for k, _ in color], np.float64)
+        cols = np.asarray([cc for _, cc in color], np.float64)
+        col = np.stack([np.interp(tt, keys, cols[:, i]) for i in range(3)], axis=1)
+    else:
+        col = np.broadcast_to(np.asarray(color, np.float64), (len(tt), 3))
+    src = srgb_to_lin(rgb) * srgb_to_lin(col / 255.0) * br
+    dst = c.lin[ys, xs]
+    c.lin[ys, xs] = src * a[:, None] + dst * (1.0 - a[:, None] * (1.0 - le))
+
+
+# the links and the wave as the module sets them (pass 5.2): LightEmission / Brightness by day and night, Transparency
+LINK_LE, LINK_BR, LINK_TR = (0.2, 0.9), (1.6, 2.4), [(0, 1), (0.08, 0.3), (0.92, 0.3), (1, 1)]
+LINK_VOID_COL = [(0.0, WHITE), (0.55, (150, 150, 158)), (1.0, INK)]
+WAVE_SIZE, WAVE_TR, WAVE_LIFE = [(0, 3), (1, 58)], [(0, 1), (0.05, 0.05), (0.45, 0.3), (1, 1)], 1.7
+WAVE_LE, WAVE_BR = (0.4, 1.0), (1.6, 2.6)
+PULSE_SIZE, PULSE_TR, PULSE_LE, PULSE_BR = [(0, 9), (1, 26)], [(0, 0.2), (0.35, 0.45), (1, 1)], (0.5, 1.0), (1.8, 2.8)
+_BEAM_MAPS = {}
+
+
+def link_scene(night, w, h, tex, offset=0.0, pps=26.0):
+    """A schematic of the three links at their real width (Width 0.9 / 0.7 -> 0.3 studs, TextureLength 7): the moon
+    (left) into the clock's bezel, out of the bezel down to the void (Color white -> ink), and down to the floor."""
+    c = HDRComp(dark_bg(w, h) if night else sky_bg(w, h, 7))
+    sx, sy = w / 420.0, h / 260.0
+    c.disc(255 * sx, 112 * sy, 50 * sy, (190, 193, 200))                   # the bezel
+    c.disc(255 * sx, 112 * sy, 45 * sy, (14, 15, 19))                      # the black dial
+    c.disc(78 * sx, 52 * sy, 17 * sy, (214, 216, 222))                     # the moon
+    c.disc(96 * sx, 206 * sy, 14 * sy, (0, 0, 0))                          # the void
+    links = [(((92, 60), (140, 22), (190, 40), (214, 84)), 0.9, WHITE),
+             (((212, 146), (180, 196), (150, 214), (110, 206)), 0.7, LINK_VOID_COL),
+             (((262, 160), (270, 200), (320, 226), (372, 244)), 0.7, WHITE)]
+    le, br = LINK_LE[night], LINK_BR[night]
+    for k, (ctrl, w0, col) in enumerate(links):
+        key = (w, h, pps, k)
+        if key not in _BEAM_MAPS:
+            _BEAM_MAPS[key] = beam_map([(x * sx, y * sy) for x, y in ctrl], w0 * pps, 0.3 * pps, w, h)
+        draw_beam(c, tex, _BEAM_MAPS[key], 7.0 * pps, offset + 0.37 * k, 0.5 * (w0 + 0.3) * pps, col, le, br, LINK_TR)
+    return c.image()
+
+
+def wave_scene(night, w, h, tex, f, pps, moon=False):
+    """The wave at life fraction f with the module's Size and Transparency curves: flat on the floor (seen at a low
+    angle: drawn 0.32 as tall as wide) or, moon=True, the camera-facing pulse behind the moon's 9-stud face."""
+    c = HDRComp(dark_bg(w, h) if night else sky_bg(w, h, 9))
+    if moon:
+        c.put(tex, w / 2, h / 2, seq_at(PULSE_SIZE, f) * pps, WHITE, seq_at(PULSE_TR, f), PULSE_LE[night], PULSE_BR[night])
+        c.disc(w / 2, h / 2, 4.5 * pps, (214, 216, 222))
+    else:
+        c.put(tex, w / 2, h * 0.55, seq_at(WAVE_SIZE, f) * pps, WHITE, seq_at(WAVE_TR, f), WAVE_LE[night], WAVE_BR[night],
+              aspect=0.32)
+    return c.image()
+
+
 def ingame_panel(kind, night, w, h, seed, pps=26.0, folder=None):
     """One panel of simulated particles at their real on-screen size (pps px per stud ~ a camera 25 studs away at FOV
     70 on a 913 px tall view), with the module's Color / LightEmission / Brightness / Transparency by day or night."""
+    if kind == "links":
+        return link_scene(night, w, h, load("te5_link", folder), 0.0, pps), [
+            "NEW link: 3 beams, Width 0.9/0.7 -> 0.3, TextureLength 7"]
+    if kind == "wave_floor":
+        return wave_scene(night, w, h, load("te5_shockwave", folder), 0.3, 9.0), [
+            "NEW shockwave: the floor's wave at 0.5 s (Size 19.5), far"]
+    if kind == "wave_moon":
+        return wave_scene(night, w, h, load("te5_shockwave", folder), 0.3, 12.0, moon=True), [
+            "NEW shockwave: the moon's pulse at 0.3 s (Size 14)"]
     rng = np.random.default_rng(seed)
     c = HDRComp(dark_bg(w, h) if night else sky_bg(w, h, seed))
     L = lambda nm: load(nm, folder)
@@ -1593,7 +1886,7 @@ def ingame_panel(kind, night, w, h, seed, pps=26.0, folder=None):
 
 
 INGAME_KINDS = ["glints", "twinkle", "motes", "stardust", "streaks", "sparks", "shards", "ash", "bokeh", "smoke_dark",
-                "smoke_silver"]
+                "smoke_silver", "links", "wave_floor", "wave_moon"]
 
 
 def sheet_ingame():
@@ -1699,7 +1992,7 @@ def sheet_before_after(before):
 def make_sheets(before=None):
     os.makedirs(SHEETS, exist_ok=True)
     paths = []
-    for fn in (sheet_overview, sheet_frames, sheet_zoom, sheet_gifs, sheet_ingame, sheet_sizes):
+    for fn in (sheet_overview, sheet_frames, sheet_zoom, sheet_gifs, sheet_motion, sheet_ingame, sheet_sizes):
         t0 = time.time()
         paths += fn()
         print(f"sheet {fn.__name__}: {time.time() - t0:.1f}s")
@@ -1713,7 +2006,7 @@ def make_sheets(before=None):
 
 SIZES = {"te5_shards": (1024, 1024), "te5_smoke": (1024, 1024), "te5_mote": (128, 128), "te5_glint": (256, 256),
          "te5_bokeh": (256, 256), "te5_streak": (256, 256), "te5_ash": (1024, 1024), "te5_twinkle": (1024, 1024),
-         "te5_spark": (256, 256), "te5_stardust": (1024, 1024)}
+         "te5_spark": (256, 256), "te5_stardust": (1024, 1024), "te5_link": (512, 128), "te5_shockwave": (512, 512)}
 
 
 def _radial(img, ch, r0, r1, n, cell=None):
@@ -1773,14 +2066,19 @@ def check():
         g = GRIDS.get(nm, 1)
         ch, cw = h // g, w // g
         edge4 = 0
-        for j in range(g):
-            for i in range(g):
-                c = A[j * ch:(j + 1) * ch, i * cw:(i + 1) * cw]
-                m4 = max(1, int(round(0.04 * cw)))
-                ring = np.ones_like(c, bool)
-                ring[m4:-m4, m4:-m4] = False
-                edge4 = max(edge4, int(c[ring].max()))
-        ok(edge4 == 0, f"{nm}: alpha 0 within 4 % of every {'cell' if g > 1 else 'frame'} edge (no square edges)")
+        if nm in BEAMS:                      # a beam tiles along x: only its top and bottom must fade out
+            m4 = max(1, int(round(0.04 * h)))
+            edge4 = int(max(A[:m4].max(), A[-m4:].max()))
+            ok(edge4 == 0, f"{nm}: alpha 0 within 4 % of the top and bottom edges (the beam's sides)")
+        else:
+            for j in range(g):
+                for i in range(g):
+                    c = A[j * ch:(j + 1) * ch, i * cw:(i + 1) * cw]
+                    m4 = max(1, int(round(0.04 * cw)))
+                    ring = np.ones_like(c, bool)
+                    ring[m4:-m4, m4:-m4] = False
+                    edge4 = max(edge4, int(c[ring].max()))
+            ok(edge4 == 0, f"{nm}: alpha 0 within 4 % of every {'cell' if g > 1 else 'frame'} edge (no square edges)")
         # no fringes: every fully transparent pixel touching visible ones carries a grey inside the range of those
         # neighbours (8-neighbourhood), so filtering never pulls black or white into an edge
         vis = A > 0
@@ -2005,6 +2303,112 @@ def check():
     ok(rgb_ok, "te5_smoke: RGB 0.75-1.0 wherever the smoke is visible")
     ok(max(steps[:11]) < 0.035 and max(steps[11:]) < 0.10, f"te5_smoke: frames change gently (max large-scale mean |dA| "
        f"per frame {max(steps[:11]):.3f} in frames 0-11, {max(steps[11:]):.3f} in the dissolve)")
+
+    # --- link: a beam texture (x along the beam, tiling): a thread of light with one pearl at x 0.5
+    a = F["te5_link"]
+    A = a[..., 3]
+    H_, W_ = A.shape
+    ok(bool((a[..., 0][A > 0.004] > 0.97).all()), "te5_link: pure light (RGB white wherever visible)")
+    side = np.r_[0:int(0.2 * W_), int(0.8 * W_):W_]                       # the thread alone (the pearl is at 0.5)
+    st_ = np.concatenate([np.abs(np.diff(A[:, :int(0.2 * W_)], axis=1)), np.abs(np.diff(A[:, int(0.8 * W_):], axis=1))], 1)
+    wrap = np.abs(A[:, 0] - A[:, -1])
+    ok(wrap.max() <= st_.max() and wrap.mean() <= 1.5 * st_.mean() + 1e-9,
+       f"te5_link: seamless along x (the wrap step is {wrap.max() * 255:.0f} levels at most; the thread's own steps "
+       f"reach {st_.max() * 255:.0f})")
+    mir = np.abs(imgs["te5_link"][..., 3] - imgs["te5_link"][:, ::-1, 3])
+    ok(int(mir.max()) <= 2 and float(mir.mean()) < 0.6, f"te5_link: mirror-symmetric about x 0.5 (max {int(mir.max())} "
+       f"levels apart: the dither only), so it reads the same whichever way it scrolls")
+    peak = A[:, side].max(axis=0)
+    ok(0.37 <= float(peak.mean()) <= 0.43 and float(peak.min()) > 0.75 * float(peak.mean()) and float(peak.max()) < 0.5,
+       f"te5_link: a continuous thread, core alpha {peak.mean():.2f} ({peak.min():.2f}-{peak.max():.2f}: never dashed)")
+    ok(float(peak.std()) > 0.005 and float(np.abs(np.diff(peak)).max()) < 0.03,
+       f"te5_link: the thread breathes gently along its length (std {peak.std():.3f}, no column jumps)")
+    c0 = H_ // 2                                                          # the centre line lies between rows c0-1, c0
+    prof = A[:, side].mean(axis=1)
+    base = 0.5 * (prof[c0 - 5] + prof[c0 + 4])                            # |dy| 4.5 px: the glow, past the core
+    half = 0.5 * (prof[c0 - 1] + base)
+    lo = next(i for i in range(c0 - 1, 0, -1) if prof[i] < half)
+    hi_ = next(i for i in range(c0, H_) if prof[i] < half)
+    x_hi = hi_ - 1 + (prof[hi_ - 1] - half) / (prof[hi_ - 1] - prof[hi_])
+    x_lo = lo + 1 - (prof[lo + 1] - half) / (prof[lo + 1] - prof[lo])
+    ok(2.0 <= x_hi - x_lo <= 3.5, f"te5_link: the thread's core is {x_hi - x_lo:.1f} px wide (half max over its glow)")
+    gl = A[np.r_[c0 - 11:c0 - 6, c0 + 6:c0 + 11]][:, side]
+    ok(1.0 / 255 < float(gl.min()) and float(gl.max()) <= 0.12 and float(A[:c0 - 30, side].max()) < 0.01,
+       f"te5_link: a soft glow round the thread ({gl.min():.2f}-{gl.max():.2f} at 6-11 px, gone by 30 px)")
+    pc = A[:, W_ // 2 - 1:W_ // 2 + 1].min(axis=1)                       # the pearl's middle (columns 255, 256)
+    tall = int((pc >= 0.9).sum())
+    ok(float(pc.max()) >= 0.99 and 3 <= tall <= 5, f"te5_link: the pearl's core is alpha 1, {tall} px tall")
+    off = np.r_[0:c0 - 7, c0 + 7:H_]
+    hal = A[:, W_ // 2 - 1:W_ // 2 + 1]
+    ok(float(hal[off].max()) <= 0.35 + 1.5 / 255 and float(hal[[c0 - 21, c0 + 20]].min()) > 0.02
+       and float(A[:c0 - 32].max()) < 0.01 and float(A[c0 + 32:].max()) < 0.01,
+       f"te5_link: a soft halo round the pearl (<= {hal[off].max():.2f} off the core, still {hal[[c0 - 21, c0 + 20]].min():.2f} "
+       "at 20 px, gone by 32 px: ~40 % of the height)")
+    E = A.sum(axis=0)
+    ex = E - float(np.median(E[side]))
+    span = np.nonzero(ex > 0.1 * ex.max())[0]
+    ln = (span.max() - span.min() + 1) / W_
+    ok(0.22 <= ln <= 0.36 and abs(int(np.argmax(E)) + 0.5 - W_ / 2) <= 1.0,
+       f"te5_link: one pearl centred at x 0.5, {ln * 100:.0f} % of the image long")
+    ok(float(np.abs(E - E[::-1]).max()) < 0.01 * float(E.max()), "te5_link: the pearl is symmetric along the beam")
+    pr = A[:, int(0.35 * W_):int(0.65 * W_)]
+    res = pr - gblur(pr, 1.5)                                             # the grains stand out of the smooth glow
+    res[c0 - 3:c0 + 3] = 0.0
+    gm = (res > 0.04) & (res >= np.max([np.roll(np.roll(res, dy_, 0), dx_, 1) for dy_ in (-1, 0, 1)
+                                         for dx_ in (-1, 0, 1)], axis=0))
+    ok(int(gm.sum()) >= 4 and float(pr[gm].max()) <= 0.6, f"te5_link: {int(gm.sum())} fine grains in the pearl "
+       f"(alpha at most {pr[gm].max():.2f})")
+
+    # --- shockwave: one expanding wave (r 1 = the image edge)
+    a = F["te5_shockwave"]
+    A = a[..., 3]
+    rrw, xxw, yyw = _rr(512)
+    r = 2.0 * rrw
+    ok(bool((a[..., 0][A > 0.004] > 0.97).all()), "te5_shockwave: pure light (RGB white wherever visible)")
+    ok(float(A[r < 0.5].max()) == 0.0 and float(A[r > 0.9].max()) == 0.0, "te5_shockwave: alpha 0 at r < 0.5 and r > 0.9")
+    bins = np.arange(0.80, 0.90, 0.002)
+    rp = np.array([A[(r >= b) & (r < b + 0.002)].mean() for b in bins])
+    rc = bins + 0.001
+    pk = int(np.argmax(rp))
+    ok(0.855 <= rc[pk] <= 0.872 and float(A[(r > 0.861) & (r < 0.869)].min()) >= 0.98,
+       f"te5_shockwave: a solid bright front at r {rc[pk]:.3f} (alpha >= 0.98 all the way round)")
+    hm = 0.5 * rp[pk]
+    i_in = next(i for i in range(pk, 0, -1) if rp[i] < hm)
+    i_out = next(i for i in range(pk, len(rp)) if rp[i] < hm)
+    r_in = rc[i_in] + 0.002 * (hm - rp[i_in]) / (rp[i_in + 1] - rp[i_in])       # half max, between the bins
+    r_out = rc[i_out - 1] + 0.002 * (rp[i_out - 1] - hm) / (rp[i_out - 1] - rp[i_out])
+    w_ = r_out - r_in
+    ok(0.024 <= w_ <= 0.034, f"te5_shockwave: the front is {w_:.3f} wide at half max ({w_ * 256:.1f} px; r {r_in:.3f}-"
+       f"{r_out:.3f})")
+    i90 = next(i for i in range(pk, len(rp)) if rp[i] < 0.9 * rp[pk])
+    i10 = next(i for i in range(pk, len(rp)) if rp[i] < 0.1 * rp[pk])
+    ok((rc[i10] - rc[i90]) * 256 <= 3.0, f"te5_shockwave: a crisp outer edge (90 % -> 10 % in "
+       f"{(rc[i10] - rc[i90]) * 256:.1f} px)")
+    wk = [float(A[(r >= q) & (r < q + 0.01)].mean()) for q in (0.56, 0.60, 0.65, 0.70, 0.75, 0.80)]
+    ok(float(A[(r > 0.56) & (r < 0.835)].max()) <= 0.35 + 1.5 / 255 and all(wk[i] < wk[i + 1] for i in range(5))
+       and wk[0] < 0.02 and 0.2 < wk[-1] <= 0.3, "te5_shockwave: a soft wake fading inward (" +
+       " ".join(f"{v:.3f}" for v in wk) + " at r .56-.80, <= 0.35)")
+    th_ = np.arctan2(yyw + 0.5 - 256, xxw + 0.5 - 256)
+    devs = []
+    for q in np.arange(0.70, 0.80, 0.01):
+        m = (r >= q) & (r < q + 0.004)
+        devs.append(A[m] - A[m].mean())
+    dv = np.concatenate(devs)
+    ok(0.01 < float(dv.std()) and float(np.abs(dv).max()) <= 0.15,
+       f"te5_shockwave: faint radial streaks in the wake (std {dv.std():.3f}, at most {np.abs(dv).max():.2f} off the mean)")
+    ang = np.linspace(0, 2 * math.pi, 4096, endpoint=False)
+    ring_ = sample_wrap(A, 256 - 0.5 - 0.75 * 256 * np.sin(ang), 256 - 0.5 + 0.75 * 256 * np.cos(ang))
+    pw = np.abs(np.fft.rfft(ring_ - ring_.mean())) ** 2
+    hf = float(pw[int(1.3 * 140) + 1:].sum() / pw[1:].sum())
+    lo_ = float(pw[1:24].sum() / pw[1:].sum())
+    ok(hf < 0.03 and lo_ < 0.03, f"te5_shockwave: the streaks are band-limited ({hf * 100:.1f} % of their power above 182 "
+       f"cycles a turn at r .75, {lo_ * 100:.1f} % below 24)")
+    sec = ((th_ + math.pi) / (2 * math.pi) * 32).astype(int) % 32
+    for nm_, (q0, q1), lim in (("wake", (0.60, 0.84), 0.05), ("front", (0.85, 0.875), 0.01)):
+        band_ = (r > q0) & (r < q1)
+        sm = np.array([A[band_ & (sec == k)].mean() for k in range(32)])
+        spread = float((sm.max() - sm.min()) / sm.mean())
+        ok(spread < lim, f"te5_shockwave: rotationally even {nm_} (32 sectors within {spread * 100:.1f} %: no bright lobe)")
     # --- the manifest matches the PNGs
     man = json.load(open(os.path.join(OUT, "manifest.json")))
     by = {e["name"]: e for e in man}

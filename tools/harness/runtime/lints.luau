@@ -62,9 +62,13 @@ do
 	end
 
 	-------------------------------------------------------------------------------------- monochrome palette (THE END)
+	-- (THE END pass 5.2: Milo asked for "the gold-and-black circular platform", so the stage's gold tint and the warm white
+	-- of the light that sweeps it are allowed; every other colour stays black, white and silver)
+	local PALETTE_ALLOW = { ["228,196,132"] = true, ["255,232,186"] = true }
 	local function monoCheck(c, where)
 		if not (H.CONFIG and H.CONFIG.mono) then return end
 		local h, s, v = H.toHSV(c)
+		if PALETTE_ALLOW[format("%d,%d,%d", math.floor(c.R * 255 + 0.5), math.floor(c.G * 255 + 0.5), math.floor(c.B * 255 + 0.5))] then return end
 		if s > 0.15 and v > 0.12 then
 			H.recordWarning("palette", format("%s uses colour (%d, %d, %d) (saturation %.2f): outside THE END's black/white/silver lock",
 				where, math.floor(c.R * 255 + 0.5), math.floor(c.G * 255 + 0.5), math.floor(c.B * 255 + 0.5), s))

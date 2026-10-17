@@ -119,5 +119,31 @@
   "purpose": "NEW: a pinch of silver glitter (a third, finest scale of dust: in the air round the wearer, or trailing the moon)",
   "notes": "Flipbook 4x4 Loop: 30 sharp grains of three sizes (three are tiny four-point stars) in a loose cluster (r < 0.36). Every grain swells and fades once per loop on a smooth cosine (never off: 35-100 %) and drifts round a tiny circle, each at its own phase: a glitter with no blinks. FlipbookFramerate 6-10, FlipbookStartRandom true. Fallback: the kit 'sparkles' sheet (also 4x4).",
   "uploadedId": null
+ },
+ {
+  "name": "te5_link",
+  "file": "te5_link.png",
+  "repoPath": "textures/te5/particles/te5_link.png",
+  "texKey": "link",
+  "fallbackTexKey": "streak",
+  "size": "512x128",
+  "layout": "None",
+  "mode": null,
+  "purpose": "NEW: the energy links (Beams): the moon's light into the clock, out of the clock to the void, and down to the floor's galaxy vortex",
+  "notes": "A Beam texture. Image x runs ALONG the beam and tiles seamlessly every 512 px (TextureMode Wrap; TextureLength ~7 studs = one pearl every 7 studs; TextureSpeed ~0.5); y runs across it, the profile centred between rows 63 and 64, so the beam's tapering Width0/Width1 scales it (alpha 0 beyond +-33 px: only the middle half of the Width ever shows; the thread is visible within the middle ~20 %, the pearl's halo within the middle ~40 %). A faint thread of light through the whole length: a 2-3 px core (~2 % of the Width) at alpha ~0.40, breathing +-10 % in brightness and between 2 and 3 px in width along the image (never dashed), in a soft gaussian glow (sigma 5 px, alpha 0.10). ONE pearl of light per image, centred at x 0.5: a hot spindle (alpha 1, 4 px tall at its middle, thinning into the thread), a glow and a soft halo reaching ~+-20 % of the Width (alpha <= 0.35 off the core), all gaussian along the beam (the pearl spans ~30 % of the image: ~2 studs at TextureLength 7), and three pairs of fine grains round it (alpha <= 0.6). The whole image is mirror-symmetric about x 0.5, so it reads the same whichever way it scrolls (TextureSpeed's sign and the attachments' order don't matter). RGB white everywhere: the Beam's Color tints it (a white -> ink ColorSequence works). At Width 0.9 -> 0.3 studs the thread is a ~0.1-stud glowing line and the pearl's halo is what reads from far away.",
+  "uploadedId": null
+ },
+ {
+  "name": "te5_shockwave",
+  "file": "te5_shockwave.png",
+  "repoPath": "textures/te5/particles/te5_shockwave.png",
+  "texKey": "shockwave",
+  "fallbackTexKey": "rim",
+  "size": "512x512",
+  "layout": "None",
+  "mode": null,
+  "purpose": "NEW: one expanding wave of energy: the floor's wave at midnight (VelocityPerpendicular, flat on the floor) and the pulse ring off the moon (camera-facing)",
+  "notes": "A single wave, centred (r = distance from the centre, 1 at the image edge): a thin bright front at r 0.86 (alpha 1 from r 0.861 to 0.871; half-max r 0.848-0.875, ~3 % of r) with a crisp outer edge (1 -> 0 over 2 px, nothing past r 0.88) and a softer inner side; behind it a soft wake fading inward (smoothstep from r 0.85 down to 0 at r 0.55; alpha ~0.28 just behind the front, <= 0.35 everywhere) streaked with faint, fine radial rays (+-22 % of the wake, so alpha +-0.06; spectral noise on a polar grid, 40-140 cycles a turn, so the rays stay below the pixel limit down to a third of full size and the mip-maps take them smoothly below that). Alpha 0 inside r 0.55 (the moon shows through the pulse). Rotationally even (no low orders: no bright lobe), so any Rotation works. Sizes: the front's DIAMETER is 0.86 x Size and its radius 0.43 x Size (Size 58 -> a 50-stud wave; for a 56-stud front use Size 65); the wake's inner end is at radius 0.275 x Size. RGB white everywhere.",
+  "uploadedId": null
  }
 ]

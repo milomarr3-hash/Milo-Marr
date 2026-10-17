@@ -44,7 +44,8 @@ do
 		for _, rec in ipairs(H.RECS) do
 			if rec.fx and rec.builtAt then
 				any = true
-				if H.NOW - rec.builtAt < (H.CONFIG.steadyAfter or 7) then return false end
+				-- (steady = after the equip has settled: THE END's pass 5.2 reveal ends 9.8 s after the build)
+				if H.NOW - rec.builtAt < (H.CONFIG.steadyAfter or 10) then return false end
 			end
 		end
 		if not any then return false end
