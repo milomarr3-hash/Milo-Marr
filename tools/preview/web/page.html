@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Aura preview (headless)</title>
+<script type="importmap">
+{ "imports": { "three": "/three/build/three.module.js", "three/addons/": "/three/examples/jsm/", "preview/": "/web/" } }
+</script>
+<style>html, body { margin: 0; background: #000; } canvas { display: block; }</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+import { Preview, caption, drawLabel } from 'preview/preview.js';
+const canvas = document.getElementById('c');
+let pv = null;
+
+function sheetOf(images, w, h) {
+	const cols = images.length <= 4 ? 2 : 3, rows = Math.ceil(images.length / cols);
+	const tw = Math.round(w / 2), th = Math.round(h / 2);
+	const c = document.createElement('canvas');
+	c.width = tw * cols; c.height = th * rows;
+	const g = c.getContext('2d');
+	g.fillStyle = '#111'; g.fillRect(0, 0, c.width, c.height);
+	g.imageSmoothingQuality = 'high';
+	images.forEach((im, i) => g.drawImage(im, (i % cols) * tw, Math.floor(i / cols) * th, tw, th));
+	return c.toDataURL('image/png');
+}
+
+window.PREVIEW = {
+	async render(args) {
+		const { snapshot, textures, views, env, clock, size, ss = 1, props = true, labels = true, sheet = true, maxPerEmitter, bloom = true, hide = [], tone,
+			aa = true, sort = 'centroid' } = args;
+		const [w, h] = size, W = Math.round(w * ss), H = Math.round(h * ss);
+		if (!pv) pv = new Preview(canvas, { width: W, height: H }); else pv.setSize(W, H);
+		pv.post.setSamples(aa ? 4 : 0);
+		await pv.loadTextures(textures);
+		const t0 = performance.now();
+		const info = pv.build(snapshot, { env, clock, props, maxPerEmitter, hide, tone, sortHost: sort === 'host' });
+		const images = [], canvases = [];
+		window.__last = { canvases, views: [], w, h };
+		for (const v of views) {
+			pv.renderView(v, { bloom });
+			const c2 = document.createElement('canvas');
+			c2.width = w; c2.height = h;
+			const g = c2.getContext('2d');
+			g.imageSmoothingQuality = 'high';
+			g.drawImage(canvas, 0, 0, w, h);
+			if (labels) drawLabel(g, caption(snapshot, v, pv.envState), w);
+			canvases.push(c2);
+			window.__last.views.push({ name: typeof v === 'string' ? v : 'view', proj: pv.camera.projectionMatrix.clone(), inv: pv.camera.matrixWorldInverse.clone() });
+			images.push({ view: v, png: c2.toDataURL('image/png') });
+		}
+		return {
+			images, sheet: sheet && images.length > 1 ? sheetOf(canvases, w, h) : null,
+			warnings: info.warnings, particles: info.particles, ms: Math.round(performance.now() - t0),
+		};
+	},
+};
+// test hook: the colour (sRGB 0-255, 5x5 average) where world points land in the last render's views
+window.PREVIEW.probe = (viewIndex, points) => {
+	const L = window.__last, v = L.views[viewIndex], g = L.canvases[viewIndex].getContext('2d');
+	return points.map(([x, y, z]) => {
+		const p = { x, y, z };
+		const e1 = v.inv.elements, e2 = v.proj.elements;
+		const cx = e1[0] * x + e1[4] * y + e1[8] * z + e1[12], cy = e1[1] * x + e1[5] * y + e1[9] * z + e1[13], cz = e1[2] * x + e1[6] * y + e1[10] * z + e1[14];
+		const px = e2[0] * cx + e2[8] * cz, py = e2[5] * cy + e2[9] * cz, pw = -cz;
+		const sx = Math.round((px / pw * 0.5 + 0.5) * L.w), sy = Math.round((1 - (py / pw * 0.5 + 0.5)) * L.h);
+		if (pw <= 0 || sx < 2 || sy < 2 || sx > L.w - 3 || sy > L.h - 3) return { p, offscreen: true };
+		const d = g.getImageData(sx - 2, sy - 2, 5, 5).data, c = [0, 0, 0];
+		for (let i = 0; i < d.length; i += 4) { c[0] += d[i] / 25; c[1] += d[i + 1] / 25; c[2] += d[i + 2] / 25; }
+		return { p, sx, sy, rgb: c.map(Math.round) };
+	});
+};
+window.PREVIEW_READY = true;
+</script>
+</body>
+</html>

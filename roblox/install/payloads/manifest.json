@@ -1,0 +1,375 @@
+{
+ "about": "AuraRNG Studio install kit: execute_luau payloads (Studio EDIT mode) that install one module file. Run 'order' one by one; each must return a line matching its 'expect'. See roblox/install/README.md.",
+ "generatedBy": "roblox/install/make_payloads.py",
+ "source": {
+  "path": "roblox/ReplicatedStorage/AuraFX/TheEnd.lua",
+  "bytes": 198845,
+  "checksum": 17952987,
+  "lines": 3420
+ },
+ "target": "ReplicatedStorage.AuraFX.TheEnd",
+ "label": "pass5",
+ "backupName": "ServerStorage.AuraRNG_Backups.TheEnd_<YYYYMMDD>_before_pass5",
+ "holder": "ServerStorage.AuraRNG_Install (temporary; removed by the apply step)",
+ "before": {
+  "path": "roblox/ReplicatedStorage/AuraFX/TheEnd.pass4-live.lua",
+  "bytes": 35000,
+  "checksum": 489406639,
+  "name": "the pass-4 live version"
+ },
+ "runId": "TheEnd-198845-17952987-16-151465783",
+ "pieces": 16,
+ "checksumAlgorithm": "x = (x * 131 + byte) % 1000000007 over the raw bytes, x starting at 0",
+ "limits": {
+  "maxBytes": 18000,
+  "maxJsonBytes": 25000
+ },
+ "mode": "Studio Edit mode: execute_luau datamodel_type \"Edit\" (stop Play first), or the Command Bar",
+ "resultFormat": "one line: OK|FAIL|STOP <file>: <what happened>",
+ "order": [
+  "01_backup.luau",
+  "02_chunk_01_of_16.luau",
+  "03_chunk_02_of_16.luau",
+  "04_chunk_03_of_16.luau",
+  "05_chunk_04_of_16.luau",
+  "06_chunk_05_of_16.luau",
+  "07_chunk_06_of_16.luau",
+  "08_chunk_07_of_16.luau",
+  "09_chunk_08_of_16.luau",
+  "10_chunk_09_of_16.luau",
+  "11_chunk_10_of_16.luau",
+  "12_chunk_11_of_16.luau",
+  "13_chunk_12_of_16.luau",
+  "14_chunk_13_of_16.luau",
+  "15_chunk_14_of_16.luau",
+  "16_chunk_15_of_16.luau",
+  "17_chunk_16_of_16.luau",
+  "18_apply.luau"
+ ],
+ "optional": [
+  "00_status.luau"
+ ],
+ "alternative": "90_install_from_file.luau",
+ "rollback": "99_rollback.luau",
+ "payloads": [
+  {
+   "file": "00_status.luau",
+   "kind": "status",
+   "expect": "^OK 00_status\\.luau: ",
+   "does": "Read-only. Reports Edit/Play mode, the target's length + checksum and which version it is, the backups in ServerStorage.AuraRNG_Backups, and how many pieces of this set the holder has.",
+   "bytes": 5075,
+   "jsonBytes": 5425,
+   "step": null
+  },
+  {
+   "file": "01_backup.luau",
+   "kind": "backup",
+   "expect": "^OK 01_backup\\.luau: ",
+   "does": "Checks ReplicatedStorage.AuraFX.TheEnd exists (reports its length + checksum and whether it is the pass-4 live version), backs it up once to ServerStorage.AuraRNG_Backups.TheEnd_<YYYYMMDD>_before_pass5 (folder made if missing, nothing deleted, copy checked), and prepares ServerStorage.AuraRNG_Install for this payload set.",
+   "onFail": "Read the message: FAIL here changes nothing in the module. STOP = Studio is in Play mode.",
+   "bytes": 6800,
+   "jsonBytes": 7349,
+   "step": 1
+  },
+  {
+   "file": "02_chunk_01_of_16.luau",
+   "kind": "chunk",
+   "expect": "^OK 02_chunk_01_of_16\\.luau: piece 1/16 stored",
+   "chunk": {
+    "index": 1,
+    "of": 16,
+    "bytes": 13242,
+    "checksum": 137879888,
+    "encoding": "long bracket level 1"
+   },
+   "does": "Stores piece 1/16 of the new source in ServerStorage.AuraRNG_Install after checking its own text and every earlier piece.",
+   "onFail": "'arrived changed' = the payload text was altered in transit: send the file again exactly. 'missing or damaged' = run the named earlier payload first. Nothing is installed by this step.",
+   "bytes": 17947,
+   "jsonBytes": 18830,
+   "step": 2
+  },
+  {
+   "file": "03_chunk_02_of_16.luau",
+   "kind": "chunk",
+   "expect": "^OK 03_chunk_02_of_16\\.luau: piece 2/16 stored",
+   "chunk": {
+    "index": 2,
+    "of": 16,
+    "bytes": 13165,
+    "checksum": 580038089,
+    "encoding": "long bracket level 1"
+   },
+   "does": "Stores piece 2/16 of the new source in ServerStorage.AuraRNG_Install after checking its own text and every earlier piece.",
+   "onFail": "'arrived changed' = the payload text was altered in transit: send the file again exactly. 'missing or damaged' = run the named earlier payload first. Nothing is installed by this step.",
+   "bytes": 17870,
+   "jsonBytes": 18845,
+   "step": 3
+  },
+  {
+   "file": "04_chunk_03_of_16.luau",
+   "kind": "chunk",
+   "expect": "^OK 04_chunk_03_of_16\\.luau: piece 3/16 stored",
+   "chunk": {
+    "index": 3,
+    "of": 16,
+    "bytes": 13228,
+    "checksum": 425714260,
+    "encoding": "long bracket level 0"
+   },
+   "does": "Stores piece 3/16 of the new source in ServerStorage.AuraRNG_Install after checking its own text and every earlier piece.",
+   "onFail": "'arrived changed' = the payload text was altered in transit: send the file again exactly. 'missing or damaged' = run the named earlier payload first. Nothing is installed by this step.",
+   "bytes": 17931,
+   "jsonBytes": 18685,
+   "step": 4
+  },
+  {
+   "file": "05_chunk_04_of_16.luau",
+   "kind": "chunk",
+   "expect": "^OK 05_chunk_04_of_16\\.luau: piece 4/16 stored",
+   "chunk": {
+    "index": 4,
+    "of": 16,
+    "bytes": 13140,
+    "checksum": 382625152,
+    "encoding": "long bracket level 0"
+   },
+   "does": "Stores piece 4/16 of the new source in ServerStorage.AuraRNG_Install after checking its own text and every earlier piece.",
+   "onFail": "'arrived changed' = the payload text was altered in transit: send the file again exactly. 'missing or damaged' = run the named earlier payload first. Nothing is installed by this step.",
+   "bytes": 17843,
+   "jsonBytes": 18933,
+   "step": 5
+  },
+  {
+   "file": "06_chunk_05_of_16.luau",
+   "kind": "chunk",
+   "expect": "^OK 06_chunk_05_of_16\\.luau: piece 5/16 stored",
+   "chunk": {
+    "index": 5,
+    "of": 16,
+    "bytes": 13231,
+    "checksum": 135632818,
+    "encoding": "long bracket level 1"
+   },
+   "does": "Stores piece 5/16 of the new source in ServerStorage.AuraRNG_Install after checking its own text and every earlier piece.",
+   "onFail": "'arrived changed' = the payload text was altered in transit: send the file again exactly. 'missing or damaged' = run the named earlier payload first. Nothing is installed by this step.",
+   "bytes": 17936,
+   "jsonBytes": 19330,
+   "step": 6
+  },
+  {
+   "file": "07_chunk_06_of_16.luau",
+   "kind": "chunk",
+   "expect": "^OK 07_chunk_06_of_16\\.luau: piece 6/16 stored",
+   "chunk": {
+    "index": 6,
+    "of": 16,
+    "bytes": 13214,
+    "checksum": 823280755,
+    "encoding": "long bracket level 1"
+   },
+   "does": "Stores piece 6/16 of the new source in ServerStorage.AuraRNG_Install after checking its own text and every earlier piece.",
+   "onFail": "'arrived changed' = the payload text was altered in transit: send the file again exactly. 'missing or damaged' = run the named earlier payload first. Nothing is installed by this step.",
+   "bytes": 17919,
+   "jsonBytes": 19131,
+   "step": 7
+  },
+  {
+   "file": "08_chunk_07_of_16.luau",
+   "kind": "chunk",
+   "expect": "^OK 08_chunk_07_of_16\\.luau: piece 7/16 stored",
+   "chunk": {
+    "index": 7,
+    "of": 16,
+    "bytes": 13219,
+    "checksum": 924487494,
+    "encoding": "long bracket level 0"
+   },
+   "does": "Stores piece 7/16 of the new source in ServerStorage.AuraRNG_Install after checking its own text and every earlier piece.",
+   "onFail": "'arrived changed' = the payload text was altered in transit: send the file again exactly. 'missing or damaged' = run the named earlier payload first. Nothing is installed by this step.",
+   "bytes": 17922,
+   "jsonBytes": 19038,
+   "step": 8
+  },
+  {
+   "file": "09_chunk_08_of_16.luau",
+   "kind": "chunk",
+   "expect": "^OK 09_chunk_08_of_16\\.luau: piece 8/16 stored",
+   "chunk": {
+    "index": 8,
+    "of": 16,
+    "bytes": 13150,
+    "checksum": 162546552,
+    "encoding": "long bracket level 0"
+   },
+   "does": "Stores piece 8/16 of the new source in ServerStorage.AuraRNG_Install after checking its own text and every earlier piece.",
+   "onFail": "'arrived changed' = the payload text was altered in transit: send the file again exactly. 'missing or damaged' = run the named earlier payload first. Nothing is installed by this step.",
+   "bytes": 17853,
+   "jsonBytes": 19003,
+   "step": 9
+  },
+  {
+   "file": "10_chunk_09_of_16.luau",
+   "kind": "chunk",
+   "expect": "^OK 10_chunk_09_of_16\\.luau: piece 9/16 stored",
+   "chunk": {
+    "index": 9,
+    "of": 16,
+    "bytes": 13223,
+    "checksum": 917082428,
+    "encoding": "long bracket level 0"
+   },
+   "does": "Stores piece 9/16 of the new source in ServerStorage.AuraRNG_Install after checking its own text and every earlier piece.",
+   "onFail": "'arrived changed' = the payload text was altered in transit: send the file again exactly. 'missing or damaged' = run the named earlier payload first. Nothing is installed by this step.",
+   "bytes": 17927,
+   "jsonBytes": 18832,
+   "step": 10
+  },
+  {
+   "file": "11_chunk_10_of_16.luau",
+   "kind": "chunk",
+   "expect": "^OK 11_chunk_10_of_16\\.luau: piece 10/16 stored",
+   "chunk": {
+    "index": 10,
+    "of": 16,
+    "bytes": 13242,
+    "checksum": 106838554,
+    "encoding": "long bracket level 0"
+   },
+   "does": "Stores piece 10/16 of the new source in ServerStorage.AuraRNG_Install after checking its own text and every earlier piece.",
+   "onFail": "'arrived changed' = the payload text was altered in transit: send the file again exactly. 'missing or damaged' = run the named earlier payload first. Nothing is installed by this step.",
+   "bytes": 17949,
+   "jsonBytes": 18961,
+   "step": 11
+  },
+  {
+   "file": "12_chunk_11_of_16.luau",
+   "kind": "chunk",
+   "expect": "^OK 12_chunk_11_of_16\\.luau: piece 11/16 stored",
+   "chunk": {
+    "index": 11,
+    "of": 16,
+    "bytes": 13241,
+    "checksum": 486110360,
+    "encoding": "long bracket level 1"
+   },
+   "does": "Stores piece 11/16 of the new source in ServerStorage.AuraRNG_Install after checking its own text and every earlier piece.",
+   "onFail": "'arrived changed' = the payload text was altered in transit: send the file again exactly. 'missing or damaged' = run the named earlier payload first. Nothing is installed by this step.",
+   "bytes": 17950,
+   "jsonBytes": 19278,
+   "step": 12
+  },
+  {
+   "file": "13_chunk_12_of_16.luau",
+   "kind": "chunk",
+   "expect": "^OK 13_chunk_12_of_16\\.luau: piece 12/16 stored",
+   "chunk": {
+    "index": 12,
+    "of": 16,
+    "bytes": 13228,
+    "checksum": 934107283,
+    "encoding": "long bracket level 0"
+   },
+   "does": "Stores piece 12/16 of the new source in ServerStorage.AuraRNG_Install after checking its own text and every earlier piece.",
+   "onFail": "'arrived changed' = the payload text was altered in transit: send the file again exactly. 'missing or damaged' = run the named earlier payload first. Nothing is installed by this step.",
+   "bytes": 17935,
+   "jsonBytes": 19564,
+   "step": 13
+  },
+  {
+   "file": "14_chunk_13_of_16.luau",
+   "kind": "chunk",
+   "expect": "^OK 14_chunk_13_of_16\\.luau: piece 13/16 stored",
+   "chunk": {
+    "index": 13,
+    "of": 16,
+    "bytes": 13234,
+    "checksum": 670841394,
+    "encoding": "long bracket level 0"
+   },
+   "does": "Stores piece 13/16 of the new source in ServerStorage.AuraRNG_Install after checking its own text and every earlier piece.",
+   "onFail": "'arrived changed' = the payload text was altered in transit: send the file again exactly. 'missing or damaged' = run the named earlier payload first. Nothing is installed by this step.",
+   "bytes": 17941,
+   "jsonBytes": 19315,
+   "step": 14
+  },
+  {
+   "file": "15_chunk_14_of_16.luau",
+   "kind": "chunk",
+   "expect": "^OK 15_chunk_14_of_16\\.luau: piece 14/16 stored",
+   "chunk": {
+    "index": 14,
+    "of": 16,
+    "bytes": 13175,
+    "checksum": 102157393,
+    "encoding": "long bracket level 0"
+   },
+   "does": "Stores piece 14/16 of the new source in ServerStorage.AuraRNG_Install after checking its own text and every earlier piece.",
+   "onFail": "'arrived changed' = the payload text was altered in transit: send the file again exactly. 'missing or damaged' = run the named earlier payload first. Nothing is installed by this step.",
+   "bytes": 17882,
+   "jsonBytes": 19020,
+   "step": 15
+  },
+  {
+   "file": "16_chunk_15_of_16.luau",
+   "kind": "chunk",
+   "expect": "^OK 16_chunk_15_of_16\\.luau: piece 15/16 stored",
+   "chunk": {
+    "index": 15,
+    "of": 16,
+    "bytes": 13201,
+    "checksum": 814892809,
+    "encoding": "long bracket level 1"
+   },
+   "does": "Stores piece 15/16 of the new source in ServerStorage.AuraRNG_Install after checking its own text and every earlier piece.",
+   "onFail": "'arrived changed' = the payload text was altered in transit: send the file again exactly. 'missing or damaged' = run the named earlier payload first. Nothing is installed by this step.",
+   "bytes": 17910,
+   "jsonBytes": 19438,
+   "step": 16
+  },
+  {
+   "file": "17_chunk_16_of_16.luau",
+   "kind": "chunk",
+   "expect": "^OK 17_chunk_16_of_16\\.luau: piece 16/16 stored",
+   "chunk": {
+    "index": 16,
+    "of": 16,
+    "bytes": 712,
+    "checksum": 773373630,
+    "encoding": "long bracket level 0"
+   },
+   "does": "Stores piece 16/16 of the new source in ServerStorage.AuraRNG_Install after checking its own text and every earlier piece.",
+   "onFail": "'arrived changed' = the payload text was altered in transit: send the file again exactly. 'missing or damaged' = run the named earlier payload first. Nothing is installed by this step.",
+   "bytes": 5417,
+   "jsonBytes": 5776,
+   "step": 17
+  },
+  {
+   "file": "18_apply.luau",
+   "kind": "apply",
+   "expect": "^OK 18_apply\\.luau: (installed|already installed)",
+   "does": "Joins the 16 pieces, checks length 198845 + checksum 17952987, checks the live text is in a backup, compiles with loadstring, writes with ScriptEditorService:UpdateSourceAsync, reads it back with GetEditorSource and checks length + checksum again (on any mismatch it puts the old text back), then removes ServerStorage.AuraRNG_Install.",
+   "onFail": "The module is left as it was (or put back, checked). Report the message to Milo.",
+   "bytes": 8982,
+   "jsonBytes": 9605,
+   "step": 18
+  },
+  {
+   "file": "90_install_from_file.luau",
+   "kind": "alternative",
+   "expect": "^OK 90_install_from_file\\.luau: (installed|already installed)",
+   "does": "Plan B (no big payloads): backs up the live module like 01, opens a file dialog on the Mac (StudioService:PromptImportFileAsync), checks the picked file is roblox/ReplicatedStorage/AuraFX/TheEnd.lua (198845 bytes, checksum 17952987), then compiles, writes, reads back and checks like the apply step. Needs someone at the Mac to pick the file. Also the easiest way to install by hand (paste it into the Command Bar).",
+   "bytes": 8202,
+   "jsonBytes": 8811,
+   "step": null
+  },
+  {
+   "file": "99_rollback.luau",
+   "kind": "rollback",
+   "expect": "^OK 99_rollback\\.luau: (rolled back|already rolled back)",
+   "does": "Puts a backup's text back into the module (default: the backup holding the pass-4 live version: 35000 bytes, checksum 489406639; else the newest backup this kit made), after saving the current text as TheEnd_<YYYYMMDD>_replaced_by_rollback unless a backup already holds it. Compiles, writes, reads back and checks. Set BACKUP_NAME at the top to pick another backup.",
+   "bytes": 8036,
+   "jsonBytes": 8670,
+   "step": null
+  }
+ ]
+}

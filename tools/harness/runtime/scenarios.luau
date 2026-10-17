@@ -1,0 +1,664 @@
+-- scenarios: deterministic test situations. Each one sets the world up, then step(t, dt) moves the wearer(s) and the
+-- camera and fires events (destroy, re-equip, visibility toggles, respawn). The ground is a plaza at y = 0.
+do
+	local D = H.INST_DATA
+	local v3 = H.v3
+	local CFrame, Vector3 = H.CFrame, H.Vector3
+	local sin, cos, rad, pi, exp, min, max = math.sin, math.cos, math.rad, math.pi, math.exp, math.min, math.max
+	local E = function(en, it) return H.enumItem(en, it) end
+
+	-------------------------------------------------------------------------------------- helpers
+	local function placeWearer(rec, pos, yaw, moveDir)
+		local d = D[rec.hrp]
+		d.props.CFrame = CFrame.new(pos.X, pos.Y, pos.Z) * CFrame.Angles(0, yaw, 0)
+		H.propagate(rec.hrp)
+		D[rec.hum].props.MoveDirection = moveDir or Vector3.zero
+		local onGround = pos.Y <= 3.05
+		D[rec.hum].props.FloorMaterial = onGround and E("Material", "Sand") or E("Material", "Air")
+		D[rec.hum].state = onGround and (moveDir and moveDir.Magnitude > 0 and E("HumanoidStateType", "Running") or E("HumanoidStateType", "Running"))
+			or E("HumanoidStateType", "Freefall")
+	end
+	H.placeWearer = placeWearer
+	local camState = nil
+	-- (focus: the camera's Focus, Roblox's CameraSubject point = the LOCAL player's HumanoidRootPart + 1.5; by default the
+	-- point looked at, which is the same thing whenever the camera follows the local player)
+	local function setCamera(pos, look, smooth, dt, focus)
+		local target = CFrame.lookAt(pos, look)
+		if smooth and camState then
+			local a = 1 - exp(-(dt or H.DT) * smooth)
+			target = camState:Lerp(target, a)
+		end
+		camState = target
+		local cd = D[H.camera]
+		cd.props.CFrame = target
+		cd.props.Focus = CFrame.new(focus or look)
+		if cd.sig or cd.psig then H.propChanged(H.camera, cd, "CFrame") end
+	end
+	H.setCamera = setCamera
+	-- Roblox's default follow camera: behind the character's facing, up a little, looking at the CameraSubject focus. The
+	-- PlayerModule's focus is HumanoidRootPart + (0, 1.5, 0) (R15 head offset); the aura's hover moves the body through the
+	-- Root joint, not the HumanoidRootPart, so the focus does not rise with it (checked against the real pass-4 Studio
+	-- captures: with this focus the "studio" camera puts the wearer's feet and the clock where the screenshots have them)
+	local function followCam(rec, dist, height, dt, sideYaw)
+		local hcf = H.rawGet(rec.hrp, "CFrame")
+		local yaw = math.atan2(-hcf.LookVector.X, -hcf.LookVector.Z) + (sideYaw or 0)
+		local off = CFrame.Angles(0, yaw, 0) * v3(0, height, dist)
+		local focus = hcf.Position + v3(0, 1.5, 0)
+		setCamera(focus + off, focus, 6, dt)
+	end
+	H.followCam = followCam
+
+	-- camera override (run_aura.py --camera SPEC, or a scenario name with an @SPEC suffix such as day_idle@front34): the
+	-- scenario runs as usual, then the camera is put where the spec says, relative to the main wearer, every frame. The aura
+	-- sees this camera (a viewer-anchored clock is placed for it), and the snapshot's camera is the render camera.
+	--   kind "orbit":   the preview renderer's view presets (tools/preview/web/views.js): azimuth from the wearer's front
+	--                   toward their right, elevation, distance, aimed at body + ty (body = HumanoidRootPart + hover)
+	--   kind "subject": Roblox's Custom camera as the Mac session's Studio captures set it up: CameraSubject focus =
+	--                   HumanoidRootPart + (0, 1.5, 0) (PlayerModule R15 head offset), Zoom studs out along
+	--                   front * f + right * r + up * u (CameraMin/MaxZoomDistance pinned to Zoom, a camera CFrame set once)
+	function H.overrideCamera(S)
+		local spec = H.CONFIG.camera
+		local rec = S.rec
+		if not spec or not rec or D[rec.hrp] == nil then return end
+		local hcf = H.rawGet(rec.hrp, "CFrame")
+		local lk = hcf.LookVector
+		-- (the main wearer is another player: Roblox's Focus stays on the local player's character, not on the wearer)
+		local myFocus = nil
+		if not rec.isLocal and S.me and S.me.hrp and D[S.me.hrp] then myFocus = H.rawGet(S.me.hrp, "CFrame").Position + v3(0, 1.5, 0) end
+		local f = v3(lk.X, 0, lk.Z)
+		if f.Magnitude < 1e-6 then f = v3(0, 0, -1) end
+		f = f.Unit
+		local r = f:Cross(v3(0, 1, 0)).Unit
+		if spec.kind == "subject" then
+			local focus = hcf.Position + v3(0, 1.5, 0)
+			local dir = (f * spec.f + r * spec.r + v3(0, spec.u, 0)).Unit
+			setCamera(focus + dir * spec.zoom, focus, nil, nil, myFocus)
+		else
+			local body = hcf.Position + v3(0, rec.hover or 0, 0)
+			local az, el = rad(spec.az), rad(spec.el)
+			local horiz = f * cos(az) + r * sin(az)
+			local dir = horiz * cos(el) + v3(0, sin(el), 0)
+			local target = body + v3(0, spec.ty, 0)
+			setCamera(target + dir * spec.d, target, nil, nil, myFocus)
+		end
+		if spec.fov then
+			local cd = D[H.camera]
+			cd.props.FieldOfView = spec.fov
+		end
+	end
+
+	-------------------------------------------------------------------------------------- scenario table
+	local SC = {}
+	H.SCENARIOS = SC
+	H.SCENARIO_ORDER = {}
+	local function def(name, desc, cfg, setup, step)
+		SC[name] = { name = name, desc = desc, cfg = cfg, setup = setup, step = step }
+		table.insert(H.SCENARIO_ORDER, name)
+	end
+
+	-- the usual single local wearer standing at the origin facing -Z
+	local function oneWearer(S, rig)
+		local lp = H.localPlayer
+		local char, info = H.spawnCharacter(lp, rig or S.rig, v3(0, 0, 0), 0)
+		local rec = H.newRec(lp, char, info, true)
+		placeWearer(rec, v3(0, 3, 0), 0)
+		return rec
+	end
+
+	def("day_idle", "Day (ClockTime 14), wearer idle, default follow camera 16 studs behind and 6 up",
+		{ duration = 16, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt) placeWearer(S.rec, v3(0, 3, 0), 0) followCam(S.rec, 16, 6, dt) end)
+
+	def("night_idle", "Night (ClockTime 0.3), wearer idle, follow camera behind",
+		{ duration = 12, clock = 0.3 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt) placeWearer(S.rec, v3(0, 3, 0), 0) followCam(S.rec, 16, 6, dt) end)
+
+	def("showcase_front", "Day, camera in front of the wearer ~34 studs out and 8 up (how Milo frames his screenshots)",
+		{ duration = 12, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt) placeWearer(S.rec, v3(0, 3, 0), 0) setCamera(v3(0, 11, -34), v3(0, 7, 0)) end)
+
+	def("camera_orbit", "Day, the camera circles the wearer once (radius 30, 8 up) over 20 s",
+		{ duration = 20, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt)
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			local a = t / 20 * 2 * pi
+			setCamera(v3(30 * sin(a), 11, 30 * cos(a)), v3(0, 5, 0))
+		end)
+
+	def("glide", "Day, idle 2 s, then walks forward on a gentle curve at WalkSpeed 16 (glide ramps 0->1), stops at 12 s",
+		{ duration = 16, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } S.pos = v3(0, 3, 0) S.yaw = 0 end,
+		function(S, t, dt)
+			local moving = t >= 2 and t < 12
+			local md = nil
+			if moving then
+				S.yaw += rad(9) * dt -- slow left turn
+				local look = v3(-sin(S.yaw), 0, -cos(S.yaw))
+				S.pos += look * 16 * dt
+				md = look
+			end
+			placeWearer(S.rec, S.pos, S.yaw, md)
+			followCam(S.rec, 16, 6, dt)
+		end)
+
+	def("air", "Day, the wearer rises from the ground at 8 studs/s from t = 2 (ground ray of 60 studs loses the floor near t = 9)",
+		{ duration = 14, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt)
+			local y = 3 + max(0, t - 2) * 8
+			placeWearer(S.rec, v3(0, y, 0), 0)
+			followCam(S.rec, 18, 6, dt)
+		end)
+
+	def("dusk", "ClockTime sweeps 17.0 -> 19.5 (sunset into night) while idle: tests day/night blending",
+		{ duration = 16, clock = 17 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt)
+			D[H.SERVICES.Lighting].props.ClockTime = 17 + 2.5 * t / 16
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			followCam(S.rec, 16, 6, dt)
+		end)
+
+	def("low_quality", "Day, quality = \"low\" (phones / low graphics), touch device",
+		{ duration = 12, clock = 14, quality = "low", touch = true },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt) placeWearer(S.rec, v3(0, 3, 0), 0) followCam(S.rec, 16, 6, dt) end)
+
+	def("remote_wearer", "Another player (isLocal = false) wears it; the local player stands 30 studs away looking at them",
+		{ duration = 12, clock = 14 },
+		function(S)
+			local lp = H.localPlayer
+			local myChar, myInfo = H.spawnCharacter(lp, "R15", v3(0, 0, 30), 0)
+			S.me = { hrp = myInfo.hrp, hum = myInfo.hum, info = myInfo, char = myChar }
+			placeWearer(S.me, v3(0, 3, 30), 0)
+			local other = H.makePlayer("Player2", 1002)
+			local char, info = H.spawnCharacter(other, "R15", v3(0, 0, 0), math.pi)
+			S.rec = H.newRec(other, char, info, false)
+			placeWearer(S.rec, v3(0, 3, 0), math.pi)
+			S.equipAt = { { rec = S.rec, t = 0.1 } }
+		end,
+		function(S, t, dt)
+			placeWearer(S.me, v3(0, 3, 30), 0)
+			placeWearer(S.rec, v3(0, 3, 0), math.pi)
+			setCamera(v3(0, 9, 44), v3(0, 6, 0), nil, nil, v3(0, 4.5, 30))
+		end)
+
+	def("far", "Camera pulls back: 20 -> 150 studs (setDetail false past 110) -> 400 (setVisible false past 320) -> back to 20",
+		{ duration = 16, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt)
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			local dist
+			if t < 3 then dist = 20
+			elseif t < 5 then dist = 20 + (t - 3) / 2 * 130
+			elseif t < 9 then dist = 150
+			elseif t < 10 then dist = 150 + (t - 9) * 250
+			elseif t < 12 then dist = 400
+			elseif t < 13 then dist = 400 - (t - 12) * 380
+			else dist = 20 end
+			setCamera(v3(0, 6 + dist * 0.15, dist), v3(0, 5, 0))
+		end)
+
+	def("toggle_visible", "Camera goes Scriptable 3-5 s (framework hides the aura), then rapid hide/show at 8.0/8.1/8.2/8.3 s",
+		{ duration = 12, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt)
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			local cam = D[H.camera]
+			local scriptable = (t >= 3 and t < 5) or (t >= 8.0 and t < 8.1) or (t >= 8.2 and t < 8.3)
+			cam.props.CameraType = E("CameraType", scriptable and "Scriptable" or "Custom")
+			followCam(S.rec, 16, 6, dt)
+		end)
+
+	def("destroy_mid_assembly", "Unequipped 2 s after equipping (mid assembly); runs on to 8 s so late callbacks fire",
+		{ duration = 8, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } S.events = { { t = 2.1, fn = function() H.unequip(S.rec) end } } end,
+		function(S, t, dt) placeWearer(S.rec, v3(0, 3, 0), 0) followCam(S.rec, 16, 6, dt) end)
+
+	def("reequip", "Equip, unequip at 4 s, equip again at 5 s (module-level state must not break the second build)",
+		{ duration = 14, clock = 14 },
+		function(S)
+			S.rec = oneWearer(S)
+			S.equipAt = { { rec = S.rec, t = 0.1 }, { rec = S.rec, t = 5.0 } }
+			S.events = { { t = 4.0, fn = function() H.unequip(S.rec) end } }
+		end,
+		function(S, t, dt) placeWearer(S.rec, v3(0, 3, 0), 0) followCam(S.rec, 16, 6, dt) end)
+
+	def("respawn", "The wearer dies at 6 s: the framework destroys the aura, a new character spawns and it is built again",
+		{ duration = 14, clock = 14 },
+		function(S)
+			S.rec = oneWearer(S)
+			S.equipAt = { { rec = S.rec, t = 0.1 } }
+			S.events = { { t = 6.0, fn = function()
+				local old = S.rec
+				H.unequip(old)
+				H.fireIf(D[old.hum], "Died")
+				H.fireIf(D[H.localPlayer], "CharacterRemoving", old.char)
+				H.destroy(old.char)
+				local i = table.find(H.RECS, old)
+				if i then table.remove(H.RECS, i) end
+				local char, info = H.spawnCharacter(H.localPlayer, "R15", v3(0, 0, 0), 0)
+				S.rec = H.newRec(H.localPlayer, char, info, true)
+				placeWearer(S.rec, v3(0, 3, 0), 0)
+				S.lateEquip = { rec = S.rec, t = 6.3 }
+			end } }
+		end,
+		function(S, t, dt)
+			if S.lateEquip and t >= S.lateEquip.t then H.equip(S.lateEquip.rec) S.lateEquip = nil end
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			followCam(S.rec, 16, 6, dt)
+		end)
+
+	def("join_wearing", "The player just joined already wearing it (time() < 20): the equip-only screen grade must not run",
+		{ duration = 10, clock = 14, timeBase = 3 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt) placeWearer(S.rec, v3(0, 3, 0), 0) followCam(S.rec, 16, 6, dt) end)
+
+	def("r6_character", "Day, an R6 character (Torso, Left Arm ...; RootJoint / Left Shoulder joints, HipHeight 0)",
+		{ duration = 12, clock = 14, rig = "R6" },
+		function(S) S.rec = oneWearer(S, "R6") S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt) placeWearer(S.rec, v3(0, 3, 0), 0) followCam(S.rec, 16, 6, dt) end)
+
+	def("film_meshes_present", "ReplicatedStorage.AuraCinema.Assets.TheEnd holds fake film meshes (RingG, Dial, Astrolabe, Hand, Gear, Oblivion.Moon/SmoothSphere)",
+		{ duration = 12, clock = 14, film = "present" },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt) placeWearer(S.rec, v3(0, 3, 0), 0) followCam(S.rec, 16, 6, dt) end)
+
+	def("film_meshes_absent", "ReplicatedStorage.AuraCinema.Assets.TheEnd exists but is empty (the fallback path)",
+		{ duration = 12, clock = 14, film = "empty" },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt) placeWearer(S.rec, v3(0, 3, 0), 0) followCam(S.rec, 16, 6, dt) end)
+
+	def("crowd", "Six wearers at once (the local player + 5 others in a ring of radius 25): per-client cost scaling",
+		{ duration = 12, clock = 14 },
+		function(S)
+			S.recs = {}
+			S.rec = oneWearer(S)
+			S.recs[1] = S.rec
+			S.equipAt = { { rec = S.rec, t = 0.1 } }
+			for i = 1, 5 do
+				local a = i / 5 * 2 * pi
+				local pos = v3(25 * sin(a), 0, 25 * cos(a))
+				local pl = H.makePlayer("Player" .. (i + 1), 1001 + i)
+				local char, info = H.spawnCharacter(pl, "R15", pos, a)
+				local rec = H.newRec(pl, char, info, false)
+				placeWearer(rec, pos + v3(0, 3, 0), a)
+				rec.homePos, rec.homeYaw = pos + v3(0, 3, 0), a
+				S.recs[#S.recs + 1] = rec
+				table.insert(S.equipAt, { rec = rec, t = 0.1 + i * 0.4 })
+			end
+		end,
+		function(S, t, dt)
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			for i = 2, #S.recs do placeWearer(S.recs[i], S.recs[i].homePos, S.recs[i].homeYaw) end
+			setCamera(v3(0, 30, 60), v3(0, 4, 0))
+		end)
+
+	-------------------------------------------------------------------------------------- added in THE END pass-5 review round 1
+	-- (camera swings, other wearers, jumps, seats, small avatars, slopes: what players do that the first 19 never did)
+	local function turnCam(S, t, degPerSec)
+		local a = math.clamp(t - 8, 0, 2) * rad(degPerSec)
+		local focus = v3(0, 4.5, 0)
+		setCamera(focus + v3(16 * sin(a), 6, 16 * cos(a)), focus)
+	end
+	def("fast_turn", "Idle; follow camera 16 behind / 6 up, then it orbits at 180 deg/s for 2 s from t = 8 (a right-drag / swipe)",
+		{ duration = 12, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt) placeWearer(S.rec, v3(0, 3, 0), 0) turnCam(S, t, 180) end)
+	def("fast_turn90", "Idle; follow camera 16 / 6, orbiting at 90 deg/s for 2 s from t = 8",
+		{ duration = 12, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt) placeWearer(S.rec, v3(0, 3, 0), 0) turnCam(S, t, 90) end)
+	def("camera_flick", "Idle; the follow camera flicks half a turn round the wearer in 0.25 s at t = 8 (a mouse flick)",
+		{ duration = 12, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt)
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			local hcf = H.rawGet(S.rec.hrp, "CFrame")
+			local yaw = math.atan2(-hcf.LookVector.X, -hcf.LookVector.Z) + math.clamp((t - 8) / 0.25, 0, 1) * pi
+			local focus = hcf.Position + v3(0, 1.5, 0)
+			setCamera(focus + CFrame.Angles(0, yaw, 0) * v3(0, 6, 16), focus)
+		end)
+	def("pair_behind", "Local wearer, default follow camera; a remote wearer stands 7 studs behind-right (between you and your camera)",
+		{ duration = 12, clock = 14 },
+		function(S)
+			S.rec = oneWearer(S)
+			local other = H.makePlayer("Player2", 1002)
+			local char, info = H.spawnCharacter(other, "R15", v3(4, 0, 7), 0)
+			S.rec2 = H.newRec(other, char, info, false)
+			placeWearer(S.rec2, v3(4, 3, 7), 0)
+			S.equipAt = { { rec = S.rec, t = 0.1 }, { rec = S.rec2, t = 0.1 } }
+		end,
+		function(S, t, dt)
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			placeWearer(S.rec2, v3(4, 3, 7), 0)
+			followCam(S.rec, 16, 6, dt)
+			if H.ownClockCheck then H.ownClockCheck(S, t) end
+		end)
+	def("pair_walkby", "Local wearer idle, follow camera; a remote wearer walks across behind you (z = 8) from x = -30 to +30",
+		{ duration = 14, clock = 14 },
+		function(S)
+			S.rec = oneWearer(S)
+			local other = H.makePlayer("Player2", 1002)
+			local char, info = H.spawnCharacter(other, "R15", v3(-30, 0, 8), -pi / 2)
+			S.rec2 = H.newRec(other, char, info, false)
+			placeWearer(S.rec2, v3(-30, 3, 8), -pi / 2)
+			S.equipAt = { { rec = S.rec, t = 0.1 }, { rec = S.rec2, t = 0.1 } }
+		end,
+		function(S, t, dt)
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			local x = -30 + max(0, t - 7) * 10
+			placeWearer(S.rec2, v3(min(x, 30), 3, 8), -pi / 2, (t > 7 and x < 30) and v3(1, 0, 0) or nil)
+			followCam(S.rec, 16, 6, dt)
+		end)
+	def("jump", "Idle, follow camera; from t = 7 a full Roblox jump (JumpHeight 7.2, gravity 196.2) every 2 s",
+		{ duration = 14, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt)
+			local h = 0
+			if t >= 7 then
+				local v0 = math.sqrt(2 * 196.2 * 7.2)
+				local u = (t - 7) % 2
+				h = max(0, v0 * u - 0.5 * 196.2 * u * u)
+			end
+			placeWearer(S.rec, v3(0, 3 + h, 0), 0)
+			followCam(S.rec, 16, 6, dt)
+		end)
+	def("seated", "Day; the wearer sits on a 1-stud-tall Seat (Humanoid.Sit, SeatPart): the ground ray hits the seat top",
+		{ duration = 12, clock = 14 },
+		function(S)
+			S.rec = oneWearer(S)
+			S.seat = H.make("Seat", { Name = "Bench", Size = v3(3, 1, 3), CFrame = CFrame.new(0, 1, 0), Anchored = true }, H.workspace)
+			S.equipAt = { { rec = S.rec, t = 0.1 } }
+		end,
+		function(S, t, dt)
+			local sit = t >= 2
+			D[S.rec.hum].props.Sit = sit
+			D[S.rec.hum].props.SeatPart = sit and S.seat or nil
+			placeWearer(S.rec, v3(0, sit and 3.0 or 4.5, 0), 0)
+			followCam(S.rec, 16, 6, dt)
+		end)
+	def("small_avatar", "Day, idle then walking; a short R15 avatar (HipHeight 1.4: the HumanoidRootPart 2.4 above the ground)",
+		{ duration = 14, clock = 14 },
+		function(S)
+			S.rec = oneWearer(S)
+			D[S.rec.hum].props.HipHeight = 1.4
+			S.pos, S.yaw = v3(0, 2.4, 0), 0
+			S.equipAt = { { rec = S.rec, t = 0.1 } }
+		end,
+		function(S, t, dt)
+			local md = nil
+			if t >= 8 then
+				S.yaw += rad(9) * dt
+				local look = v3(-sin(S.yaw), 0, -cos(S.yaw))
+				S.pos += look * 16 * dt
+				md = look
+			end
+			placeWearer(S.rec, S.pos, S.yaw, md)
+			followCam(S.rec, 16, 6, dt)
+		end)
+	def("downhill", "Day; walks forward at 16 studs/s while the ground drops 6 studs/s (t = 8..11): the dais must not lag behind",
+		{ duration = 13, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } S.pos = v3(0, 3, 0) end,
+		function(S, t, dt)
+			local md = nil
+			local gy = -6 * math.clamp(t - 8, 0, 3)
+			if t >= 8 and t < 11 then
+				S.pos += v3(0, 0, -16 * dt)
+				md = v3(0, 0, -1)
+			end
+			S.pos = v3(S.pos.X, gy + 3, S.pos.Z)
+			D[H.plaza].props.CFrame = CFrame.new(0, gy - 0.5, 0)
+			placeWearer(S.rec, S.pos, 0, md)
+			followCam(S.rec, 16, 6, dt)
+		end)
+	-------------------------------------------------------------------------------------- added in THE END pass-5 review round 2
+	-- (the roll cutscene with both framework behaviours, and other players standing beside a wearer)
+	-- the first frame the aura can be seen after the cutscene: if its assembly already ran while hidden, the void (which
+	-- condenses from a point in the first 1.2 s) is already full size
+	local function assemblyCheck(S, t)
+		if S.checked or t < 5.08 then return end
+		S.checked = true
+		local void = nil
+		H.forDescendants(H.container, function(c)
+			local d = D[c]
+			if not void and d.cls.isa.BasePart and d.name == "Void" then void = c end
+		end)
+		if void and H.rawGet(void, "Size").X > 7.5 then
+			H.recordWarning("assembly-unseen", "the equip assembly ran while the aura was hidden by the cutscene: the player first sees it already built")
+		end
+	end
+	local function cutscene(S, t, dt)
+		placeWearer(S.rec, v3(0, 3, 0), 0)
+		D[H.camera].props.CameraType = E("CameraType", t < 5 and "Scriptable" or "Custom")
+		followCam(S.rec, 16, 6, dt)
+		assemblyCheck(S, t)
+	end
+	-- (the reveal waits for the player: it starts at 5 s and settles at ~15 s, so these run to 17 s, steady after 15.2)
+	def("equip_in_cutscene", "Equipped at 0.1 s while the roll cutscene holds a Scriptable camera (0-5 s); the framework KEEPS calling update while the aura is hidden",
+		{ duration = 17, clock = 14, steadyAfter = 15.2 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } H.UPDATE_WHILE_HIDDEN = true end,
+		cutscene)
+	def("equip_in_cutscene_paused", "As equip_in_cutscene, but the framework does not call update while the aura is hidden",
+		{ duration = 17, clock = 14, steadyAfter = 15.2 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } H.UPDATE_WHILE_HIDDEN = false end,
+		cutscene)
+	def("pair_side", "Local wearer idle, follow camera 16/6; another wearer stands 5 studs to your right (friends side by side)",
+		{ duration = 12, clock = 14 },
+		function(S)
+			S.rec = oneWearer(S)
+			local other = H.makePlayer("Player2", 1002)
+			local char, info = H.spawnCharacter(other, "R15", v3(5, 0, 0), 0)
+			S.rec2 = H.newRec(other, char, info, false)
+			placeWearer(S.rec2, v3(5, 3, 0), 0)
+			S.equipAt = { { rec = S.rec, t = 0.1 }, { rec = S.rec2, t = 0.1 } }
+		end,
+		function(S, t, dt)
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			placeWearer(S.rec2, v3(5, 3, 0), 0)
+			followCam(S.rec, 16, 6, dt)
+			H.ownClockCheck(S, t)
+		end)
+	def("visit_close", "A player without the aura stands 9 studs in front of a wearer, then (t = 7..9) walks round to 5 studs at their side; follow camera",
+		{ duration = 14, clock = 14 },
+		function(S)
+			local lp = H.localPlayer
+			local myChar, myInfo = H.spawnCharacter(lp, "R15", v3(0, 0, -9), pi)
+			S.me = { hrp = myInfo.hrp, hum = myInfo.hum, info = myInfo, char = myChar }
+			placeWearer(S.me, v3(0, 3, -9), pi)
+			local other = H.makePlayer("Player2", 1002)
+			local char, info = H.spawnCharacter(other, "R15", v3(0, 0, 0), 0)
+			S.rec = H.newRec(other, char, info, false)
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			S.equipAt = { { rec = S.rec, t = 0.1 } }
+		end,
+		function(S, t, dt)
+			local u = math.clamp((t - 7) / 2, 0, 1)
+			local th, r = pi - u * pi / 2, 9 - 4 * u
+			placeWearer(S.me, v3(r * sin(th), 3, r * cos(th)), th, (u > 0 and u < 1) and v3(cos(th), 0, -sin(th)) or nil)
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			followCam(S.me, 16, 6, dt)
+		end)
+	-------------------------------------------------------------------------------------- added in THE END pass-5 review round 3
+	-- (teleports, a NaN frame, a slope, and another wearer's aura in front of your own clock)
+	local function auraModel(rec)
+		local name = "TheEnd_" .. D[rec.char].name
+		for _, m in ipairs(D[H.container].children) do
+			local d = D[m]
+			if d and not d.destroyed and d.name == name then return m end
+		end
+		return nil
+	end
+	local function auraPart(rec, nm)
+		local m = auraModel(rec)
+		local found = nil
+		if m then
+			H.forDescendants(m, function(c)
+				local d = D[c]
+				if not found and d.cls.isa.BasePart and d.name == nm then found = c end
+			end)
+		end
+		return found
+	end
+	-- heights of the clock (its inlay), the moon and the void relative to the HumanoidRootPart
+	local function heights(rec)
+		local out = {}
+		local hy = H.rawGet(rec.hrp, "CFrame").Position.Y
+		for _, nm in ipairs({ "Inlay", "Moon", "Void" }) do
+			local p = auraPart(rec, nm)
+			if p then out[nm] = H.rawGet(p, "CFrame").Position.Y - hy end
+		end
+		return out
+	end
+	local function trailOn(rec)
+		local m = auraModel(rec)
+		local on = false
+		if m then
+			H.forDescendants(m, function(c)
+				local d = D[c]
+				if d.cls.name == "ParticleEmitter" and d.parent and D[d.parent] and D[d.parent].name == "Trail" and H.rawGet(c, "Enabled") then on = true end
+			end)
+		end
+		return on
+	end
+	-- (another wearer beside you: from your camera, nothing of theirs that is solid may hide your own clock's hub or its XII)
+	function H.ownClockCheck(S, t)
+		if t < 7 or t > 12.01 or (S.lastOwn and t - S.lastOwn < 0.5) then return end
+		S.lastOwn = t
+		local hub, inlay = auraPart(S.rec, "Hub"), auraPart(S.rec, "Inlay")
+		local other = S.rec2 and auraModel(S.rec2)
+		if not (hub and inlay and other) then return end
+		local camPos = H.rawGet(H.camera, "CFrame").Position
+		local targets = { hub = H.rawGet(hub, "CFrame").Position, XII = H.rawGet(inlay, "CFrame") * v3(0, 9.6, 0) }
+		for nm, p in pairs(targets) do
+			local dv = p - camPos
+			local len = dv.Magnitude
+			local hit = nil
+			H.forDescendants(other, function(c)
+				local d = D[c]
+				if hit or not d.cls.isa.BasePart then return end
+				if (d.props.Transparency or 0) >= 0.5 or (d.props.LocalTransparencyModifier or 0) >= 0.5 then return end
+				if H.rayPart(camPos, dv / len, len - 0.5, c) then hit = d.name end
+			end)
+			S.ownTotal = (S.ownTotal or 0) + 1
+			if hit then
+				S.ownHidden = (S.ownHidden or 0) + 1
+				H.recordWarning("own-clock-hidden", "another wearer's solid " .. hit .. " hides your own clock's " .. nm .. " from your camera")
+			end
+		end
+	end
+	def("teleport", "Idle; the wearer is teleported 60 studs up onto a platform at t = 8 and back down at t = 10 (PivotTo, no hide); the camera follows at once",
+		{ duration = 12, clock = 14 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } S.y = 0 end,
+		function(S, t, dt)
+			local want = (t >= 8 and t < 10) and 60 or 0
+			if want ~= S.y then
+				S.before = heights(S.rec) -- (where the clock and the orbs stand before the jump)
+				S.y = want
+				S.check = 3
+			elseif S.check then
+				-- the first frames after the jump: the clock and the orbs must arrive with the wearer, not spring across
+				local after = heights(S.rec)
+				for k, v in pairs(S.before) do
+					if after[k] and math.abs(after[k] - v) > 0.5 then
+						H.recordWarning("teleport-lag", string.format("after a %d-stud teleport the %s is %.1f studs from where it rides (it springs across instead of arriving with the wearer)",
+							60, k, after[k] - v))
+					end
+				end
+				if trailOn(S.rec) then H.recordWarning("teleport-trail", "a teleport switched the speed trail on") end
+				S.check -= 1
+				if S.check <= 0 then S.check = nil end
+			end
+			D[H.plaza].props.CFrame = CFrame.new(0, S.y - 0.5, 0)
+			placeWearer(S.rec, v3(0, S.y + 3, 0), 0)
+			local focus = H.rawGet(S.rec.hrp, "CFrame").Position + v3(0, 1.5, 0)
+			setCamera(focus + v3(0, 6, 16), focus)
+		end)
+	def("nan_frame", "Idle; at t = 8 one frame hands the aura a NaN hover and at t = 9 a NaN HumanoidRootPart position (a physics fling): it skips them and carries on",
+		{ duration = 12, clock = 14, steadyAfter = 10 },
+		function(S) S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } end,
+		function(S, t, dt)
+			local nan = 0 / 0
+			S.rec.hoverBase = (t >= 8 and not S.n1) and nan or (S.rec.hoverBase ~= S.rec.hoverBase and 2.4 or S.rec.hoverBase)
+			if t >= 8 and not S.n1 then S.n1 = true S.before = heights(S.rec) end
+			if t >= 9 and not S.n2 then
+				S.n2 = true
+				S.rec.nanOnce = true
+			end
+			placeWearer(S.rec, v3(0, 3, 0), 0)
+			followCam(S.rec, 16, 6, dt)
+			if (t >= 8.5 and not S.c1) or (t >= 9.5 and not S.c2) then
+				if t >= 9.5 then S.c2 = true else S.c1 = true end
+				local m = auraModel(S.rec)
+				local bad = 0
+				if m then
+					H.forDescendants(m, function(c)
+						local d = D[c]
+						if d.cls.isa.BasePart then
+							local p = H.rawGet(c, "CFrame").Position
+							if p.X ~= p.X or p.Y ~= p.Y or p.Z ~= p.Z then bad += 1 end
+						end
+					end)
+				end
+				if bad > 0 then H.recordWarning("nan-state", bad .. " aura parts have a NaN position after a NaN frame (the springs never recover)") end
+				-- (the clock rides steadily; the orbs rock like scales by +-2 studs, so only the clock is compared)
+				local after = heights(S.rec)
+				local b = S.before and S.before.Inlay
+				if b and after.Inlay and math.abs(after.Inlay - b) > 1.0 then
+					H.recordWarning("nan-state", string.format("after a NaN frame the clock is %.1f studs from where it rode before", after.Inlay - b))
+				end
+			end
+		end)
+	-- the plaza tilted 10 degrees (rising toward -Z): the dais must lie along it, and no rim block may sink into it
+	local SLOPE = math.rad(10)
+	local function slopeY(z) return -z * math.tan(SLOPE) end
+	local function slopeCheck(S, label)
+		local base = auraPart(S.rec, "DaisBase")
+		if not base then return end
+		local up = H.rawGet(base, "CFrame").RightVector -- (the base disc is an upright cylinder: its axis is local X)
+		local n = H.rawGet(H.plaza, "CFrame").UpVector
+		local ang = math.deg(math.acos(math.clamp(up:Dot(n), -1, 1)))
+		if ang > 1.5 then
+			H.recordWarning("slope-dais", string.format("%s: on a 10-degree slope the dais is %.1f degrees off the ground's slope (half of it sinks into the hill)", label, ang))
+		end
+		local m = auraModel(S.rec)
+		local worst = math.huge
+		if m then
+			H.forDescendants(m, function(c)
+				local d = D[c]
+				if d.cls.isa.BasePart and d.name == "DaisRim" then
+					local cf = H.rawGet(c, "CFrame")
+					local sz = H.rawGet(c, "Size")
+					local p = cf * v3(0, -sz.Y / 2, 0)
+					local h = p.Y - slopeY(p.Z)
+					worst = math.min(worst, h * math.cos(SLOPE))
+				end
+			end)
+		end
+		if worst < -0.1 then
+			H.recordWarning("slope-dais", string.format("%s: a dais rim block sinks %.2f studs into the 10-degree slope", label, -worst))
+		end
+	end
+	def("slope", "Day; the plaza is a 10-degree slope (rising ahead): idle, then walks uphill at 16 studs/s (t = 8..10), then idle; follow camera",
+		{ duration = 13, clock = 14 },
+		function(S)
+			D[H.plaza].props.CFrame = CFrame.Angles(SLOPE, 0, 0) * CFrame.new(0, -0.5, 0)
+			S.rec = oneWearer(S) S.equipAt = { { rec = S.rec, t = 0.1 } } S.z = 0
+		end,
+		function(S, t, dt)
+			D[H.plaza].props.CFrame = CFrame.Angles(SLOPE, 0, 0) * CFrame.new(0, -0.5, 0)
+			local md = nil
+			if t >= 8 and t < 10 then
+				S.z -= 16 * dt
+				md = v3(0, 0, -1)
+			end
+			placeWearer(S.rec, v3(0, slopeY(S.z) + 3, S.z), 0, md)
+			followCam(S.rec, 16, 6, dt)
+			if t >= 7.5 and not S.c1 then S.c1 = true slopeCheck(S, "standing") end
+			if t >= 12 and not S.c2 then S.c2 = true slopeCheck(S, "after walking uphill") end
+		end)
+end
