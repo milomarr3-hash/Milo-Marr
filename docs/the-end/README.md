@@ -121,7 +121,12 @@ the seconds hand**
 **5. Day, from the camera you used for your pass-4 screenshots**
 ![Day, studio camera](pass52-renders/01_day_studio.jpg)
 
-All thirteen pictures are in [`pass52-renders/`](pass52-renders/). The new textures' own sheets are in
+**Videos** (cloud preview, 15 frames a second):
+[the equip reveal at night](pass52-renders/14_reveal_night_video.mp4) (top: your view from behind; bottom: the clock up
+close, with the hands ticking to midnight and the one pulse) and [flying round it by day](pass52-renders/15_orbit_day_video.mp4)
+once it has settled.
+
+All thirteen pictures and both videos are in [`pass52-renders/`](pass52-renders/). The new textures' own sheets are in
 `textures/te5/surfaces/sheets/` and `textures/te5/particles/sheets/`. Pass 5.1's pictures are still in
 [`pass51-renders/`](pass51-renders/).
 
