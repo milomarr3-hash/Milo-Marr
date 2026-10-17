@@ -568,10 +568,18 @@ Start with `payloads/00_status.luau` (Edit). It should say `the NEW version`. It
    and repeat them.
 2. **Reveal, day and night** (S1, then S2 each time). Start Play. Run S1 with `VIEW = "owner", CLOCK_TIME = 14,
    EQUIP = true, WAIT = 2`, and capture during the assembly: void, then moon, then the bezel sweeps in, gears, hands
-   lock, and the dais wave. At this close zoom the rings lie flat on the dais until the hands have locked at XII, then rise
-   and close round you as the finale (review round 3: risen earlier, the meridian stood across the dial during the lock).
-   Your screen dims and cools, then comes back. There must be **no pulse and no flash**, and the hands visibly lock at XII
-   **inside the frame**. Run S2: `grade: on`. Capture again at 9 s. Then take these, with `TURN_TO_OPEN = true` the first time:
+   spin in, and the dais wave. At this close zoom the rings lie flat on the dais until the hands have reached five to
+   midnight, then rise and close round you (review round 3: risen earlier, the meridian stood across the dial).
+   **Pass 5.2's reveal** (about 4.6 s to 10 s after equipping; captures at 5.5, 6.7, 7.2 and 9 s): the energy links light
+   up along their length (moon to IX, III to the void, VI down to the floor), the hour plots light one by one round the
+   dial, I first and XII last, the gears race, the void's smoke draws in close, streaks converge on the clock, a golden
+   light sweeps once round the stage. The minute hand ticks from XI to XII a minute at a time; the fifth tick is
+   midnight: the gears stop dead for a moment and **one soft pulse** goes out (a ring off the moon, a wave across the
+   floor with streaks racing out with it, glints off the dial that slow into orbit, sparks lifting off the floor, the
+   void's smoke blown out), then everything settles. Your screen dims and cools, blooms softly at midnight and the
+   view pushes in a little (the field of view narrows about 6 %), then all of it comes back exactly. That one pulse is
+   the only one: **no other pulse, strobe or flash**, before or after, and the hands visibly lock at XII **inside the
+   frame**. Run S2: `grade: on`. Capture again at 11 s. Then take these, with `TURN_TO_OPEN = true` the first time:
    - `VIEW = "studio", CLOCK_TIME = 14, WAIT = 21` for day, then `CLOCK_TIME = 0.5, WAIT = 21` for night. Name them
      `real_day_studio.jpg` and `real_night_studio.jpg` if they go to `tools/baseline/pass5/`.
    - `VIEW = "owner"` (Roblox's default zoom, 12.5 studs: the clock stands 32 studs further back, drops a little and
@@ -620,8 +628,9 @@ Start with `payloads/00_status.luau` (Edit). It should say `the NEW version`. It
    fill strength: S8 `HIGHLIGHT_FILL = 0.8` (weaker fill: the metal keeps more of its own light and dark), re-equip,
    capture, compare with the default 0.65, and keep the one Milo likes. The black void stays **pure black** in every shot.
 5. **Low quality.** S5 with `QUALITY = "low"` (and `IS_LOCAL = true` to see the assembly). S2 with
-   `WHO = "TheEndBench1"`: 150 parts, 10 emitters in the model (+2 on the torso; the speed trail is off while you stand
-   still), 2 beams, 8 GUIs, 0 lights. It must still read as the clock, armillary,
+   `WHO = "TheEndBench1"`: 163 parts, 12 emitters in the model, 10 on (+2 on the torso; the speed trail is off while
+   you stand still, the floor's wave only fires at midnight), 4 beams (the two streams and two energy links), 8 GUIs,
+   0 lights. It must still read as the clock (with the four-point central star), armillary,
    moon, void and dais. The meridian reads as a ring, not a lumpy polygon (review round 3: 18 segments on low), and the
    void's heart is a round pinpoint (no slit pupil). By hand: Test -> Device (a phone) or Esc -> Settings -> Graphics Quality 1-3, then rejoin. The
    framework picks low on phones and low graphics.
@@ -692,7 +701,24 @@ Start with `payloads/00_status.luau` (Edit). It should say `the NEW version`. It
     night. One screenshot with `FAR_BEACON` off (the default) and one with it on (S8 `FAR_BEACON = true`, re-equip).
     Show Milo both and ask which he wants: it changes what everyone in the server sees. Write his answer in the report and
     set the attribute to match.
-17. **Wrap up.** Stop Play. Write the report (below). Update `docs/memory/aura-rng.md` (and the Mac project's
+17. **Pass 5.2 details** (with the te5 textures uploaded; captures with S1 `VIEW = "clock"`, `"void"` and `"studio"`).
+    The bezel has a **dark band** between bright silver lips, engraved with a fine degree scale that creeps round
+    anticlockwise (a degree a second), never painted over grey by the silver tone. A polished ring frames the star window.
+    The **central star** is eight solid faceted points (bright silver on one half, gunmetal on the other), not hollow
+    (if hollow: `WEDGE_SWAP = true`, which also fixes the void's heart); the sub-dial turns slowly under it. The hour and
+    minute hands each have a **Breguet moon** (a ring with a dark eye) near the tip. A soft **comet of light rides the
+    seconds hand** round the minute track, head at the hand, tail behind it, lighting the hours as it passes. A bright
+    segment of light runs round the meridian and the equator. The **void's photon ring** is thickest and whitest on the
+    side facing the clock and a fine hair on the far side; its heart has a slow glint with rays; thin ink tendrils curl
+    between the smoke's billows, which now have gaps; matter spirals into the void from every side. The moon wears a broad
+    soft glow (a pale haze by day), a ring of glints orbits it, and its face rocks a few degrees over ~47 s. Over the
+    galaxy: a **fine fast swirl** (its arms trail its spin, like the floor's: else `GALAXY_DIR` for all of them), **rings of
+    energy** turning slowly with a bright boundary ring, and motes streaming in along **two spiral arms** that stand still
+    on the floor (if they spin like wheels or point like spokes, write it down). The **stage is gold on black**, readable by
+    day and night, never glowing so much the detail goes (at night 1.25, under the Bloom threshold). The three **energy
+    links** are thin threads with soft pearls of light gliding along them; by day only the pearls may read, which is
+    intended (restrained). In first person they are off.
+18. **Wrap up.** Stop Play. Write the report (below). Update `docs/memory/aura-rng.md` (and the Mac project's
     `CHANGELOG.md`). Show Milo the thumbnails.
 
 ## STUDIO-VERIFY items
@@ -737,6 +763,20 @@ wrong. The spec's list (§19) and how to see each one:
 | (round 3) The silver tint at the default zoom | by day, `VIEW = "owner"` | the rings read silver, not pale cyan (the fill strengthens close up); if still cool, the next pass warms the day FillColor to (220, 212, 206) while the camera is close |
 | (round 3) The ink smoke by day | `void` and `owner` views, ClockTime 14 | the void's smoke reads as black ink on the sky, not a teal haze (te5_smoke is a dense billow now) |
 | (round 3) The pass-2 rim radius (`RIM_R`) | check 14 | the night corona hugs the bezel before the te5 upload |
+| (5.2) One pulse, at midnight only | check 2, captures from 4.5 to 11 s after equipping | the hands tick from XI to XII; exactly one pulse, on the fifth tick; nothing else flashes, before or after |
+| (5.2) The wearer's screen is given back | S2 before equipping, during the reveal and at 12 s; `print(workspace.CurrentCamera.FieldOfView)` | `TheEndBloom` is under the Camera only during the reveal and gone after; the field of view is exactly what it was before; `Lighting` is never touched; nothing happens on another player's screen |
+| (5.2) The push-in lets go | with a script or the command bar, set `workspace.CurrentCamera.FieldOfView = 80` during the buildup | the aura stops touching the field of view at once and leaves it at 80 |
+| (5.2) The central star's facets (WedgeParts) | `clock` close-up | eight solid points, bright on the half to the left of each point's tip; hollow ones mean `WEDGE_SWAP = true` (the void's heart uses the same flag) |
+| (5.2) The bezel band | `clock` close-up, day | the dark band sits just proud of the flutes all round (no flicker against them), its engraving crisp and white, not greyed by the silver tone; it creeps round anticlockwise |
+| (5.2) The seconds hand's trail | `clock` close-up, watch a few seconds | the comet's head is at the seconds hand and its tail behind it (if it leads: the dial's GUIs are mirrored too, see `FRONT_FACES`) |
+| (5.2) The energy links | `studio` and `owner` views, day and night | thin bowed threads from the moon into IX, from III into the void, from VI down to the floor, pearls gliding along them; none crosses the moon's face or the dial; they light up along their length in the reveal |
+| (5.2) The floor's wave (VelocityPerpendicular) | night, `studio` and `owner` views at midnight | one flat ring grows from under you to the stage's edge in ~1.7 s, lying on the floor (not standing up facing you), streaks racing out with it |
+| (5.2) The dial's glints (Cylinder + Outward on a carrier turned to the dial) | `clock` view at midnight | glints burst outward in the dial's plane, slow down and orbit round it for a few seconds; if they fly at the camera, write it down |
+| (5.2) The spiral arms (attachments moved every frame) | `owner` view, look down at the pool | two arms of motes stand still on the floor and stream in toward the centre |
+| (5.2) The gold stage | day and night, `studio` and `owner` views | gold markings on a black base, crisp; the golden sweep in the reveal goes round head first |
+| (5.2) The photon ring's highlight | `void` close-up | thickest and whitest on the side facing the clock, a fine hair on the far side |
+| (5.2) Particles in front of silver under the Highlight | by day, `clock` view at midnight | the flare at the hub and the glints over the rete still read (the silver tone's fill composites over particles in front of silver parts; the flare is big so its rays reach the dark dial) |
+| (5.2) Cost | check 10 with pass 5.2 | 454 parts (163 low), ~41 emitters (13 low): the frame time and MicroProfiler numbers, compared with pass 5.1 if you have them |
 
 ## Reporting back
 
@@ -754,7 +794,7 @@ Backup: ServerStorage.AuraRNG_Backups.<name>  ·  textures: fallbacks | te5 (ids
 ## Checklist
 | # | check | result (what was seen) | shot |
 |---|---|---|---|
-| 2 | reveal: no pulse/flash, grade dims and returns | | |
+| 2 | reveal: one pulse at midnight only; the grade, bloom and push-in come and go | | |
 | 2 | day / night (studio camera) | | real_day_studio.jpg / real_night_studio.jpg |
 | ... | | | |
 

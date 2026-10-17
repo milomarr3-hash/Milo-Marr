@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # THE END (1 in 1,000,000,000) -- equipped aura, pass 5 "The Last Clock" -- texture group "surfaces".
 #
-# Spec: docs/the-end/pass5-spec.md, section 16.2 (group "surfaces"). 11 textures:
+# Spec: docs/the-end/pass5-spec.md, section 16.2 (group "surfaces"). 15 textures:
 #   te5_dial_inlay  te5_subdial  te5_accretion  te5_galaxy_floor  te5_galaxy_arms  te5_galaxy_core
 #   te5_engraving   te5_halo     te5_stream
 #   te5_moon        te5_star_window  (added in review round 1: docs/the-end/pass5-build-notes.md)
+#   te5_bezel_band  te5_trail  te5_galaxy_swirl  te5_energy_rings  (added in pass 5.2, which also rebuilt te5_engraving
+#   as the gold-and-black platform and gave te5_dial_inlay a polished-metal bevel)
 #   (te5_ribbon was dropped in review round 3: the void's ink ribbon became the lensed band, two beams that use
 #   te5_stream. Its generator is in the git history.)
 #
@@ -30,8 +32,10 @@
 #   * After downsampling the colour is un-premultiplied and BLED into the fully transparent pixels (pull-push fill), so
 #     Roblox's bilinear filtering and mip-maps never mix black into an edge: no dark or light fringes.
 #   * Smooth gradients (halo, discs) are dithered by +-1 LSB before 8-bit quantisation: no banding.
-#   * Monochrome lock: every pixel has R == G and R <= B <= R + 20 (a faint cool tint at most; the rebuilt seven are
-#     pure grey, R == G == B).
+#   * Metal strokes (dial inlay, engraving) are shaded from the outline's exact normal and depth (edge_frame): lit from
+#     the upper left on the dial, which never turns to the viewer; a ridge that ignores direction on the turning stage.
+#   * Monochrome lock: every pixel has R == G and R <= B <= R + 20 (a faint cool tint at most; the rebuilt seven, the
+#     four new pass-5.2 textures and te5_engraving are pure grey, R == G == B: the module tints some with ImageColor3).
 import argparse, json, math, os, sys, time
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
@@ -210,8 +214,9 @@ def quantise(x, rng, dither):
     return np.clip(np.rint(v), 0, 255).astype(np.uint8)
 
 
-def finish(name, P, A, dither=False, extra=None, seed=7):
-    """Downsample (P, A) from SS, un-premultiply, enforce monochrome, bleed, quantise and save. Returns the RGBA array."""
+def finish(name, P, A, dither=False, extra=None, seed=7, grey=False):
+    """Downsample (P, A) from SS, un-premultiply, enforce monochrome, bleed, quantise and save. Returns the RGBA array.
+    grey: a pure grey image (R = G = B exactly, for a texture the module tints): the dithered grey goes to all three."""
     P, A = box_down(P, A, SS)
     if extra is not None:          # post-downsample hook working on straight colour (e.g. single-pixel stars)
         C = np.where(A[..., None] > 1e-6, P / np.maximum(A, 1e-6)[..., None], 0.0)
@@ -229,7 +234,7 @@ def finish(name, P, A, dither=False, extra=None, seed=7):
     C = bleed(C, a8 > 0)
     rgb8 = quantise(np.clip(C, 0, 1), rng, dither)
     rgb8[..., 1] = rgb8[..., 0]                      # keep R == G exactly after dithering
-    rgb8[..., 2] = np.maximum(rgb8[..., 2], rgb8[..., 0])
+    rgb8[..., 2] = rgb8[..., 0] if grey else np.maximum(rgb8[..., 2], rgb8[..., 0])
     img = np.dstack([rgb8, a8])
     Image.fromarray(img, "RGBA").save(os.path.join(OUT, name + ".png"), optimize=True)
     return img
@@ -359,6 +364,33 @@ class Layer:
     def polyline(self, pts, w_out):
         for a, b in zip(pts[:-1], pts[1:]):
             self.capsule(a, b, w_out)
+
+    def circle(self, c, R, w_out):
+        """A small ring of radius R (r units) round c, stroke w_out output px."""
+        cv = self.cv
+        cx, cy = c[0] * cv.k, c[1] * cv.k; Rp = R * cv.k; hw = cv.px(w_out) / 2.0
+        reg = cv.region(cx - Rp - hw, cx + Rp + hw, cy - Rp - hw, cy + Rp + hw, self.pad)
+        if reg is None:
+            return
+        sl, X, Y = reg
+        sd = (np.abs(np.sqrt((X - cx) ** 2 + (Y - cy) ** 2) - Rp) - hw).astype(F32)
+        np.minimum(self.d[sl], sd, out=self.d[sl])
+
+    def arc(self, R, a0, a1, w_out):
+        """An arc of radius R round the centre from clock angle a0 to a1 (radians, a1 > a0: clockwise), round caps."""
+        cv = self.cv
+        Rp = R * cv.k; hw = cv.px(w_out) / 2.0
+        ts = np.linspace(a0, a1, 64)
+        xs, ys = Rp * np.sin(ts), Rp * np.cos(ts)
+        reg = cv.region(xs.min() - hw, xs.max() + hw, ys.min() - hw, ys.max() + hw, self.pad)
+        if reg is None:
+            return
+        sl, X, Y = reg
+        on = np.abs(wrap_pi(np.arctan2(X, Y) - 0.5 * (a0 + a1))) <= 0.5 * (a1 - a0)
+        d_on = np.abs(np.hypot(X, Y) - Rp) - hw
+        d_cap = np.minimum(np.hypot(X - xs[0], Y - ys[0]), np.hypot(X - xs[-1], Y - ys[-1])) - hw
+        sd = np.where(on, d_on, d_cap).astype(F32)
+        np.minimum(self.d[sl], sd, out=self.d[sl])
 
 
 def coverage(d, aa=1.0):
@@ -499,12 +531,128 @@ def star4(layer, c, phi, L, waist=0.24, short=1.0):
                     (cx - ax * ln, cy - ay * ln), (cx - bx * w, cy - by * w)])
 
 
+def seg_ring(cv, R, w_out, nseg, duty, phase):
+    """A ring of radius R broken into nseg arcs with round caps: duty = each arc's share of its period, phase = the clock
+    angle (radians) where the first arc starts. -> (signed distance in SS px, each pixel's place along its arc 0..1, or -1
+    in the gaps). Full canvas."""
+    X = cv.xs[None, :]; Y = cv.ys[:, None]
+    rr = cv.r_px
+    phi = np.arctan2(X, Y)
+    P = 2 * math.pi / nseg; La = duty * P
+    u = np.mod(phi - phase, P)
+    Rp = R * cv.k; hw = cv.px(w_out) / 2.0
+    a_s = phi - u                                         # where this period's arc starts
+    cap = lambda a: np.hypot(X - Rp * np.sin(a), Y - Rp * np.cos(a)) - hw
+    on = u <= La
+    d = np.where(on, np.abs(rr - Rp) - hw, np.minimum(cap(a_s + La), cap(a_s + P)))
+    return d.astype(F32), np.where(on, u / La, -1.0).astype(F32)
+
+
 # --------------------------------------------------------------------------------------------------------------------
-# 1. te5_dial_inlay  (1024^2, inlay plane 24.4 studs, r 1 = 12.2 studs)
+# metal shading inside strokes.  edge_frame() finds, for every pixel a stroke layer covers, the distance to the nearest
+# point of the strokes' outline and the outline's outward normal there.  The union's distance field is exact OUTSIDE the
+# strokes (inside, overlapping pieces such as serifs, brackets and crossed rhombi leave hidden edges), so the outline is
+# sampled from the exterior pixels next to it (q - d grad d, sub-pixel) and each covered pixel takes the nearest sample:
+# no seams where pieces overlap, and every straight edge has one exact normal (no shading noise).
+# --------------------------------------------------------------------------------------------------------------------
+
+def edge_frame(layer, reach_out=6.5):
+    """-> (rows, cols, depth, nx, ny) for the covered pixels (d < 0.5 SS px): depth in SS px (0 on the outline, < 0 in
+    the anti-aliased rim), (nx, ny) the outward normal (x right, y up). Deeper than reach_out output px: depth = reach,
+    normal 0."""
+    d = layer.d
+    M = d.shape[0]
+    R = int(math.ceil(reach_out * SS)) + 1
+    qi, qj = np.nonzero((d >= 0.0) & (d < 1.5))
+    keep = (qi > 0) & (qi < M - 1) & (qj > 0) & (qj < M - 1)
+    qi, qj = qi[keep], qj[keep]
+    gr = 0.5 * (d[qi + 1, qj] - d[qi - 1, qj]); gc = 0.5 * (d[qi, qj + 1] - d[qi, qj - 1])
+    gn = np.maximum(np.hypot(gr, gc), 1e-6)
+    nr, nc = (gr / gn).astype(F32), (gc / gn).astype(F32)
+    dq = d[qi, qj]
+    grids = [np.full((M + 2 * R, M + 2 * R), np.nan, F32) for _ in range(4)]
+    for g, v in zip(grids, (qi - dq * nr, qj - dq * nc, nr, nc)):
+        g[qi + R, qj + R] = v
+    BR, BC, NR, NC = grids
+    ci, cj = np.nonzero(d < 0.5)
+    pr, pc = ci.astype(F32), cj.astype(F32)
+    best = np.full(len(ci), np.inf, F32)
+    br = np.zeros(len(ci), F32); bc = np.zeros(len(ci), F32); onr = np.zeros(len(ci), F32); onc = np.zeros(len(ci), F32)
+    offs = sorted(((dy, dx) for dy in range(-R, R + 1) for dx in range(-R, R + 1) if dy * dy + dx * dx <= R * R),
+                  key=lambda o: o[0] * o[0] + o[1] * o[1])
+    for k, (dy, dx) in enumerate(offs):
+        rho = math.sqrt(dy * dy + dx * dx)
+        if k % 64 == 0 and rho > 2.0 and np.all(np.sqrt(best) + 1.6 < rho):
+            break                                         # (every pixel's nearest sample is already found)
+        ii = ci + (R + dy); jj = cj + (R + dx)
+        sr = BR[ii, jj]; sc = BC[ii, jj]
+        d2 = (sr - pr) ** 2 + (sc - pc) ** 2
+        m = d2 < best                                     # (NaN: no sample there)
+        if not m.any():
+            continue
+        best[m] = d2[m]; br[m] = sr[m]; bc[m] = sc[m]; onr[m] = NR[ii[m], jj[m]]; onc[m] = NC[ii[m], jj[m]]
+    found = np.isfinite(best)
+    depth = np.where(found, (br - pr) * onr + (bc - pc) * onc, float(R)).astype(F32)   # along the normal: exact on lines
+    nx = np.where(found, onc, 0.0).astype(F32); ny = np.where(found, -onr, 0.0).astype(F32)
+    return ci, cj, depth, nx, ny
+
+
+def bevel_lit(layer, light=(-1.0, 1.0), mid=225, hi=255, lo=170, width=2.0, gain=1.3):
+    """Polished metal lit from a fixed direction (the dial never turns to the viewer): each stroke's rim is shaded by its
+    outline normal against the light, edges facing it -> hi, facing away -> lo, fading into a flat middle (mid) over
+    `width` output px. -> grey value map (0..1) at SS resolution."""
+    ci, cj, depth, nx, ny = edge_frame(layer)
+    lx, ly = light; ln = math.hypot(lx, ly); lx, ly = lx / ln, ly / ln
+    ndl = np.clip(gain * (nx * lx + ny * ly), -1.0, 1.0)
+    b = 1.0 - sstep(0.4 * SS, width * SS, np.maximum(depth, 0.0))
+    v = mid + b * np.where(ndl > 0, (hi - mid) * ndl, (mid - lo) * ndl)
+    out = np.full(layer.d.shape, mid / 255.0, F32)
+    out[ci, cj] = v / 255.0
+    return out
+
+
+def bevel_ridge(layer, flank=205, ridge=255, power=1.15):
+    """A metal bevel that does not depend on the direction (for a plane that turns): every stroke rises to a bright
+    ridge along its centre line from slightly darker flanks. The ridge height at a pixel is its depth over the stroke's
+    local half-width (the deepest point straight in from the outline). -> grey value map (0..1) at SS resolution."""
+    ci, cj, depth, nx, ny = edge_frame(layer)
+    M = layer.d.shape[0]
+    dep = np.maximum(depth, 0.0)
+    D = np.zeros((M, M), F32); D[ci, cj] = dep
+    hw = dep.copy(); alive = np.ones(len(ci), bool)
+    for t in np.arange(0.5, 2.0 * 6.5 * SS, 0.5):        # walk straight in, until the stroke ends
+        ii = np.clip(np.rint(ci + t * ny).astype(np.int64), 0, M - 1)      # (in: -normal; rows run down)
+        jj = np.clip(np.rint(cj - t * nx).astype(np.int64), 0, M - 1)
+        v = D[ii, jj]
+        alive &= v > 0
+        if not alive.any():
+            break
+        hw = np.where(alive, np.maximum(hw, v), hw)
+    s = np.clip(dep / np.maximum(hw, 0.5), 0.0, 1.0) ** power
+    out = np.full((M, M), flank / 255.0, F32)
+    out[ci, cj] = (flank + (ridge - flank) * s) / 255.0
+    return out
+
+
+def shaded(layer, value, fill_a=1.0, ink_out=0.0, ink=(10, 10, 14), ink_a=0.9):
+    """Like inked(), but the stroke's grey comes from a per-pixel value map (bevel_lit / bevel_ridge)."""
+    d = layer.d
+    cf = coverage(d) * fill_a
+    ci = coverage(d - ink_out * SS) * ink_a if ink_out > 0 else np.zeros_like(d)
+    ink_rgb = np.asarray(ink, F32) / 255.0
+    A = cf + ci * (1.0 - cf)
+    P = (value * cf)[..., None] + ink_rgb * (ci * (1.0 - cf))[..., None]
+    return P.astype(F32), A.astype(F32)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# 1. te5_dial_inlay  (1024^2, inlay plane 24.4 studs, r 1 = 12.2 studs).  (pass 5.2) polished metal: the dial never
+#    turns relative to the viewer, so every stroke is lit from the canvas's upper left: its rim is shaded by the outline's
+#    normal against that light (255 on edges facing up-left, 170 facing down-right), its flat middle 225; 2 px ink.
 # --------------------------------------------------------------------------------------------------------------------
 
 def make_dial_inlay():
-    n = 1024; cv = Canvas(n); px = 1.0 / (n / 2.0)          # one output pixel in r units
+    n = 1024; cv = Canvas(n)
     L = Layer(cv, pad_out=4.0)
     L.ring(0.985, 3.0)                                      # (a) outer track
     L.ring(0.955, 2.0)                                      # (b) inner track
@@ -519,7 +667,8 @@ def make_dial_inlay():
     for h in range(12):                                     # (f) half-hour stars
         phi = math.radians(h * 30.0 + 15.0)
         star4(L, (0.865 * math.sin(phi), 0.865 * math.cos(phi)), phi, 0.025)
-    P, A = inked(L, fill=250, ink_out=2.0, ink=(10, 10, 14), ink_a=0.9)
+    metal = bevel_lit(L, light=(-1.0, 1.0), mid=225, hi=255, lo=170, width=2.0)
+    P, A = shaded(L, metal, ink_out=2.0, ink=(10, 10, 14), ink_a=0.9)
     return finish("te5_dial_inlay", P, A)
 
 
@@ -557,46 +706,115 @@ def make_subdial():
 
 
 # --------------------------------------------------------------------------------------------------------------------
-# 7. te5_engraving  (1024^2, the stage: a ground ring 56 studs across, r 1 = 28 studs; review round 3: it was 40 studs and
-#    barely cleared the dais rim, a faint thin ring of tiny numerals. Now it runs from just outside the rim (r 0.57 =
-#    15.95 studs) to r 0.99: fine guilloche ticks, Roman numerals 3 studs tall, an INKED minute track (a solid dark band
-#    with white ticks, lume batons at the five-minute marks) that reads on bright sand by day. Opaque: every stroke is
-#    white with an ink outline at alpha >= 0.9, the band is solid ink; nothing is semi-transparent)
+# 7. te5_engraving  (1024^2, the stage: a ground ring 56 studs across, r 1 = 28 studs).  (pass 5.2) "the gold-and-black
+#    circular platform with astronomical markings". An OPAQUE near-black base (14) over the whole annulus r 0.548-0.992
+#    (the dais's silver rim covers r < 0.555), the markings on it in light metal (205-255): the module tints the image
+#    gold (ImageColor3 ~228,196,132) at Brightness 1.0 by day and 1.25 at night, so the detail comes from contrast, not
+#    glow. The stage turns, so the bevel does not depend on the direction: every stroke rises from slightly darker flanks
+#    to a bright ridge along its centre line. Layout (as in review round 3, cleaner): rim lines r 0.585 and 0.985; rings
+#    0.605 0.632 0.688 0.725 0.875 0.918; a guilloche band of 120 ticks (0.638-0.682); Roman numerals 3 studs tall at r
+#    0.80 (IIII, tops outward), a touch bolder; half-hour stars; a 360-tick degree scale hanging in from the 0.918 ring;
+#    the minute band r 0.922-0.978 (ticks, batons every five minutes); and, dim (alpha <= 0.6), small constellations
+#    between the numerals. Every stroke >= 2 px (the image is ~18 px per stud).
 # --------------------------------------------------------------------------------------------------------------------
 
 def make_engraving():
     n = 1024; cv = Canvas(n)
-    r = cv.r_px / cv.k
-    # the inked minute track: a solid dark band (alpha 1, anti-aliased edges)
-    band = sstep(0.922, 0.926, r) * sstep(0.978, 0.974, r)
-    track = solid([16, 16, 20], band.astype(F32))
-    L = Layer(cv, pad_out=4.0)
-    # inner frame just outside the dais rim, and a fine guilloche tick band
-    for R, w in ((0.585, 3.0), (0.605, 1.6), (0.632, 1.6), (0.688, 1.6)):
+    rp = cv.r_px
+    base = solid([14, 14, 14], coverage(np.maximum(0.548 * cv.k - rp, rp - 0.992 * cv.k)))
+    L = Layer(cv, pad_out=12.0)          # (a wide pad: the constellations ask how far they are from every stroke)
+    # the rims and the rings
+    for R, w in ((0.585, 3.0), (0.605, 2.0), (0.632, 2.0), (0.688, 2.0), (0.725, 2.0), (0.875, 2.0), (0.918, 2.5),
+                 (0.985, 3.0)):
         L.ring(R, w)
+    # the guilloche band: 120 ticks, bolder at the hours
     for k in range(120):
-        phi = math.radians(k * 3.0)
-        L.radial_tick(phi, 0.638, 0.682, 2.6 if k % 10 == 0 else 1.2)
-    # the numerals (3 studs tall) and half-hour four-point stars
-    H = 0.107
-    radial_numerals(L, 0.80, H, 0.016 * H / 0.13 * 1.05, 0.007 * H / 0.13 * 1.2)
+        L.radial_tick(math.radians(k * 3.0), 0.638, 0.682, 3.0 if k % 10 == 0 else 2.0)
+    # the numerals (3 studs tall) and the half-hour stars
+    radial_numerals(L, 0.80, 0.107, 0.0150, 0.0074)
     for h in range(12):
         phi = math.radians(h * 30.0 + 15.0)
-        star4(L, (0.80 * math.sin(phi), 0.80 * math.cos(phi)), phi, 0.026)
-    L.ring(0.725, 2.0)
-    L.ring(0.875, 2.0)
-    # the minute track's white frame and its ticks (inside the dark band), lume batons every five minutes
-    L.ring(0.918, 2.4)
-    L.ring(0.982, 3.0)
+        star4(L, (0.80 * math.sin(phi), 0.80 * math.cos(phi)), phi, 0.026, waist=0.26)
+    # the degree scale, hanging in from the 0.918 ring (its inner edge is at 0.9156): 1, 5, 10 degrees and the hours
+    for deg in range(360):
+        ln, w = (0.030, 3.5) if deg % 30 == 0 else (0.024, 3.0) if deg % 10 == 0 else (0.016, 2.5) if deg % 5 == 0 \
+            else (0.009, 2.0)
+        L.radial_tick(math.radians(deg), 0.9156 - ln, 0.918, w)
+    # the minute band: minute ticks, and batons every five minutes
     for m in range(60):
         phi = math.radians(m * 6.0)
         if m % 5 == 0:
-            L.radial_tick(phi, 0.929, 0.971, 6.0)
+            L.radial_tick(phi, 0.929, 0.971, 7.0)
         else:
-            L.radial_tick(phi, 0.938, 0.962, 2.0)
-    marks = inked(L, fill=240, ink_out=2.0, ink=(20, 20, 22), ink_a=0.95)
-    P, A = over(marks, track)
-    return finish("te5_engraving", P, A)
+            L.radial_tick(phi, 0.937, 0.963, 2.5)
+    # astronomical markings: small constellations (3-5 stars: the brightest a tiny four-point star, the rest dots, joined
+    # by hairlines that stop short of each star) in the gaps beside the numerals, only where they keep clear of every
+    # stroke; about ten of them, never two in neighbouring gaps
+    rng = np.random.default_rng(707)
+    clear = lambda x, y: float(L.d[int(cv.M / 2 - y * cv.k), int(cv.M / 2 + x * cv.k)]) / SS   # output px to a stroke
+    found = []
+    for g in range(24):
+        a0 = 15.0 * g
+        pts = []
+        for attempt in range(8):
+            pts, want = [], int(rng.integers(3, 6))
+            for _ in range(600):
+                if len(pts) >= want:
+                    break
+                a = math.radians(rng.uniform(a0 + 0.5, a0 + 14.5)); rr = rng.uniform(0.745, 0.855)
+                x, y = rr * math.sin(a), rr * math.cos(a)
+                if clear(x, y) < 7.0:
+                    continue
+                ds = [math.hypot(x - p[0], y - p[1]) for p in pts]
+                if ds and (min(ds) < 0.024 or min(ds) > 0.060):
+                    continue
+                pts.append((x, y))
+            if len(pts) >= 3:
+                break
+        if len(pts) >= 3:
+            found.append((g, pts))
+    chosen = []
+    for i in rng.permutation(len(found)):
+        g, pts = found[i]
+        if any((g - c) % 24 in (0, 1, 23) for c, _ in chosen):
+            continue
+        chosen.append((g, pts))
+        if len(chosen) >= 10:
+            break
+    stars_l, dots_l, lines_l = Layer(cv, pad_out=2.0), Layer(cv, pad_out=2.0), Layer(cv, pad_out=2.0)
+    for g, pts in chosen:
+        # star-chart style: the brightest star a tiny four-point star, the rest dots of different sizes; the figure's
+        # lines are the shortest tree through them (like a real constellation's), faint, stopping short of each star
+        gap = []
+        for i, (x, y) in enumerate(pts):
+            if i == 0:
+                star4(stars_l, (x, y), math.atan2(x, y) + rng.uniform(-0.4, 0.4), 0.0095, waist=0.30)
+                gap.append(0.0095 * 0.7 + 0.005)
+            else:
+                rad = 0.0030 + 0.0020 * rng.random() ** 1.5
+                dots_l.disc((x, y), rad)
+                gap.append(rad + 0.005)
+        inside, edges = {0}, []
+        while len(inside) < len(pts):                     # Prim: the shortest tree through the stars
+            i, j = min(((i, j) for i in inside for j in range(len(pts)) if j not in inside),
+                       key=lambda e: math.hypot(pts[e[0]][0] - pts[e[1]][0], pts[e[0]][1] - pts[e[1]][1]))
+            inside.add(j); edges.append((i, j))
+        for i, j in edges:
+            (x0, y0), (x1, y1) = pts[i], pts[j]
+            ln = math.hypot(x1 - x0, y1 - y0)
+            ux, uy = (x1 - x0) / ln, (y1 - y0) / ln
+            if ln - gap[i] - gap[j] < 0.006:
+                continue
+            p0 = (x0 + ux * gap[i], y0 + uy * gap[i]); p1 = (x1 - ux * gap[j], y1 - uy * gap[j])
+            if min(clear(p0[0] + (p1[0] - p0[0]) * t, p0[1] + (p1[1] - p0[1]) * t) for t in np.linspace(0, 1, 12)) < 4.5:
+                continue
+            lines_l.capsule(p0, p1, 2.0)
+    stars = over(solid([240, 240, 240], coverage(stars_l.d) * 0.60), solid([236, 236, 236], coverage(dots_l.d) * 0.58))
+    cons = over(stars, solid([225, 225, 225], coverage(lines_l.d) * 0.30))
+    marks = shaded(L, bevel_ridge(L, flank=205, ridge=255))
+    P, A = over(marks, over(cons, base))
+    print(f"  engraving: {len(chosen)} constellations, {sum(len(p) for _, p in chosen)} stars")
+    return finish("te5_engraving", P, A, grey=True)
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -1035,6 +1253,63 @@ def make_galaxy_core():
     P, A = over(nd, over(core, over(ink, over(kn, arm))))
     cut = 1.0 - sstep(0.84, 0.85, r)
     return finish("te5_galaxy_core", (P * cut[..., None]).astype(F32), (A * cut).astype(F32), dither=True)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# 16. te5_galaxy_swirl  (1024^2, an 18-stud layer over the galaxy floor, r 1 = 9 studs, Top face, spinning CLOCKWISE
+#     ~30 deg/s): a finer, faster swirl. 8 thin luminous filaments in a tight log spiral (pitch 14) with the floor's
+#     winding (counter-clockwise outward, image +y up: the clockwise spin makes them trail), each with its own start,
+#     end, brightness and slow meander, beaded into knots and broken by gaps, in a soft glow; long fine gas threads
+#     between them, dust grains, and three thin broken dark lanes on filaments' concave edges. Transparent between the
+#     filaments (it lies over the opaque floor): mean alpha ~0.17, cores up to ~0.82. Empty inside r 0.10 (the balance
+#     wheel), fading in from r 0.12 and out by 0.95.
+# --------------------------------------------------------------------------------------------------------------------
+
+def make_galaxy_swirl():
+    n = 1024
+    seed = 1601
+    X, Y, r, th = disc_grid(n)
+    rng = np.random.default_rng(seed)
+    # (pitch 14: tight, but still a vortex from Roblox's low default camera, where 10-11 deg spirals read as rings)
+    pitch = 14.0; k = 1.0 / math.tan(math.radians(pitch)); sinp = math.sin(math.radians(pitch)); r0 = 0.2
+    span = sstep(0.10, 0.24, r) * sstep(0.95, 0.84, r)
+    f = lambda sd, lam, e, b=1.1: spiral_field(r, th, pitch, sd, lam, n, elong=e, beta=b)
+    lum = np.zeros_like(r); wing = np.zeros_like(r); lane = np.zeros_like(r)
+    NF = 8
+    for j in range(NF):
+        t0 = 2 * math.pi * j / NF + rng.normal(0.0, 0.10)
+        wj = (0.0045 + 0.0085 * np.clip(r, 0.0, 1.0)) * rng.uniform(0.85, 1.2)     # across the filament (r units)
+        meander = 0.45 * f(seed + 10 + j, (30, 140), 7.0, 1.4)                      # (in filament widths)
+        xa = across_arm(r, th, t0, k, r0, sinp, wj) - meander
+        ra, rb = rng.uniform(0.12, 0.20), rng.uniform(0.78, 0.97)
+        life = sstep(ra, ra + 0.08, r) * sstep(rb, rb - 0.14, r)
+        beads = unit01(f(seed + 30 + j, (8, 40), 4.0, 1.0), 1.2)
+        gaps = breakup(unit01(f(seed + 50 + j, (14, 70), 5.0, 1.2), 1.1), 0.15, 1.6)
+        b = rng.uniform(0.70, 1.0) * (0.60 + 0.40 * beads) * (0.30 + 0.70 * gaps) * life
+        lum = np.maximum(lum, b * np.exp(-xa * xa))
+        wing = np.maximum(wing, b * np.exp(-(xa / 4.5) ** 2))
+        if j in (1, 4, 6):                                # dark lanes along the concave edge of three filaments
+            brk = breakup(unit01(f(seed + 70 + j, (8, 40), 5.0, 1.1), 1.1), 0.35, 1.9)
+            lane = np.maximum(lane, np.exp(-((xa - 1.7) / 0.45) ** 2) * brk * life)
+    # faint gas threads between the filaments: long fine streamers along the spiral (a comb of thin lines in the spiral
+    # phase, wandering a little and coming and going along their length)
+    psi = th - k * np.log(np.maximum(r, 1e-3))
+    wan = 1.4 * spiral_noise(r, th, k, seed + 90, size=(128, 1024), beta=1.4, fmin=2.0, ylr=10.0)
+    threads = (0.5 + 0.5 * np.cos(29.0 * psi + wan)) ** 14
+    threads = threads * breakup(unit01(f(seed + 91, (16, 80), 6.0, 1.2), 1.1), 0.30, 1.7)
+    a_light = np.clip(0.85 * lum + 0.42 * wing + 0.32 * threads, 0.0, 0.82) * span
+    grain = np.clip(star_grain(rng, n, np.clip(0.12 + 0.9 * lum + 0.3 * wing, 0, 1) * span, 45000, 0.95,
+                               vmin=0.25, vspread=0.55, blur=0.6) * 1.2, 0.0, 0.75) * span
+    Lw = 0.86 + 0.14 * unit01(f(seed + 95, (20, 80), 3.0, 1.2), 1.2)
+    white = solid(np.dstack([Lw, Lw, Lw]).astype(F32), a_light.astype(F32))
+    pts_l = solid(np.ones((1, 1, 3), F32), grain.astype(F32))
+    ink = solid([9, 9, 9], np.clip(lane * 0.55 * span, 0.0, 1.0).astype(F32))
+    P, A = over(ink, over(pts_l, white))
+    img = finish("te5_galaxy_swirl", P, A, dither=True, grey=True)
+    a = img[..., 3] / 255.0
+    yy, xx = np.mgrid[0:n, 0:n]; rr = np.hypot(xx + 0.5 - n / 2, yy + 0.5 - n / 2) / (n / 2)
+    print(f"  galaxy swirl: mean alpha (r < 0.95) = {a[rr < 0.95].mean():.3f}, max {a.max():.2f}")
+    return img
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -1731,6 +2006,176 @@ def make_stream():
 
 
 # --------------------------------------------------------------------------------------------------------------------
+# 14. te5_bezel_band  (1024^2): the engraving on the near-black inset ring set into the clock's silver bezel. A 27.4-stud
+#     plane (r 1 = 13.7 studs) that turns about a degree a second in front of a ring of dark parts; the dark ring is
+#     geometry, the texture holds only the light strokes, and EVERY one lies inside the band those parts cover,
+#     r 0.936-0.990 (BAND_R, 12.82-13.56 studs; checked: outside it a stroke would float over bright silver). Polished
+#     edges at r 0.940 and 0.986, each a bright 2.5 px line with a dim groove on the band side (a bevelled inset); a
+#     360-tick degree scale hanging from the outer edge; four-point stars at the hours and small ringed planets at the
+#     half hours (r 0.958); in the inner half a faint zodiac of dots, hairline arcs and constellation lines (alpha 0.45).
+#     ~37 px per stud: the band is ~28 px wide.
+# --------------------------------------------------------------------------------------------------------------------
+
+BAND_R = (0.936, 0.990)
+
+
+def make_bezel_band():
+    n = 1024; cv = Canvas(n); px = 1.0 / (n / 2.0)
+    r = cv.r_px / cv.k
+    # (a) the polished edges, and the groove beside each on the band side
+    edge = Layer(cv, pad_out=3.0)
+    edge.ring(0.940, 2.5); edge.ring(0.986, 2.5)
+    groove = Layer(cv, pad_out=3.0)
+    groove.ring(0.940 + 1.75 * px, 1.0); groove.ring(0.986 - 1.75 * px, 1.0)
+    # (b) the degree scale hanging from the outer edge (from its lip, 0.986 - 1.25 px; the ticks run on under the line)
+    marks = Layer(cv, pad_out=3.0)
+    lip = 0.986 - 1.25 * px
+    for deg in range(360):
+        ln, w = (0.012, 3.0) if deg % 30 == 0 else (0.016, 2.4) if deg % 10 == 0 else (0.011, 1.8) if deg % 5 == 0 \
+            else (0.006, 1.2)                             # (the hours: shorter and bolder, a gap above the star)
+        marks.radial_tick(math.radians(deg), lip - ln, 0.986, w)
+    # (c) a four-point star at each hour, a ringed planet at each half hour
+    RS = 0.958
+    for h in range(12):
+        phi = math.radians(h * 30.0)
+        star4(marks, (RS * math.sin(phi), RS * math.cos(phi)), phi, 0.010, waist=0.25, short=0.8)
+        phi = math.radians(h * 30.0 + 15.0)
+        c = (RS * math.sin(phi), RS * math.cos(phi))
+        marks.circle(c, 0.0046, 1.1)
+        marks.disc(c, 0.0016)
+    # (d) the zodiac, in the inner half between each star and planet (clock angles a0 + 2.2 .. a0 + 12.8 deg, r 0.949 -
+    #     0.9605, clear of the groove and the tick ends): an orbit (a hairline arc with planets on it), a little
+    #     constellation (dots joined by hairlines that stop short of them), or a lone pair of dots
+    zod = Layer(cv, pad_out=2.0)
+    rng = np.random.default_rng(1401)
+    for g in range(24):
+        a0 = 15.0 * g
+        kind = rng.choice(["orbit", "stars", "stars", "pair"], p=[0.35, 0.25, 0.25, 0.15])
+        if kind == "orbit":
+            Ro = float(rng.choice([0.9500, 0.9540]))
+            s0 = a0 + rng.uniform(2.2, 4.0); s1 = a0 + rng.uniform(10.5, 12.8)
+            zod.arc(Ro, math.radians(s0), math.radians(s1), 0.8)
+            for a in rng.uniform(s0 + 1.0, s1 - 1.0, int(rng.integers(1, 3))):
+                zod.disc((Ro * math.sin(math.radians(a)), Ro * math.cos(math.radians(a))), 0.0021)
+        elif kind == "stars":
+            m = int(rng.integers(3, 5))
+            angs = np.sort(rng.uniform(a0 + 2.2, a0 + 12.8, m))
+            rads = rng.uniform(0.9490, 0.9605, m)
+            P_ = [(R_ * math.sin(math.radians(a)), R_ * math.cos(math.radians(a))) for a, R_ in zip(angs, rads)]
+            sz = rng.uniform(0.0015, 0.0022, m)
+            for (x, y), s in zip(P_, sz):
+                zod.disc((x, y), s)
+            for i in range(m - 1):
+                (x0, y0), (x1, y1) = P_[i], P_[i + 1]
+                ln = math.hypot(x1 - x0, y1 - y0)
+                g0, g1 = sz[i] + 1.3 * px, sz[i + 1] + 1.3 * px
+                if ln - g0 - g1 > 2.0 * px:
+                    ux, uy = (x1 - x0) / ln, (y1 - y0) / ln
+                    zod.capsule((x0 + ux * g0, y0 + uy * g0), (x1 - ux * g1, y1 - uy * g1), 0.75)
+        else:
+            for a in rng.uniform(a0 + 3.0, a0 + 12.0, 2):
+                R_ = rng.uniform(0.949, 0.959)
+                zod.disc((R_ * math.sin(math.radians(a)), R_ * math.cos(math.radians(a))), 0.0017)
+    E = inked(edge, fill=250, ink_out=0.0)
+    M_ = inked(marks, fill=245, ink_out=1.0, ink=(20, 20, 20), ink_a=0.6)
+    Z = solid([225, 225, 225], coverage(zod.d) * 0.45)
+    G = solid([60, 60, 60], coverage(groove.d) * 0.5)
+    P, A = over(E, over(M_, over(Z, G)))
+    # the hard rule, kept by construction and enforced here too: nothing outside the dark band
+    win = sstep(BAND_R[0] + 0.0002, BAND_R[0] + 0.0012, r) * sstep(BAND_R[1] - 0.0003, BAND_R[1] - 0.0013, r)
+    return finish("te5_bezel_band", (P * win[..., None]).astype(F32), (A * win).astype(F32), grey=True)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# 15. te5_trail  (1024^2): a comet-shaped arc of light, used twice: on a 25-stud plane riding the clock's seconds hand
+#     (r 1 = 12.5 studs) it lights the dial's minute track, and on the 56-stud stage (r 1 = 28 studs) it sweeps the
+#     stage's outer minute band. White, alpha only. Radial: a core centred r 0.946 (half-width 0.010 at the head, alpha 1)
+#     in a soft glow (alpha <= 0.35) out to +-0.030; alpha 0 inside r 0.88 and outside 0.995. The HEAD is at 12 o'clock
+#     (canvas top centre) with a quick soft leading edge over ~3 deg clockwise of 12 (canvas +x); the TAIL runs
+#     COUNTER-clockwise from 12 (toward XI, the canvas's upper left) for ~80 deg, fading as exp(-dtheta / 22 deg), its
+#     core narrowing a little; a few faint sparkle grains in its first 30 deg.
+# --------------------------------------------------------------------------------------------------------------------
+
+TRAIL_R = 0.946
+
+
+def make_trail():
+    n = 1024
+    X, Y, r, th = disc_grid(n)
+    dth = -np.degrees(np.arctan2(X, Y))                   # degrees counter-clockwise from 12 (the tail side is +)
+    tail = np.maximum(dth, 0.0)
+    s_ahead = r * np.radians(np.maximum(-dth, 0.0))       # how far ahead of the head (r units, along the arc)
+    grow = 1.0 - np.exp(-tail / 30.0)
+    w = 0.010 * (1.0 - 0.30 * grow)                       # the core narrows along the tail
+    soft = 0.0022 + 0.0022 * grow                         # and its edge softens
+    dr = np.abs(r - TRAIL_R)
+    # the head is a rounded cap: ahead of 12 the profiles fall with the distance from the head's centre line end, the
+    # core's edge softening toward the front (a soft but quick leading edge, gone ~3 deg ahead)
+    dc = np.hypot(dr, s_ahead / 1.3)
+    dg = np.hypot(dr, s_ahead / 1.2)
+    soft = soft + 0.0060 * sstep(0.0, 0.008, s_ahead)
+    core = sstep(w + soft, w - soft, dc)
+    coma = 0.27 + 0.07 * np.exp(-tail / 5.0)              # the glow is strongest round the head (<= 0.34)
+    glow = coma * np.exp(-np.maximum(dg - 0.008, 0.0) / 0.006) * sstep(0.031, 0.025, dg)
+    fall = np.exp(-tail / 22.0) * sstep(88.0, 62.0, tail)
+    a = screen(fall * core, fall * glow)
+    # sparkle grains in the first 30 degrees of the tail, in the glow beside the core
+    rng = np.random.default_rng(1501)
+    G = 38
+    gd = 1.0 + 29.0 * rng.random(G) ** 1.25
+    gr_ = TRAIL_R + np.where(rng.random(G) < 0.5, -1.0, 1.0) * rng.uniform(0.0115, 0.026, G)
+    ang = np.radians(-gd)
+    sx, sy = r_to_px(n, gr_ * np.sin(ang), gr_ * np.cos(ang))
+    grains = soft_dots(r.shape, sx, sy, rng.uniform(0.45, 0.8, G) * SS,
+                       rng.uniform(0.25, 0.5, G) * (0.55 + 0.45 * np.exp(-gd / 22.0)))
+    a = screen(a, grains) * sstep(0.88, 0.895, r) * sstep(0.995, 0.982, r)
+    a = a.astype(F32)
+    return finish("te5_trail", np.dstack([a, a, a]).astype(F32), a, dither=True, grey=True)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# 17. te5_energy_rings  (1024^2): concentric energy rings on a 28-stud layer over the galaxy pool (r 1 = 14 studs; the
+#     pool's silver rim starts at ~14.75 studs, so everything stays inside r 0.99), Top face, turning +4 deg/s. Six thin
+#     rings, some solid, some broken into arcs (different counts and phases, so the turn shows; one ring's arcs swell in
+#     the middle like pulses), a fine ring of 120 ticks at r 0.80, and an outer boundary ring at r 0.965 (3 px, alpha
+#     0.85) with a soft inner glow. White, alpha 0 elsewhere.
+# --------------------------------------------------------------------------------------------------------------------
+
+def make_energy_rings():
+    n = 1024; cv = Canvas(n); px = 1.0 / (n / 2.0)
+    r = cv.r_px / cv.k
+
+    def ring(R, w, a):
+        L = Layer(cv); L.ring(R, w)
+        return coverage(L.d) * a
+
+    def arcs(R, w, a, nseg, duty, phase_deg, pulse=False):
+        d, t = seg_ring(cv, R, w, nseg, duty, math.radians(phase_deg))
+        c = coverage(d) * a
+        if pulse:                                          # brightest mid-arc, dimmer toward the round ends
+            c = c * np.where(t >= 0, 0.30 + 0.70 * np.sin(math.pi * np.clip(t, 0, 1)) ** 0.7, 0.30)
+        return c
+    parts = [ring(0.220, 1.5, 0.34),
+             arcs(0.340, 2.0, 0.46, 24, 0.60, 4.0),
+             arcs(0.470, 1.2, 0.30, 12, 0.82, 11.0),
+             arcs(0.600, 2.5, 0.55, 8, 0.70, 20.0, pulse=True),
+             arcs(0.730, 1.8, 0.40, 18, 0.42, 7.0),
+             ring(0.860, 1.0, 0.26)]
+    T = Layer(cv)
+    for k in range(120):                                  # the tick ring (the hours a little longer)
+        if k % 10 == 0:
+            T.radial_tick(math.radians(k * 3.0), 0.788, 0.812, 1.8)
+        else:
+            T.radial_tick(math.radians(k * 3.0), 0.793, 0.807, 1.4)
+    parts.append(coverage(T.d) * 0.40)
+    parts.append(ring(0.965, 3.0, 0.85))                  # the boundary, with a soft glow falling inward from it
+    inward = (0.965 - 1.5 * px) - r
+    parts.append(np.where(inward > 0, 0.25 * np.exp(-inward / 0.0095) * sstep(0.032, 0.022, inward), 0.0).astype(F32))
+    A = screen(*parts).astype(F32)
+    return finish("te5_energy_rings", np.dstack([A, A, A]).astype(F32), A, dither=True, grey=True)
+
+
+# --------------------------------------------------------------------------------------------------------------------
 # contact sheets + in-game-size mock-ups (sheets/).  These are review aids, not uploads.  They composite the PNGs the
 # way a SurfaceGui with LightInfluence 0 draws them: colour x Brightness (clipped), over the background, plus a rough
 # bloom for the part above 1 at night (place Bloom: threshold ~2 in Studio's units; here simply "above white").
@@ -1841,11 +2286,12 @@ def label(im, text, xy, sz=15, fill=(235, 235, 240)):
 
 
 SHEET_ORDER = ["te5_dial_inlay", "te5_subdial", "te5_accretion", "te5_galaxy_floor", "te5_galaxy_arms", "te5_galaxy_core",
-               "te5_engraving", "te5_halo", "te5_stream", "te5_moon", "te5_star_window"]
+               "te5_engraving", "te5_halo", "te5_stream", "te5_moon", "te5_star_window", "te5_bezel_band", "te5_trail",
+               "te5_galaxy_swirl", "te5_energy_rings"]
 
 
 def sheet_overview():
-    """All 12 textures over the dark and the sky background (tiles 400 px; beams tiled 2x along U)."""
+    """All 15 textures over the dark and the sky background (tiles 400 px; beams tiled 2x along U)."""
     tile, pad, cols = 400, 14, 4
     rows = math.ceil(len(SHEET_ORDER) / cols)
     paths = []
@@ -1884,7 +2330,10 @@ def sheet_zoom():
              ("te5_galaxy_core", (160, 160, 352, 352), 2), ("te5_halo", (256, 0, 512, 256), 1),
              ("te5_stream", (0, 0, 512, 128), 2),
              ("te5_moon", (250, 600, 650, 900), 1), ("te5_moon", (230, 250, 630, 510), 1),
-             ("te5_star_window", (420, 420, 620, 620), 2)]
+             ("te5_star_window", (420, 420, 620, 620), 2),
+             ("te5_engraving", (700, 100, 900, 260), 2), ("te5_bezel_band", (400, 0, 624, 40), 4),
+             ("te5_bezel_band", (986, 400, 1024, 624), 3), ("te5_trail", (180, 0, 600, 140), 2),
+             ("te5_galaxy_swirl", (560, 300, 860, 560), 2), ("te5_energy_rings", (480, 0, 700, 200), 2)]
     paths = []
     for bgname, bg in (("dark", BG_DARK), ("sky", BG_SKY)):
         tiles = []
@@ -1908,17 +2357,24 @@ def sheet_zoom():
 
 
 def insitu_clock():
-    """The dial at its in-game size (bezel 28 studs ~ 430 px, as in the pass-4 Studio capture): silver bezel, dark
-    chapter ring + te5_dial_inlay, the skeleton centre showing the movement plate's te5_star_window (Brightness 1.1 / 2.0),
-    the dark sub-dial + te5_subdial. Day (Brightness 1.6/1.4)
-    over the sky and night (2.6/2.2, bloom) over the night sky."""
+    """The dial at its in-game size (bezel 28 studs ~ 430 px, as in the pass-4 Studio capture): silver bezel with its
+    near-black inset band (pass 5.2: dark parts r 12.70-13.62 studs + te5_bezel_band, 27.4 studs, Brightness 1.3 / 1.8,
+    Color 236,236,240), dark chapter ring + te5_dial_inlay, the skeleton centre showing the movement plate's
+    te5_star_window (Brightness 1.1 / 2.0), the dark sub-dial + te5_subdial, and the seconds hand's te5_trail (25 studs,
+    1.4 / 2.4) with its head at 2 o'clock. Day (inlay 1.6, sub-dial 1.4) over the sky and night (2.6/2.2, bloom) over
+    the night sky."""
     S = 15.4                                   # px per stud
     W, H = 520, 520
     cx = cy = W / 2
     out = []
+    band = load("te5_bezel_band"); trail = load("te5_trail")
     for mode in ("day", "night"):
         cp = Comp(W, H, BG_SKY if mode == "day" else (20, 22, 30))
         cp.disc(cx, cy, 12.2 * S, 14.0 * S, (176, 180, 190) if mode == "day" else (120, 124, 134))   # bezel
+        cp.disc(cx, cy, 12.70 * S, 13.62 * S, (30, 31, 35))                                           # inset band
+        bb = resize_premult(rotate_rgba(band, -12.0), int(27.4 * S), int(27.4 * S))
+        cp.put(bb, int(cx - bb.shape[1] / 2), int(cy - bb.shape[0] / 2), bright=1.3 if mode == "day" else 1.8,
+               color=(236, 236, 240))
         # the movement plate (24.6 studs, black) with te5_star_window on it, seen through the skeleton dial
         cp.disc(cx, cy, 0, 12.3 * S, (12, 12, 16))
         sw = resize_premult(load("te5_star_window"), int(24.6 * S), int(24.6 * S))
@@ -1927,6 +2383,8 @@ def insitu_clock():
         cp.disc(cx, cy, 9.4 * S, 12.2 * S, (44, 46, 52))                                              # chapter ring
         inl = resize_premult(load("te5_dial_inlay"), int(24.4 * S), int(24.4 * S))
         cp.put(inl, int(cx - inl.shape[1] / 2), int(cy - inl.shape[0] / 2), bright=1.6 if mode == "day" else 2.6)
+        tr = resize_premult(rotate_rgba(trail, -60.0), int(25.0 * S), int(25.0 * S))      # the hand at 2 o'clock
+        cp.put(tr, int(cx - tr.shape[1] / 2), int(cy - tr.shape[0] / 2), bright=1.4 if mode == "day" else 2.4)
         cp.disc(cx, cy, 0, 3.25 * S, (30, 31, 36))                                                    # sub-dial
         sd = resize_premult(load("te5_subdial"), int(6.5 * S), int(6.5 * S))
         cp.put(sd, int(cx - sd.shape[1] / 2), int(cy - sd.shape[0] / 2), bright=1.4 if mode == "day" else 2.2)
@@ -1949,13 +2407,16 @@ def _ground_quad(cx, cy, R, elev_deg, W, H, persp=0.18):
 
 
 def insitu_dais(t=3.0):
-    """The dais stack at in-game scale: engraving (56) on the plaza, dark base (29.6) + te5_galaxy_floor, the floating
-    arms (21, +0.42) and core (12, +0.66) at their relative spins after t seconds, silver rim (31.1). Top-down and from a
-    32-degree camera, by day and by night."""
+    """The dais stack at in-game scale: the stage (te5_engraving, 56, tinted gold, Brightness 1.0 / 1.25) on the plaza
+    with the golden sweep (te5_trail, 56, Color 255,232,186, 1.5 / 2.5) on its minute band, dark base (29.6) +
+    te5_galaxy_floor, the energy rings (28, +4 deg/s, 1.2 / 2.2) and the fine swirl (18, -30 deg/s, 1.3 / 2.4) over it
+    (pass 5.2; their lifts here are guesses), the floating arms (21, +0.42) and core (12, +0.66) at their relative spins
+    after t seconds, silver rim (31.1). Top-down and from a 32-degree camera, by day and by night."""
     S = 10.0                                   # px per stud (the 56-stud stage fits the 600 px tile)
     out = []
     eng = load("te5_engraving"); flo = load("te5_galaxy_floor"); arm = load("te5_galaxy_arms")
-    cor = load("te5_galaxy_core")
+    cor = load("te5_galaxy_core"); swp = load("te5_trail"); rng_ = load("te5_energy_rings"); swl = load("te5_galaxy_swirl")
+    GOLD = (228, 196, 132); WHITE = (255, 255, 255)
     for mode in ("day", "night"):
         for view in ("top", "persp"):
             W, H = 600, 600 if view == "top" else 380
@@ -1964,12 +2425,15 @@ def insitu_dais(t=3.0):
             cx, cy = W / 2, H / 2 if view == "top" else H * 0.52
             elev = 90 if view == "top" else 32
             day = mode == "day"
-            for img, dia, rate, br, lift in [(eng, 56.0, 2.5, 1.0 if day else 2.0, 0.0),
-                                             (None, 29.6, 0, 0, 0.06),
-                                             (flo, 29.6, -6.0, 1.3 if day else 2.4, 0.15),
-                                             (None, 31.1, 0, 0, 0.9),
-                                             (arm, 21.0, 9.0, 1.4 if day else 2.4, 0.42),
-                                             (cor, 12.0, -16.0, 1.5 if day else 2.6, 0.66)]:
+            for img, dia, rate, br, lift, col in [(eng, 56.0, 2.5, 1.0 if day else 1.25, 0.0, GOLD),
+                                                  (swp, 56.0, -20.0, 1.5 if day else 2.5, 0.01, (255, 232, 186)),
+                                                  (None, 29.6, 0, 0, 0.06, WHITE),
+                                                  (flo, 29.6, -6.0, 1.3 if day else 2.4, 0.15, WHITE),
+                                                  (rng_, 28.0, 4.0, 1.2 if day else 2.2, 0.2, WHITE),
+                                                  (swl, 18.0, -30.0, 1.3 if day else 2.4, 0.25, WHITE),
+                                                  (None, 31.1, 0, 0, 0.9, WHITE),
+                                                  (arm, 21.0, 9.0, 1.4 if day else 2.4, 0.42, WHITE),
+                                                  (cor, 12.0, -16.0, 1.5 if day else 2.6, 0.66, WHITE)]:
                 R = dia / 2 * S
                 if img is None and dia == 29.6:          # D1 base disc
                     src = np.zeros((256, 256, 4), F32); yy, xx = np.mgrid[0:256, 0:256]
@@ -1988,11 +2452,11 @@ def insitu_dais(t=3.0):
                 src = resize_premult(src, size, size) if view == "top" else src
                 yoff = -lift * S * math.cos(math.radians(elev)) if view != "top" else 0
                 if view == "top":
-                    cp.put(src, int(cx - R), int(cy - R), bright=br)
+                    cp.put(src, int(cx - R), int(cy - R), bright=br, color=col)
                 else:
                     q = _ground_quad(cx, cy + yoff, R, elev, W, H)
                     wimg = warp_rgba(resize_premult(src, min(1024, size * 2), min(1024, size * 2)), (W, H), q)
-                    cp.put(wimg, 0, 0, bright=br)
+                    cp.put(wimg, 0, 0, bright=br, color=col)
             im = cp.image(bloom=0.0 if day else 1.0)
             label(im, f"dais {mode} {view} (t={t:.0f}s)", (8, 6), 14, fill=(20, 20, 24) if day else (235, 235, 240))
             out.append(im)
@@ -2199,9 +2663,12 @@ MANIFEST = [
     ("te5_dial_inlay", "dialInlay", "dialOuter", "1024x1024",
      "Inlaid Roman numerals, minute track and inner ring on the solid dark chapter ring (C3 inlay plane, 24.4 "
      "studs)",
-     "C3 SurfaceGui Face=Back, image +y toward XII. r 1 = 12.2 studs. White 250 strokes, 2 px ink (10,10,14, "
-     "0.9). Radial numerals (tops outward, XII upright), IIII at 4 as on clock dials. Half-hour 4-point stars, "
-     "tip radius 0.025."),
+     "C3 SurfaceGui Face=Back, image +y toward XII. r 1 = 12.2 studs. Pass 5.2: polished metal, lit from the "
+     "canvas's upper left (the dial never turns to the viewer): each stroke's rim is shaded by its outline normal "
+     "against that light, ~255 on edges facing up-left, ~170 facing down-right, a flat 225 middle (numerals, hour "
+     "batons, minute ticks, track rings and the stars alike), 2 px ink (10,10,14, 0.9) kept. Layout and radii as "
+     "before: tracks r 0.985 / 0.955, batons 0.94-0.985, radial numerals at 0.865 (tops outward, XII upright, IIII "
+     "at 4 as on clock dials), inner ring 0.775, half-hour 4-point stars (tip radius 0.025)."),
     ("te5_subdial", "subdial", "dialInner", "512x512",
      "Engraved guilloche face of the 6.5-stud sub-dial at the clock centre (C6)",
      "C6 Face=Left. 24-circle rosette (alpha 0.85, no ink) kept off r < 0.15, which the hub stack covers "
@@ -2241,12 +2708,18 @@ MANIFEST = [
      "(COUNTER-clockwise outward). Pitch now 15 deg (was 10: from Roblox's low default camera the 10-deg arms "
      "read as concentric rings; 15 reads as a vortex). Brightness 1.5 / 2.6."),
     ("te5_engraving", "engraving", "gring", "1024x1024",
-     "The stage: an engraved clock ring on the ground round the dais (D5, 56 studs; review round 3, was 40)",
-     "r 1 = 28 studs. From just outside the dais rim (r 0.585) to r 0.99: a fine guilloche tick band (r "
-     "0.64-0.68), Roman numerals 3 studs tall at r 0.80 with half-hour four-point stars, and an INKED minute "
-     "track (a solid ink band r 0.925-0.975, alpha 1) with white ticks and lume batons every five minutes. "
-     "White 240 strokes with a 2 px ink (20) outline at alpha 0.95: nothing semi-transparent. Day Brightness "
-     "1.0 (the ink carries the day), night 2.0."),
+     "The stage: the gold-and-black circular platform with astronomical markings round the dais (D5, 56 studs; "
+     "rebuilt in pass 5.2)",
+     "r 1 = 28 studs. Grey: the module tints it gold (ImageColor3 ~228,196,132), Brightness 1.0 by day, 1.25 at "
+     "night (detail from contrast, not glow). An OPAQUE near-black base (14, alpha 1) over the whole annulus r "
+     "0.548-0.992 (the dais's silver rim covers r < 0.555), alpha 0 inside and outside (1 px edges). The markings "
+     "are light metal (205-255) with a bevel that ignores direction (the stage turns): a bright ridge along each "
+     "stroke's centre line, darker flanks. Rim lines r 0.585 and 0.985 (3 px); rings 0.605 0.632 0.688 0.725 "
+     "0.875 (2 px) and 0.918 (2.5 px); a guilloche band of 120 ticks r 0.638-0.682; Roman numerals 3 studs tall at "
+     "r 0.80 (IIII at 4, tops outward, XII upright; stems 0.015 r) with half-hour four-point stars; a 360-tick "
+     "degree scale hanging in from the 0.918 ring (1 / 5 / 10 deg and the hours); the minute band r 0.922-0.978 "
+     "with minute ticks and 7 px batons every five minutes; and between the numerals ten small constellations "
+     "(dots, tiny four-point stars, faint lines; alpha <= 0.6). Every stroke >= 2 px (~18 px per stud)."),
     ("te5_halo", "halo", "rim", "512x512",
      "Rim-only halo: moon halo billboard (15 studs), night bezel corona (C10, 44 studs) and the void's horizon "
      "glow particles (11.2 studs); its ring peaks at r 0.73, and the module scales the three by RIM_R while "
@@ -2283,6 +2756,45 @@ MANIFEST = [
      "dimmed behind the dust, the 8 brightest with short diffraction spikes; ~260,000 unresolved stars as the "
      "band's grain; 34 small distant galaxies. Turns with the centre wheel (+6 deg/s). Brightness 1.1 / 2.0. "
      "Until uploaded it falls back to the pass-4 galaxy (galaxy4), drawn dimmer."),
+    ("te5_bezel_band", "bezelBand", None, "1024x1024",
+     "The engraving on the near-black inset ring set into the clock's silver bezel (pass 5.2): a 27.4-stud plane "
+     "turning ~1 deg/s in front of a ring of dark parts",
+     "r 1 = 13.7 studs, image +y = XII. HARD RULE (checked): every pixel with alpha > 0.02 lies in r 0.936-0.990 "
+     "(12.82-13.56 studs), the band the dark parts cover; outside it a stroke would float over the silver. Light "
+     "strokes on alpha 0: polished edges at r 0.940 and 0.986 (250, 2.5 px), each with a dim groove (grey 60, alpha "
+     "0.5, 1 px) on the band side; a 360-tick degree scale hanging from the outer edge (1 deg 0.006 r / 1.2 px, "
+     "5 deg 0.011 / 1.8 px, 10 deg 0.016 / 2.4 px; at the hours 0.012 / 3 px, so a gap stays above the star); "
+     "four-point stars (tip 0.010 r) at the hours and small ringed planets at the half hours, centred r 0.958; "
+     "in the inner half a faint zodiac of dots, hairline arcs and constellation lines (alpha 0.45). Strokes 245 "
+     "with a 1 px ink outline (20, alpha 0.6). Pure grey. ~37 px per stud (the band is ~28 px wide)."),
+    ("te5_trail", "trail", None, "1024x1024",
+     "A comet arc of light (pass 5.2): the seconds hand's trail on the dial's minute track (25-stud plane, r 1 = "
+     "12.5 studs) and the golden sweep round the stage's minute band (56-stud plane, r 1 = 28 studs)",
+     "White, pure grey, alpha only. Radial: a core centred r 0.946 (half-width 0.010 at the head, alpha 1, "
+     "narrowing to ~0.007 along the tail) in a soft glow (alpha <= 0.34) out to +-0.030; alpha 0 inside r 0.88 and "
+     "outside 0.995. Angular: the HEAD is at 12 o'clock (canvas top centre), a rounded cap with a soft, quick "
+     "leading edge, gone ~2.5 deg clockwise of 12 (toward canvas +x); the TAIL runs COUNTER-clockwise from 12 "
+     "(toward XI, the canvas's upper left) for ~80 deg, alpha ~ exp(-dtheta / 22 deg), 0 by 88 deg; 38 faint "
+     "sparkle grains (alpha <= 0.5) beside the core in the tail's first 30 deg. Turn the image so canvas up "
+     "points along the hand: a clockwise sweep then drags the tail behind the head."),
+    ("te5_galaxy_swirl", "galaxySwirl", None, "1024x1024",
+     "A finer, faster swirl laid over the galaxy floor (pass 5.2): an 18-stud layer, Top face, spinning "
+     "clockwise ~30 deg/s",
+     "r 1 = 9 studs. 8 thin luminous filaments in a tight log spiral (pitch 14: at 10-11 deg spirals read as rings "
+     "from the low default camera) with the SAME winding as te5_galaxy_floor / _core (counter-clockwise outward, "
+     "image +y up: the clockwise spin makes them trail), each with its own start, end, brightness and meander, "
+     "beaded and broken; a soft glow round each, long fine gas threads between them, dust grains, and three thin "
+     "broken dark lanes (RGB 9, alpha <= 0.55) on filaments' concave edges. Mean alpha ~0.17 inside r 0.95, "
+     "filament cores up to ~0.82. Empty inside r 0.10 (the balance wheel), fading in from r 0.12, out by 0.95. "
+     "Pure grey."),
+    ("te5_energy_rings", "energyRings", None, "1024x1024",
+     "Concentric energy rings over the galaxy pool (pass 5.2): a 28-stud layer, Top face, turning +4 deg/s",
+     "r 1 = 14 studs; nothing beyond r 0.97 (the pool's silver rim starts at ~14.75 studs = r 1.05). Six thin "
+     "rings: r 0.22 solid (1.5 px, alpha 0.34), 0.34 in 24 dashes (2 px, 0.46), 0.47 in 12 arcs (1.2 px, 0.30), "
+     "0.60 in 8 arcs that swell mid-arc like pulses (2.5 px, 0.55), 0.73 in 18 short arcs (1.8 px, 0.40), 0.86 "
+     "solid (1 px, 0.26), the broken ones at different phases so the turn shows; 120 ticks at r 0.80 (alpha "
+     "0.40, longer at the hours); an outer boundary ring at r 0.965 (3 px, alpha 0.85) with a soft inner glow "
+     "(alpha <= 0.25 over 0.03 r). White, pure grey, alpha 0 elsewhere."),
 ]
 
 
@@ -2335,7 +2847,9 @@ def check():
     sizes = {"te5_dial_inlay": (1024, 1024), "te5_subdial": (512, 512), "te5_accretion": (1024, 1024),
              "te5_galaxy_floor": (1024, 1024), "te5_galaxy_arms": (1024, 1024), "te5_galaxy_core": (512, 512),
              "te5_engraving": (1024, 1024), "te5_halo": (512, 512),
-             "te5_stream": (512, 128), "te5_moon": (1024, 1024), "te5_star_window": (1024, 1024)}
+             "te5_stream": (512, 128), "te5_moon": (1024, 1024), "te5_star_window": (1024, 1024),
+             "te5_bezel_band": (1024, 1024), "te5_trail": (1024, 1024), "te5_galaxy_swirl": (1024, 1024),
+             "te5_energy_rings": (1024, 1024)}
     for nm, (w, h) in sizes.items():
         im = Image.open(os.path.join(OUT, nm + ".png"))
         a = np.asarray(im.convert("RGBA")).astype(np.int32)
@@ -2435,7 +2949,110 @@ def check():
     yc, xc = np.mgrid[0:512, 0:512]; rc = np.hypot(xc + 0.5 - 256, yc + 0.5 - 256) / 256
     ok(co[..., 3][rc < 0.06].min() == 1.0 and co[..., 3][rc > 0.86].max() == 0,
        "te5_galaxy_core: opaque bulge (r < 0.06), alpha 0 beyond r 0.86")
+    check_pass52(ok, rr)
     return fails
+
+
+def _at(ch, r, clock_deg):
+    """a channel sampled (bilinear) at radius r and a clock angle (degrees clockwise from 12), image +y up"""
+    n = ch.shape[0]; a = math.radians(clock_deg)
+    x = (r * math.sin(a) * 0.5 + 0.5) * n - 0.5; y = (0.5 - r * math.cos(a) * 0.5) * n - 0.5
+    x0, y0 = int(math.floor(x)), int(math.floor(y)); fx, fy = x - x0, y - y0
+    return float(ch[y0, x0] * (1 - fx) * (1 - fy) + ch[y0, x0 + 1] * fx * (1 - fy) + ch[y0 + 1, x0] * (1 - fx) * fy
+                 + ch[y0 + 1, x0 + 1] * fx * fy)
+
+
+def _count_runs(sig, thr):
+    """how many separate runs above thr round a closed ring of samples"""
+    on = sig >= thr
+    return int((on & ~np.roll(on, 1)).sum())
+
+
+def _ring_max(ch, r, n_ang=4096):
+    """the brightest of four rings across one pixel round radius r (a thin line's samples, wherever it falls)"""
+    return np.max([_ring(ch, r + d / (ch.shape[0] / 2.0), n_ang) for d in (-0.75, -0.25, 0.25, 0.75)], axis=0)
+
+
+def check_pass52(ok, rr):
+    """The pass-5.2 textures: the four new ones, the gold-and-black stage and the polished dial (ok() records)."""
+    ld = lambda nm: np.asarray(Image.open(os.path.join(OUT, nm + ".png")).convert("RGBA")).astype(np.float64)
+    for nm in ("te5_engraving", "te5_bezel_band", "te5_trail", "te5_galaxy_swirl", "te5_energy_rings"):
+        a = ld(nm)
+        ok(bool((a[..., 0] == a[..., 1]).all() and (a[..., 1] == a[..., 2]).all()),
+           f"{nm}: pure grey (R = G = B; the module may tint it)")
+    # the bezel band: the hard window, the polished edges, the degree scale, the hour stars and half-hour planets
+    bb = ld("te5_bezel_band"); A = bb[..., 3] / 255.0
+    vis = A > 0.02
+    ok(bool(vis.any()) and rr[vis].min() >= BAND_R[0] and rr[vis].max() <= BAND_R[1],
+       f"te5_bezel_band: every pixel with alpha > 0.02 lies in r {BAND_R[0]}-{BAND_R[1]} "
+       f"(they span r {rr[vis].min():.4f}-{rr[vis].max():.4f})")
+    ev = [float(_ring_max(A, R_).min()) for R_ in (0.940, 0.986)]
+    ok(min(ev) > 0.9, "te5_bezel_band: unbroken polished edges at r 0.940 / 0.986 (min alpha " +
+       " ".join(f"{v:.2f}" for v in ev) + ")")
+    nt = _count_runs(_ring(A, 0.9805, 360 * 16), 0.3)
+    ok(nt == 360, f"te5_bezel_band: a degree scale of 360 ticks (r 0.9805: {nt})")
+    light = bb[..., 0] / 255.0 * A                       # (the dark ink outlines do not show on the dark band)
+    nl = _count_runs(_ring(light, 0.9695, 360 * 16), 0.3)
+    ok(nl == 36 - 12, f"te5_bezel_band: the 10-degree ticks reach r 0.9695, the hours' stop short of their star, "
+                      f"leaving a gap ({nl} of 36 lit)")
+    st = [_at(A, 0.958, h * 30.0) for h in range(12)] + [_at(A, 0.958 + 0.0046, h * 30.0 + 15.0) for h in range(12)]
+    ok(min(st) > 0.7, f"te5_bezel_band: stars at the hours, ringed planets at the half hours (min alpha {min(st):.2f})")
+    # the trail: head at 12, quick leading edge clockwise of it, the tail counter-clockwise, fading as exp(-d / 22 deg)
+    tA = ld("te5_trail")[..., 3] / 255.0
+    ok(tA[rr < 0.88].max() == 0 and tA[rr > 0.995].max() == 0, "te5_trail: alpha 0 inside r 0.88 and outside 0.995")
+    head = _at(tA, TRAIL_R, -0.3)
+    lead = max(_at(tA, TRAIL_R + d, 3.2) for d in np.linspace(-0.02, 0.02, 9))
+    t22 = float(np.mean([_at(tA, TRAIL_R, -22.0 + d) for d in np.linspace(-0.5, 0.5, 5)]))
+    far = max(max(_at(tA, R_, a) for a in np.arange(-180.0, -90.0, 0.5)) for R_ in (0.93, 0.946, 0.96))
+    cw = max(max(_at(tA, R_, a) for a in np.arange(5.0, 180.0, 0.5)) for R_ in (0.93, 0.946, 0.96))
+    ok(head > 0.95 and lead < 0.06 and 0.25 < t22 / head < 0.50 and far < 0.01 and cw < 0.01,
+       f"te5_trail: head at XII ({head:.2f}), gone 3.2 deg clockwise ({lead:.2f}), tail counter-clockwise "
+       f"(at 22 deg {t22 / head:.2f} of the head, past 90 deg {far:.3f}; clockwise of the head {cw:.3f})")
+    Rs = np.arange(0.90, 0.99, 0.0005); prof = np.asarray([_at(tA, R_, -10.0) for R_ in Rs])
+    pk = float((Rs * prof * (prof > 0.5)).sum() / (prof * (prof > 0.5)).sum())        # the core's centre line
+    gl = max(_at(tA, TRAIL_R + s * d, a) for s in (-1, 1) for d in (0.013, 0.02, 0.028) for a in (-0.3, -40.0, -60.0))
+    ok(abs(pk - TRAIL_R) < 0.004 and gl <= 0.35, f"te5_trail: core on r {TRAIL_R} (peak {pk:.4f}), glow <= 0.35 off "
+                                                  f"the core ({gl:.2f})")
+    # the galaxy swirl: open between the filaments, a clear middle, the floor's winding
+    gA = ld("te5_galaxy_swirl")[..., 3] / 255.0
+    mg = float(gA[rr < 0.95].mean())
+    ok(0.15 <= mg <= 0.25 and gA[rr < 0.10].max() < 0.05 and gA[rr > 0.965].max() <= 0.02 and gA.max() <= 0.9,
+       f"te5_galaxy_swirl: mean alpha {mg:.3f} inside r 0.95, r < 0.10 empty (max {gA[rr < 0.10].max():.3f}), "
+       f"faded out by r 0.965 (max {gA[rr > 0.965].max():.3f}), cores <= 0.9 ({gA.max():.2f})")
+    lags = [_winding(gA, a, b, 1) for a, b in ((0.40, 0.42), (0.55, 0.575), (0.70, 0.73))]   # (close: no aliasing)
+    ok(all(l > 0.05 for l in lags), "te5_galaxy_swirl: winds counter-clockwise outward like the floor (ring shifts "
+                                     + " ".join(f"{l:+.2f}" for l in lags) + " rad)")
+    # the energy rings: inside r 0.99, the six rings and their breaks, the tick ring, the boundary and its glow
+    eA = ld("te5_energy_rings")[..., 3] / 255.0
+    ve = eA > 0.02
+    ok(rr[ve].max() <= 0.99, f"te5_energy_rings: everything inside r 0.99 (max r {rr[ve].max():.4f})")
+    runs = {R_: _count_runs(_ring_max(eA, R_), 0.12) for R_ in (0.22, 0.34, 0.47, 0.60, 0.73, 0.86)}
+    ok(runs == {0.22: 0, 0.34: 24, 0.47: 12, 0.60: 8, 0.73: 18, 0.86: 0}
+       and min(_ring_max(eA, 0.22).min(), _ring_max(eA, 0.86).min()) > 0.12,
+       "te5_energy_rings: rings at r .22 .34 .47 .60 .73 .86 (solid / 24 / 12 / 8 / 18 arcs / solid: " +
+       " ".join(str(v) for v in runs.values()) + ")")
+    ntk = _count_runs(_ring(eA, 0.80, 360 * 12), 0.2)
+    bnd = float(_ring_max(eA, 0.965).mean())
+    glo = [float(_ring(eA, R_, 4096).mean()) for R_ in (0.955, 0.94, 0.925)]
+    ok(ntk == 120 and 0.78 <= bnd <= 0.9 and glo[0] <= 0.25 and glo[0] > glo[1] > glo[2],
+       f"te5_energy_rings: 120 ticks at r 0.80 ({ntk}), boundary at r 0.965 (alpha {bnd:.2f}), soft inner glow "
+       f"(" + " ".join(f"{v:.2f}" for v in glo) + " at r .955 .94 .925)")
+    # the stage: an opaque black annulus, light metal markings with a ridge
+    en = ld("te5_engraving"); eg, ea = en[..., 0], en[..., 3]
+    ok(ea[(rr > 0.556) & (rr < 0.984)].min() == 255 and ea[rr < 0.545].max() == 0 and ea[rr > 0.995].max() == 0,
+       "te5_engraving: opaque annulus (alpha 1 for r 0.556-0.984, 0 inside 0.545 and outside 0.995)")
+    base = float(np.median(eg[(rr > 0.560) & (rr < 0.578)]))
+    ok(12 <= base <= 16 and eg.max() >= 250, f"te5_engraving: near-black base (grey {base:.0f}), light markings "
+                                              f"(max {eg.max():.0f})")
+    rim = [float(np.mean(_ring(eg, 0.985 + d / 512.0, 2048))) for d in (-1.0, 0.0, 1.0)]
+    ok(rim[1] > max(rim[0], rim[2]) + 15, "te5_engraving: a ridge along each stroke (the 0.985 rim: flanks " +
+       f"{rim[0]:.0f} / {rim[2]:.0f}, centre {rim[1]:.0f})")
+    # the dial: polished metal lit from the upper left
+    di = ld("te5_dial_inlay")[..., 0]
+    ul = _at(di, 0.985 + 0.6 / 512, 315.0); lr = _at(di, 0.985 + 0.6 / 512, 135.0)
+    mid = (di[19, 511] + di[19, 512]) / 2
+    ok(ul > lr + 35 and abs(mid - 225) <= 6, f"te5_dial_inlay: lit from the upper left (outer track's rim {ul:.0f} "
+                                              f"up-left vs {lr:.0f} down-right; flat middle of the XII baton {mid:.0f})")
 
 
 def make_sheets(before=None):
@@ -2473,6 +3090,10 @@ job("te5_halo", make_halo)
 job("te5_stream", make_stream)
 job("te5_moon", make_moon)
 job("te5_star_window", make_star_window)
+job("te5_bezel_band", make_bezel_band)
+job("te5_trail", make_trail)
+job("te5_galaxy_swirl", make_galaxy_swirl)
+job("te5_energy_rings", make_energy_rings)
 
 
 def main():

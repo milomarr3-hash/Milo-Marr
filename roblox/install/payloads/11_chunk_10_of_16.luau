@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 09_chunk_08_of_12.luau | step 9: piece 8 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (155147 bytes, checksum 484396720).
+-- AuraRNG Studio install kit | 11_chunk_10_of_16.luau | step 11: piece 10 of 16
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (198845 bytes, checksum 17952987).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "09_chunk_08_of_12.luau"
+local FILE = "11_chunk_10_of_16.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-155147-484396720-12-73384217"
-local NEW_LEN, NEW_SUM = 155147, 484396720
+local RUN = "TheEnd-198845-17952987-16-151465783"
+local NEW_LEN, NEW_SUM = 198845, 17952987
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 12
-local LENS = { 13303, 13296, 13287, 13167, 13290, 13271, 13256, 13301, 13240, 13302, 13264, 9170 }
-local SUMS = { 67409079, 948660274, 266404745, 816058228, 379904796, 918623796, 659321254, 309794145, 464118196, 901135989, 725623781, 681290935 }
+local N = 16
+local LENS = { 13242, 13165, 13228, 13140, 13231, 13214, 13219, 13150, 13223, 13242, 13241, 13228, 13234, 13175, 13201, 712 }
+local SUMS = { 137879888, 580038089, 425714260, 382625152, 135632818, 823280755, 924487494, 162546552, 917082428, 106838554, 486110360, 934107283, 670841394, 102157393, 814892809, 773373630 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -67,65 +67,9 @@ local function chunkOk(h, i)
 	return v ~= nil and v:IsA("StringValue") and #v.Value == LENS[i] and sum(v.Value) == SUMS[i]
 end
 
-local K = 8
--- piece 8 of 12 of the new source (13301 bytes, checksum 309794145, long bracket level 1)
-local DATA = [=[
-				LockedToPart = true, Rotation = n(0, 90), RotSpeed = n(-8, 8), ZOffset = 0.2 }, WHITE_LE, WHITE_BR, "nearcam")
-			-- (and clusters of glitter ride the same ring between the stars: each cluster's grains swell and fade on their own
-			-- beats, which gives the ring a glittering body that reads from across the plaza)
-			pe(hosts.halo, "stardust", 3.6, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.76, EmissionDirection = N_.Top,
-				Rate = 8, Lifetime = n(4, 6), Speed = n(0.05, 0.15), Size = n(3.0, 4.0),
-				Transparency = seq({ { 0, 1 }, { 0.2, 0.25 }, { 0.8, 0.25 }, { 1, 1 } }), LockedToPart = true, Rotation = n(0, 360),
-				RotSpeed = n(-6, 6), FlipbookFramerate = n(6, 9), FlipbookStartRandom = true }, { 0.4, 0.9 }, { 2.0, 2.6 }, "nearcam")
-		end
-		-- P16 (pass 5.1): the duality helix: two points turn round the body at 220 degrees a second and leave a strand each,
-		-- so a silver ribbon of light and an ink ribbon of smoke braid up round the wearer from the feet to above the head,
-		-- about one and a half turns each (not locked: each particle stays where it was born and climbs, which is what draws
-		-- the spiral; born 0.4 studs apart, so each strand reads as one ribbon). While the wearer travels the strands thin
-		-- out, so they don't hang far behind (see the travelling flip)
-		em.strandMoon = pe(hosts.strandMoon, "mote", 5.2, { EmissionDirection = N_.Top, Rate = rate(34, 14), Lifetime = n(2.0, 2.3),
-			Speed = n(2.6, 2.9), SpreadAngle = Vector2.new(4, 4), Drag = 0.3, Size = seq({ { 0, 1.0 }, { 0.7, 0.8 }, { 1, 0 } }),
-			Transparency = seq({ { 0, 1 }, { 0.06, 0.02 }, { 0.75, 0.15 }, { 1, 1 } }), ZOffset = 0.4 }, WHITE_LE, WHITE_BR, "nearcam")
-		em.strandVoid = pe(hosts.strandVoid, "wisp", 5.2, { EmissionDirection = N_.Top, Rate = rate(18, 8), Lifetime = n(2.0, 2.3),
-			Speed = n(2.6, 2.9), SpreadAngle = Vector2.new(4, 4), Drag = 0.3, Size = seq({ { 0, 1.4 }, { 0.5, 2.4 }, { 1, 1.1 } }),
-			Transparency = seq({ { 0, 1 }, { 0.1, 0.1 }, { 0.7, 0.35 }, { 1, 1 } }), Color = ColorSequence.new(INK), Rotation = n(0, 360),
-			RotSpeed = n(-40, 40), ZOffset = 0.3 }, nil, nil, "nearcam")
-		-- P17 (pass 5.1): stars twinkle inside the clock's star window, between the rete's bars (locked to the dial, so they
-		-- stay in the face however the clock turns to its viewer)
-		if hi and hosts.inlay then
-			pe(hosts.inlay, "twinkle", 4.4, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0, EmissionDirection = N_.Front,
-				Rate = 5, Lifetime = n(2.6, 3.4), Speed = n(0), Size = seq({ { 0, 1.0, 0.3 }, { 1, 1.0, 0.3 } }),
-				Transparency = seq({ { 0, 1 }, { 0.12, 0 }, { 0.88, 0 }, { 1, 1 } }), LockedToPart = true, Rotation = n(0, 90),
-				ZOffset = 0.6 }, { 0.6, 1 }, { 2.2, 3.0 })
-		end
-		if hi then
-			-- P7: a low mist bank round the pool's rim, only while standing on the ground (ShapePartial 0.8: the outer fifth
-			-- of the disc, so the galaxy inside stays clear)
-			-- (pass 5.1: te5_mistbank is one soft low fog bank, densest along its middle and thinning upward in layers: a
-			-- single image, because a 6-8 s particle would step through a flipbook. Kept level: the bank is wide and flat)
-			local mb = isTe5("mistbank")
-			local mist = pe(hosts.floorFx, "mistbank", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.8, EmissionDirection = N_.Top,
-				Rate = 2.5, Lifetime = n(6, 8), Speed = n(0.1, 0.25), Size = mb and seq({ { 0, 9 }, { 1, 15 } }) or seq({ { 0, 8 }, { 1, 14 } }),
-				Transparency = mb and seq({ { 0, 1 }, { 0.3, 0.55 }, { 0.7, 0.6 }, { 1, 1 } }) or seq({ { 0, 1 }, { 0.3, 0.80 }, { 0.7, 0.82 }, { 1, 1 } }),
-				Color = ColorSequence.new(MIST), LockedToPart = true, Rotation = mb and n(-4, 4) or n(0, 360),
-				RotSpeed = mb and n(-2, 2) or n(-6, 6) }, nil, nil, "ground")
-			if mb then
-				propsFix(mist, { Size = seq({ { 0, 8 }, { 1, 14 } }), Transparency = seq({ { 0, 1 }, { 0.3, 0.80 }, { 0.7, 0.82 }, { 1, 1 } }),
-					Rotation = n(0, 360), RotSpeed = n(-6, 6) }, { 0, 0, 1, 1 })
-			end
-		end
-		-- P8: starlight rises off the turning arms and swirls with them, in slow four-point twinkles (grow, hold, shrink);
-		-- black ash flakes rise against them. At Roblox's default zoom, where the floor is a few studs from the lens, the
-		-- twinkles are drawn smaller (five sizes made here, each step under 20 %, changed only when the zoom moves a step
-		-- past a threshold: never a jump or a pulse on the floor)
-		hosts.moteSizes = {}
-		for k = 1, 5 do
-			local pk = 1.3 - 0.1625 * (k - 1) -- (1.3, 1.14, 0.98, 0.81, 0.65)
-			hosts.moteSizes[k] = seq({ { 0, 0 }, { 0.25, pk, 0.3 * pk / 1.3 }, { 0.75, pk, 0.3 * pk / 1.3 }, { 1, 0 } })
-		end
-		em.motes = pe(hosts.floorFx, "glint5", 4.8, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.15, EmissionDirection = N_.Top,
-			Rate = rate(18, 8), Lifetime = n(2.6, 3.6), Speed = n(0.5, 1.2), Acceleration = Vector3.new(0, 0.35, 0), Drag = 0.2,
-			Size = hosts.moteSizes[1], Transparency = glintT, Rotation = n(0, 90), RotSpeed = n(-20, 20),
+local K = 10
+-- piece 10 of 16 of the new source (13242 bytes, checksum 106838554, long bracket level 0)
+local DATA = [[
 			LockedToPart = true, ZOffset = 0.2 }, WHITE_LE, WHITE_BR)
 		if hi then
 			-- (pass 5.1: te5_ash is an ember flake tumbling through 16 frames: charred black, burning white-hot along one
@@ -202,54 +146,71 @@ local DATA = [=[
 			SpreadAngle = Vector2.new(10, 10), Size = seq({ { 0, 0.5 * stS }, { 1, 0.1 * stS } }),
 			Transparency = seq({ { 0, 0.2 }, { 0.6, 0.3 }, { 1, 1 } }), Color = ColorSequence.new(Color3.fromRGB(226, 230, 240)),
 			Orientation = VPAR, Rotation = stRot }, WHITE_LE, WHITE_BR, "speed"), stS, { { 0, 0.5 }, { 1, 0.1 } })
-		-- which emitters belong to the parts that turn see-through while another wearer's aura is in your way (their smoke,
-		-- swirl, dust, shards, glints, horizon and palm streaks must not stay solid across your character)
-		local ghostHost = { [moon] = true, [void] = true }
-		for _, h in ipairs({ "swirl", "shardFeed", "horizon", "timeDust", "palmMoon", "palmVoid", "inlay" }) do
-			if hosts[h] then ghostHost[hosts[h]] = true end
-		end
-		for _, e in ipairs(emitters) do
-			local par = e[1].Parent
-			if par and par:IsA("Attachment") then par = par.Parent end
-			e[6] = ghostHost[par] == true
-		end
-	end
-	table.sort(emitters, function(a, b) return a[2] < b[2] end)
-
-	-- lights: the moon's key light (above) and the wheel's underlight on the feet (night only, high quality)
-	local wheelLight = hi and new("PointLight", { Name = "Underlight", Range = 12, Color = Color3.fromRGB(230, 234, 246), Brightness = 0,
-		Shadows = false, Enabled = false }, wheelHub)
-
-	---------------------------------------------------------------- the move list (one BulkMoveTo per frame)
-	local act, actParts, acf = table.create(NP), table.create(NP), table.create(NP)
-	local nAct = 0
-	local function rebuildActive()
-		table.clear(act)
-		table.clear(actParts)
-		table.clear(acf)
-		nAct = 0
-		for i = 1, NP do
-			if shownH[PH[i]] then
-				nAct += 1
-				act[nAct], actParts[nAct], acf[nAct] = i, PP[i], IDENT
+		-- (pass 5.2) particles with jobs and timing. At rest: motes drift down the moon's link into the clock (P19), motes
+		-- stream in along two spiral arms over the galaxy (P20), a slow glint gives the void's heart its glow and rays
+		-- (P21), glints orbit the moon on a tilted ring (P22), matter spirals into the void from all round (P23), and a few
+		-- big signature sparkles glint at XII and at the links' ports (P31). The reveal adds streaks converging on the clock
+		-- in the buildup (P26) and, once, at midnight: the floor's wave (P24), glints bursting off the dial that slow into
+		-- orbit round it (P25), sparks lifting off the floor (P27) and a ring off the moon (P28). The moon gets a broad soft
+		-- glow (P29) and the void thin ink tendrils between its billows (P30).
+		-- STUDIO-VERIFY: the wave lies flat on the floor (VelocityPerpendicular with its velocity straight up); the dial's
+		-- glints burst out in the dial's plane (Cylinder + Outward on a carrier whose axis is the dial's); the spiral arms
+		-- stand still on the floor while their motes stream in (attachments moved every frame on a turning host)
+		em.wave = pe(hosts.wave, "shockwave", 0, { EmissionDirection = N_.Top, Rate = 0, Lifetime = n(1.7), Speed = n(0.05), LockedToPart = true,
+			Orientation = Enum.ParticleOrientation.VelocityPerpendicular, Size = seq({ { 0, 3 }, { 1, 65 } }), -- (its ring is 0.86 of its size: 56 studs at the end)
+			Transparency = seq({ { 0, 1 }, { 0.05, 0.05 }, { 0.45, 0.3 }, { 1, 1 } }) }, { 0.4, 1 }, { 1.6, 2.6 }, "burst")
+		if hi then
+			if hosts.linkMoon then
+				em.feed = pe(hosts.linkMoon, "mote", 4.8, { EmissionDirection = N_.Front, Rate = 5, Lifetime = n(2.2, 2.4), Speed = n(6), SpreadAngle = Vector2.new(5, 5),
+					Size = seq({ { 0, 0 }, { 0.15, 0.55 * mS, 0.15 * mS }, { 0.85, 0.45 * mS }, { 1, 0 } }),
+					Transparency = seq({ { 0, 1 }, { 0.12, 0.1 }, { 0.85, 0.2 }, { 1, 1 } }), LockedToPart = true, ZOffset = 0.3 }, WHITE_LE, WHITE_BR)
+				sizeFix(em.feed, mS, { { 0, 0 }, { 0.15, 0.55, 0.15 }, { 0.85, 0.45 }, { 1, 0 } })
 			end
-		end
-	end
-	rebuildActive()
-	-- the solid parts that turn see-through while another wearer's aura stands between you and your camera: the clock and
-	-- the orbs (ghostParts), and on their own the rings (ringParts: a visitor standing beside the wearer looks through
-	-- their rings only, never through their clock). The rings also fade out on the near-camera rule.
-	local ghostParts, ringParts = {}, {}
-	for _, i in ipairs(solids) do
-		if PH[i] == ARM or PH[i] == ARMD then
-			table.insert(ringParts, PP[i])
-		elseif PG[i] <= GHF or PG[i] == GMOONF then
-			table.insert(ghostParts, PP[i])
-		end
-	end
-	-- (Beams and ParticleEmitters carry a hidden LocalTransparencyModifier too; if it cannot be written, a ghosted aura's
-	-- beams and smoke switch off instead)
-]=]
+			for _, a in ipairs({ hosts.spiralA, hosts.spiralB }) do
+				sizeFix(pe(a, "mote", 4.8, { EmissionDirection = N_.Back, Rate = 9, Lifetime = n(4.2, 4.6), Speed = n(2.4, 2.6), SpreadAngle = Vector2.new(3, 3),
+					Size = seq({ { 0, 0 }, { 0.12, 0.6 * mS, 0.12 * mS }, { 0.8, 0.45 * mS }, { 1, 0 } }),
+					Transparency = seq({ { 0, 1 }, { 0.1, 0.1 }, { 0.85, 0.25 }, { 1, 1 } }), LockedToPart = true, ZOffset = 0.3 }, WHITE_LE, WHITE_BR),
+					mS, { { 0, 0 }, { 0.12, 0.6, 0.12 }, { 0.8, 0.45 }, { 1, 0 } })
+			end
+			pe(new("Attachment", { Name = "Glint" }, hosts.heart), "glint5", 1.1, { Rate = 1, Lifetime = n(2.4), Size = n(3.0, 3.6),
+				Transparency = seq({ { 0, 1 }, { 0.3, 0.12 }, { 0.7, 0.12 }, { 1, 1 } }), Rotation = n(-8, 8), RotSpeed = n(-3, 3), LockedToPart = true,
+				ZOffset = 1.0 }, { 0.4, 1 }, { 2.2, 3.0 })
+			pe(hosts.moonRing, "twinkle", 1.6, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.86, EmissionDirection = N_.Top, Rate = 6,
+				Lifetime = n(3, 4), Size = seq({ { 0, 0.75, 0.2 }, { 1, 0.75, 0.2 } }), Transparency = TWINKLE_T, LockedToPart = true, Rotation = n(0, 90),
+				ZOffset = 0.5 }, WHITE_LE, WHITE_BR)
+			sizeFix(pe(hosts.infall, "mote", 1.4, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = INWARD, Rate = 12, Lifetime = n(1.4, 1.5),
+				Speed = n(5.2, 5.8), Size = seq({ { 0, 0.5 * mS }, { 1, 0.2 * mS } }), Transparency = seq({ { 0, 1 }, { 0.2, 0.15 }, { 1, 0.4 } }),
+				LockedToPart = true, ZOffset = 0.3 }, WHITE_LE, WHITE_BR), mS, { { 0, 0.5 }, { 1, 0.2 } })
+			em.burst = pe(hosts.burst, "glint5", 0, { Shape = CYL, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, EmissionDirection = N_.Top, Rate = 0,
+				Lifetime = n(4.5, 6), Speed = n(13, 19), Drag = 1.7, LockedToPart = true, Size = seq({ { 0, 0 }, { 0.04, 1.8, 0.35 }, { 0.75, 1.1, 0.2 }, { 1, 0 } }),
+				Transparency = seq({ { 0, 0 }, { 0.75, 0.15 }, { 1, 1 } }), Rotation = n(0, 90), RotSpeed = n(-25, 25), ZOffset = 0.8 }, { 0.5, 1 }, WHITE_BR, "burst")
+			-- (the stroke itself: one star flares at the hub and shrinks away in about half a second, the only flash there is)
+			em.flare = pe(new("Attachment", { Name = "Flare", Position = Vector3.new(0, 0, 2.2) }, hosts.ports), "glint5", 0, { Rate = 0,
+				Lifetime = n(0.7), Size = seq({ { 0, 3 }, { 0.12, 16 }, { 0.45, 9 }, { 1, 0 } }), Transparency = seq({ { 0, 0 }, { 0.6, 0.2 }, { 1, 1 } }),
+				Rotation = n(0), RotSpeed = n(20), LockedToPart = true, ZOffset = 1.5 }, { 0.8, 1 }, { 3.0, 3.5 }, "burst")
+			em.converge = sizeFix(pe(hosts.converge, "streak5", 0, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = INWARD, Rate = 10,
+				Lifetime = n(1.6, 1.8), Speed = n(7.5, 8.2), Size = seq({ { 0, 0.5 * stS }, { 1, 0.12 * stS } }),
+				Transparency = seq({ { 0, 1 }, { 0.2, 0.1 }, { 0.9, 0.3 }, { 1, 1 } }), Orientation = VPAR, Rotation = stRot, LockedToPart = true, ZOffset = 0.5 },
+				WHITE_LE, WHITE_BR, "converge"), stS, { { 0, 0.5 }, { 1, 0.12 } })
+			-- (the wave's front, as streaks racing out along the floor with it at its own 16 studs a second: the ring lies flat,
+			-- so from a low camera this is what reads)
+			em.waveFront = sizeFix(pe(hosts.wave, "streak5", 0, { Shape = CYL, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, EmissionDirection = N_.Top,
+				Rate = 0, Lifetime = n(1.5, 1.6), Speed = n(15.5, 16.5), LockedToPart = true, Size = seq({ { 0, 0.7 * stS }, { 1, 0.3 * stS } }),
+				Transparency = seq({ { 0, 0 }, { 0.7, 0.25 }, { 1, 1 } }), Orientation = VPAR, Rotation = stRot }, WHITE_LE, WHITE_BR, "burst"),
+				stS, { { 0, 0.7 }, { 1, 0.3 } })
+			em.lift = pe(hosts.floorFx, "glint5", 0, { Shape = DISCSHAPE, ShapeStyle = VOLUME, ShapePartial = 0.2, EmissionDirection = N_.Top, Rate = 0,
+				Lifetime = n(3, 4.5), Speed = n(5, 9), Drag = 1.5, LockedToPart = true, Size = seq({ { 0, 0 }, { 0.06, 0.9, 0.25 }, { 0.8, 0.65 }, { 1, 0 } }),
+				Transparency = seq({ { 0, 0 }, { 0.8, 0.15 }, { 1, 1 } }), Rotation = n(0, 90), RotSpeed = n(-20, 20), ZOffset = 0.3 }, WHITE_LE, WHITE_BR, "burst")
+			local mc = new("Attachment", { Name = "Centre" }, moon)
+			em.moonPulse = pe(mc, "shockwave", 0, { Rate = 0, Lifetime = n(1.0), Size = seq({ { 0, 9 }, { 1, 26 } }),
+				Transparency = seq({ { 0, 0.2 }, { 0.35, 0.45 }, { 1, 1 } }), LockedToPart = true, ZOffset = -1 }, { 0.5, 1 }, { 1.8, 2.8 }, "burst")
+			pe(mc, "softGlow", 0.9, { Rate = 1, Lifetime = n(3), Size = n(18), Transparency = seq({ { 0, 1 }, { 0.33, 0.84 }, { 0.67, 0.84 }, { 1, 1 } }),
+				Color = ColorSequence.new(Color3.fromRGB(232, 236, 246)), LockedToPart = true, ZOffset = -2.5 }, { 0, 0.6 }, { 1, 1.5 })
+			pe(void, "wisp", 1.2, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, Rate = 5, Lifetime = n(2.6, 3.4), Speed = n(1.6, 2.6),
+				Drag = 0.25, Acceleration = Vector3.new(0, 0.3, 0), Size = seq({ { 0, 2.4 }, { 0.5, 4.6 }, { 1, 5.4 } }),
+				Transparency = seq({ { 0, 1 }, { 0.12, 0.15 }, { 0.7, 0.45 }, { 1, 1 } }), Color = ColorSequence.new(Color3.fromRGB(28, 28, 32)),
+				Rotation = n(0, 360), RotSpeed = n(-30, 30), ZOffset = -2.5 })
+]]
 
 local function main()
 	if game:GetService("RunService"):IsRunning() then
@@ -293,7 +254,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "14_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "18_apply.luau"))
 end
 
 local ok, res = pcall(main)

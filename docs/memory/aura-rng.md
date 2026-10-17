@@ -47,9 +47,21 @@ his claude.ai chats) can pick up the work. Update it at the end of every session
    more feel toward the build. Go all out, take your time and build it so much better. its getting better though, your on
    the right track."
 9. To the cloud session (2026-10-14): "pick up where it left off, go above and beyond ... Make it amazing!"
+10. (2026-10-16) "i still think you can make it even better, improve the particle effects and texture tenfold".
+11. (2026-10-17, a long brief) "UPGRADE MY EXISTING CELESTIAL VFX — KEEP THE ENTIRE CONCEPT, IMPROVE THE EXECUTION". First:
+    "The clock's materials and fine details", "The movement between the elements ... connected through animated energy",
+    "The galaxy vortex and particle choreography ... make the particles appear at intentional moments". Keep: the silver
+    clock (Roman numerals, gears, central star), the realistic moon on the left, the black void with a white star on the
+    right and the dark smoke, white sparkles/fragments, the black-and-white galaxy vortex, **"the gold-and-black circular
+    platform with astronomical markings"**, the character at the centre. "a clear buildup, a single strong peak, and an
+    aftermath that settles into a beautiful lower-intensity idle state ... Allow brief, controlled flashes only at the
+    most important moment." Wearer-only cinematic lighting, restored after; "Do not unexpectedly alter lighting for
+    everyone"; "Do not invent uploaded asset IDs"; "Do not change the concept. Upgrade its execution." He also said "THE
+    VFX STUDIO IS INSANE, if you need to go ahead and use it" (a plugin on his Mac: the cloud can't reach it).
 
-Style lock: black, white and silver only (a faint cool tint is ok). Keep the clock. **No flashes, strobes or flicker.**
-Must read by day (bright tropical islands, cyan sky) and by night.
+Style lock: black, white and silver only (a faint cool tint is ok), **plus the gold on the platform** (Milo, 2026-10-17:
+"the gold-and-black circular platform"). Keep the clock. **No flashes, strobes or flicker**, except the one controlled pulse
+at midnight in the equip reveal (2026-10-17 brief). Must read by day (bright tropical islands, cyan sky) and by night.
 
 ## THE END equipped aura — history
 
@@ -97,57 +109,72 @@ Must read by day (bright tropical islands, cyan sky) and by night.
   near upright (baked light). **23 te5 textures** to upload (te5_smoke retired to `textures/te5/particles/retired/`). Module
   **155,147 bytes (checksum 484396720)**, 12 payload pieces. Every smoke/ember emitter takes its pass-4 settings back if
   its te5 texture is missing or fails to load. Still not run in Studio.
+- Pass 5.2 in the cloud (2026-10-17, Milo's "keep the entire concept, improve the execution" brief; he wrote it from the pass
+  5.1 preview pictures, where the stage looked gold because the sandy plaza showed through it): **the clock**: a near-black
+  engraved band in the bezel (its engraving creeps round a degree a second), a polished flange round the star window, a
+  faceted eight-point central star (silver and gunmetal facets) over a slowly turning sub-dial, Breguet moon hands, a comet
+  of light riding the seconds hand, hour plots that light in turn; **the links**: three thin energy threads with gliding
+  pearls of light (moon → IX, III → void, VI → floor), moonlight motes into IX, runners on two rings; **the galaxy**: a fine
+  fast swirl and energy rings over the arms, two spiral arms of motes; **the platform**: gold markings on an opaque black
+  base (te5_engraving tinted `GOLD`); the moon's glow, ring of glints and libration; the void's Doppler-bright photon ring,
+  heart glint, ink tendrils and infall; **the reveal**: hands spin in to five to midnight, a buildup (links light, the dial
+  is swept and the plots light I → XII, the gears race, the smoke draws in, a golden sweep round the stage, streaks
+  converge), the minute hand ticks five times to XII, **one pulse at midnight** (flare at the hub, floor wave, dial glints
+  into orbit, lifting sparks, the moon's ring, smoke blown out), an aftermath that settles by 9.8 s; on the wearer's own
+  screen only a bloom and a 6 % push-in, given back exactly. 6 new textures (bezel band, trail, galaxy swirl, energy rings,
+  link, shockwave), 2 rebuilt (the gold-and-black engraving, the bevelled dial inlay): **29 te5 textures**. A reviewer
+  found and the lead fixed six issues (hide before the buildup cancelled the bloom/push, a runner ran tail-first, frame
+  fit vs the push-in, ...). Module **198,845 bytes (checksum 17952987)**, 16 payload pieces. Still not run in Studio.
 
-## Status (cloud, 2026-10-16, pass 5.1)
+## Status (cloud, 2026-10-17, pass 5.2)
 
-Pass 5.1 of THE END's equipped aura (pass 5 + review rounds 1-3 + the film-quality texture and particle pass) is **built
-and verified in the cloud only**. **Nothing has run in Roblox Studio.**
+Pass 5.2 of THE END's equipped aura (pass 5 + review rounds 1-3 + pass 5.1's textures and particles + pass 5.2's execution
+upgrade) is **built and verified in the cloud only**. **Nothing has run in Roblox Studio.**
 
 **What's built, and where**
-- Module: `roblox/ReplicatedStorage/AuraFX/TheEnd.lua`, **155,147 bytes, checksum 484396720**. TEX5 is empty
-  until the upload, so the aura falls back to pass-4 textures. Live pass 4 for rollback and diffing:
-  `TheEnd.pass4-live.lua` (35,000 bytes, checksum 489406639).
-- Budgets (high / low): 362 / 151 parts in one BulkMoveTo, 25 emitters (23 on by day) / 12 on, about 304 / 78 particles
-  per second (about 770 / 165 alive), 6 / 2 beams, 11 / 8 GUIs, 2 / 0 PointLights, 1 Highlight. Registers: 31 spare in
-  `End.build` at -O0, 67 at -O1 and -O2.
-- Textures: 23 te5 PNGs (9 particles, 3 smoke, 11 surfaces) in `textures/te5/`, with their generators, manifests and
-  contact sheets (`sheets/before_after*.png` show pass 5 vs pass 5.1). `patch_tex5.py status`: 23 keys, 0 filled.
-- Docs: `docs/the-end/README.md` (status page for Milo), `pass5-spec.md` (the design, synced to the build),
-  `pass5-build-notes.md` (the build, review rounds 1-3, STUDIO-VERIFY items 1-50), `pass5-art-direction.md`, and 14 curated
-  preview renders in `pass5-renders/`.
-- Install kit: `roblox/install/` (README, MILO_PROMPT, studio_checks, upload_textures, patch_tex5.py, make_payloads.py).
-  Payloads: `01_backup`, 12 pieces, `14_apply` (14 to run in order), plus `00_status` (read-only), `90_install_from_file`
-  (plan B) and `99_rollback`.
+- Module: `roblox/ReplicatedStorage/AuraFX/TheEnd.lua`, **198,845 bytes, checksum 17952987**. TEX5 is empty until the
+  upload, so the aura falls back to pass-4 textures (and the four te5-only layers, the bezel engraving, the trail and stage
+  sweep, the galaxy swirl and the energy rings, are not built). Live pass 4 for rollback and diffing: `TheEnd.pass4-live.lua`
+  (35,000 bytes, checksum 489406639).
+- Budgets (high / low): 454 / 163 parts in one BulkMoveTo (459 with te5), 43 emitters (34 on by day) / 12 on, about 343 / 78
+  particles per second (about 891 / 164 alive), 9 / 4 beams, 11 / 8 GUIs (16 with te5), 2 / 0 PointLights, 1 Highlight.
+  Registers: 29 spare in `End.build` at -O0, 65 at -O1 and -O2.
+- New flags: `LINKS`, `REVEAL_BLOOM`, `REVEAL_PUSH` (all on). Reveal constants: `ASM_END` 7.0, `REV_BUILD` 4.6, `PEAK` 6.6,
+  `REV_END` 9.8 (spec §12 has the timeline).
+- Textures: 29 te5 PNGs (11 particles, 3 smoke, 15 surfaces) in `textures/te5/`, with their generators, manifests and contact
+  sheets. `patch_tex5.py status`: 29 keys, 0 filled.
+- Docs: `docs/the-end/README.md` (status page for Milo, with pictures from `pass52-renders/`), `pass5-spec.md` (§9 rows
+  P19-P31, §12 the reveal, §14 budget, §15 flags, §16 textures), `pass5-build-notes.md` ("Pass 5.2", STUDIO-VERIFY 59-71),
+  `pass5-art-direction.md`.
+- Install kit: `roblox/install/` (README, MILO_PROMPT, studio_checks (step 2 and new step 17 for the reveal and the
+  details), upload_textures (6 batches), patch_tex5.py, make_payloads.py). Payloads: `01_backup`, 16 pieces, `18_apply`
+  (18 to run in order), plus `00_status`, `90_install_from_file` and `99_rollback`.
 
-**Cloud tools** (see `tools/README.md`): `tools/check_aura.sh MODULE OUTDIR` (harness over 35 scenarios, then preview
-renders and day/night sheets); `tools/harness/run_aura.py` (mock Roblox runtime, lints, snapshots);
-`tools/preview/render.mjs` (three.js in headless Chromium); `tools/harness/tests/run_tests.py`;
-`tools/harness/register_headroom.py`; `tools/harness/typecheck.sh` (needs a luau-lsp binary in `LUAU_LSP`; none is
-installed system-wide, so build one per tools/harness/README.md); `roblox/install/test/run_tests.py`. To preview the
-post-upload te5 look, use a temp copy with `TEX5 = "pending:<key>"`. Never ship that.
+**Cloud tools** (see `tools/README.md`): as before. Pass 5.2 changed the harness's steady state to start 10 s after the build
+(the reveal), lengthened the two cutscene scenarios to 17 s, let the palette lint accept the stage's gold, and the preview
+now draws `:Emit` bursts from disabled emitters. Preview te5 look: a temp copy with `TEX5 = "pending:<key>"` (never ship).
 
-**Final verification results (pass 5.1, 2026-10-16, all headless)**
-- `run_aura.py` (35 scenarios): 0 errors and 0 harness failures. 3 known warning kinds, all `translucent-layer` on the rim-only
-  moon halo and the night corona (spec §7.3's allowed soft elements).
-- `tests/run_tests.py`: all passed. `install/test/run_tests.py`: 25/25, typecheck included. `typecheck.sh`: 0 diagnostics.
-- `make_payloads.py --check`: payloads match (12 pieces). `check_aura.sh`: no module errors. Preview `npm test`: passed.
-  The three texture generators' `--check`: passed (108 particle, 29 smoke and 65 surface checks).
+**Final verification results (pass 5.2, 2026-10-17, all headless)**
+- `run_aura.py` (35 scenarios), fallback and te5 previews: 0 errors, 0 harness failures; the 3 known translucent-layer
+  warnings only. After the reveal: 0 GUI writes per frame. The field of view returns exactly to 70; the bloom is removed.
+- `tests/run_tests.py`: all passed (typecheck included). `install/test/run_tests.py`: 25/25. `typecheck.sh`: 0 diagnostics.
+- `make_payloads.py --check`: payloads match (16 pieces). Preview `npm test`: passed. Generators' `--check`: particles 139,
+  surfaces 103, smoke 29, all passed.
 
 **Pending**
 - First Studio install and Play test with the fallback textures (`roblox/install/MILO_PROMPT.md`, `studio_checks.md`
-  steps 1-2).
-- Measure `RIM_R` (studio check 14), then upload the 23 te5 textures (te5_moon first). Fill TEX5 with `patch_tex5.py`,
-  re-make the payloads with `--label pass5tex` and install again.
-- STUDIO-VERIFY items 1-50: write the results in `docs/the-end/pass5-studio-results.md`, saying only what was really seen.
-- Milo's calls: the far beacon (on/off), `FRAME_TOP` 9.6 vs 22.4, and the "neutral, a hair warm" silver.
-- Maybe later: 512² low-quality texture variants (if Studio's memory measurement asks for them), R3W-5 (rings across the
-  face), the warm close-up FillColor (STUDIO-VERIFY 44), the R3S-10 registry fallback (studio check 13).
+  steps 1-2), then the 29-texture upload (te5_moon first), `patch_tex5.py`, re-made payloads, and a second test (step 17).
+- STUDIO-VERIFY items 1-71: results in `docs/the-end/pass5-studio-results.md`, saying only what was really seen.
+- Milo's calls: the far beacon, `FRAME_TOP` 9.6 vs 22.4, the "neutral, a hair warm" silver, and now the reveal's push-in
+  and bloom (`REVEAL_PUSH`, `REVEAL_BLOOM`) and the energy links (`LINKS`).
+- Maybe later: drop the reveal-only carriers from the move list after the reveal (4 parts); 512² low-quality texture
+  variants if Studio's memory measurement asks; R3W-5; the warm close-up FillColor; the R3S-10 registry fallback.
 
 **Next steps**
 1. Studio test on the Mac (fallback textures), then the te5 upload and a second test. Fix whatever Studio shows. Iterate
    with Milo's screenshots.
 2. Then the other auras. Milo wants "all vfx tenfold better". None of their modules are in this repo yet: copy them from
-   `ReplicatedStorage.AuraFX` on the Mac first, and reuse pass 5's tooling (harness, preview, install kit) for each.
+   `ReplicatedStorage.AuraFX` on the Mac first, and reuse the tooling (harness, preview, install kit) for each.
 
 ## Framework contract (from the pass-4 module)
 
@@ -190,6 +217,15 @@ post-upload te5 look, use a temp copy with `TEX5 = "pending:<key>"`. Never ship 
   `LocalTransparencyModifier`: to fade parts of a highlighted model, move them to a sibling model outside the adornee while
   they fade. Phones and low graphics draw without anti-aliasing: hairlines (≤ 0.15 studs) need to thicken with distance or
   they crawl. A dais that is a level plane floats on hills: fit the ground plane with a few rays, but keep it level on stairs.
+- (Pass 5.2, cloud, unverified in Studio) The silver Highlight's fill also composites over **particles** in front of silver
+  parts (as over BillboardGuis): a flare over the silver hub reads weakly by day, so make such effects big enough to reach
+  dark parts. GUIs over highlighted silver are washed the same way: put engraving on dark (non-highlighted) parts.
+- (Pass 5.2) Anything the reveal does to the player's screen must start only when its moment comes and only if nothing
+  hid the aura first in a way that matters: the framework hides the aura under the roll cutscene's Scriptable camera
+  before the first frame, so a "hide = cancel" rule cancelled the bloom and push-in on every real equip. Give the field of
+  view back to the camera it was taken from, and let go at once if any other script changes it.
+- (Pass 5.2) `ParticleEmitter:Emit(n)` works on a disabled emitter: burst-only emitters stay `Enabled = false` (Rate 0).
+  A flat expanding floor ring is one particle with `Orientation = VelocityPerpendicular` and a tiny upward speed.
 
 ## Texture ids in use (pass 4 TEX table)
 

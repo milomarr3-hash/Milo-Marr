@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 02_chunk_01_of_12.luau | step 2: piece 1 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (155147 bytes, checksum 484396720).
+-- AuraRNG Studio install kit | 02_chunk_01_of_16.luau | step 2: piece 1 of 16
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (198845 bytes, checksum 17952987).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "02_chunk_01_of_12.luau"
+local FILE = "02_chunk_01_of_16.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-155147-484396720-12-73384217"
-local NEW_LEN, NEW_SUM = 155147, 484396720
+local RUN = "TheEnd-198845-17952987-16-151465783"
+local NEW_LEN, NEW_SUM = 198845, 17952987
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 12
-local LENS = { 13303, 13296, 13287, 13167, 13290, 13271, 13256, 13301, 13240, 13302, 13264, 9170 }
-local SUMS = { 67409079, 948660274, 266404745, 816058228, 379904796, 918623796, 659321254, 309794145, 464118196, 901135989, 725623781, 681290935 }
+local N = 16
+local LENS = { 13242, 13165, 13228, 13140, 13231, 13214, 13219, 13150, 13223, 13242, 13241, 13228, 13234, 13175, 13201, 712 }
+local SUMS = { 137879888, 580038089, 425714260, 382625152, 135632818, 823280755, 924487494, 162546552, 917082428, 106838554, 486110360, 934107283, 670841394, 102157393, 814892809, 773373630 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,7 +68,7 @@ local function chunkOk(h, i)
 end
 
 local K = 1
--- piece 1 of 12 of the new source (13303 bytes, checksum 67409079, long bracket level 1)
+-- piece 1 of 16 of the new source (13242 bytes, checksum 137879888, long bracket level 1)
 local DATA = [=[
 --[[
 	AuraFX.TheEnd — 『 THE END 』 worn (1 in 1,000,000,000). Midnight of the universe, worn: black, white and silver only.
@@ -117,6 +117,24 @@ local DATA = [=[
 	twelve, the gears slide out and spin down, the hands spin in and lock at twelve, the dais rim rises in a wave, the crown
 	drops on, the shards settle on their ring; the wearer's own screen dims and cools meanwhile. After that everything
 	turns, sways or drifts at a steady pace: no pulses, strobes or flicker, ever.
+	Pass 5.2 (2026-10-17), Milo: "UPGRADE MY EXISTING CELESTIAL VFX — KEEP THE ENTIRE CONCEPT, IMPROVE THE EXECUTION" (the
+	clock first, then the movement between the elements, then the galaxy and the particles' timing):
+	  the clock      a near-black band set into the bezel, engraved with a degree scale that creeps round; a polished flange
+	                 round the star window; a faceted eight-point star at the centre (silver and gunmetal facets); Breguet
+	                 moon hands; a trail of light that rides the seconds hand round the minute track
+	  the links      thin tapered threads of light with pearls of light gliding along them: the moon into IX, III out to the
+	                 void, VI down to the floor's vortex; motes drift from the moon into the clock; a bright segment of light
+	                 runs round the meridian and the equator
+	  the galaxy     a fine fast swirl and rings of energy over the arms, and motes streaming in along two spiral arms
+	  the platform   the 56-stud stage is gold-and-black, as Milo calls it: gold markings on a black base
+	  the reveal     a buildup, one peak and an aftermath. The hands spin in to five to midnight; the links light up, the hour
+	                 plots light one by one round the dial behind a sweep of light, the gears race, the void's smoke draws in,
+	                 the moon and the galaxy's heart brighten, light sweeps round the stage and streaks converge on the clock.
+	                 Then the minute hand ticks to XII and midnight strikes: the gears stop dead for a moment and one soft
+	                 pulse goes out (a ring off the moon, a wave across the floor, glints off the dial that slow into orbit,
+	                 sparks lifting off the floor, the void's smoke blown out), and everything settles into the idle. The
+	                 wearer's own screen gets a soft bloom and a slight push-in meanwhile, put back afterwards. That one
+	                 pulse at midnight is the only one: the idle never pulses, strobes or flickers.
 	Day reads by value (dark steel, black void and dark pool against white lume, silver metal and an ink contour; one
 	Highlight keeps the metal neutral under the cyan sky); night glows softly through GUI Brightness above the Bloom threshold.
 	Past ~110 studs the particles stop and the fine detail is dropped; low quality builds 150 parts. Flags: CONFIG below (a
@@ -143,6 +161,7 @@ local TEX = {
 	moon = "rbxassetid://105160126126488", voidOrb = "rbxassetid://98346126355034", line = "rbxassetid://111152711897982",
 	tick = "rbxassetid://99880756430819", dialOuter = "rbxassetid://138970147678654", dialMid = "rbxassetid://79447855638088",
 	dialInner = "rbxassetid://134434932210706", hands4 = "rbxassetid://120547039021938", galaxy4 = "rbxassetid://91068008644782",
+	none = "", -- (the "fallback" of a te5-only layer: it is not built until its texture is uploaded)
 }
 -- pass 5 (textures/te5/surfaces, textures/te5/particles): filled in on the Mac after upload. "" = not uploaded yet;
 -- "rbxassetid://123", "123" and the number 123 all work. Until a key is filled in (or if its upload fails to load in the
@@ -155,6 +174,10 @@ local TEX5 = {
 	-- billow out and thin into veils); curling wisps; a low fog bank; a hot fleck with a hairline tail; a glitter cluster
 	-- whose grains swell and fade on their own phases. (te5_smoke is retired: billow, wisp and mistbank replace it)
 	twinkle = "", billow = "", wisp = "", mistbank = "", spark5 = "", stardust = "",
+	-- (pass 5.2) the bezel's engraved band; a comet arc of light (the seconds hand's trail, and the stage's sweep); the
+	-- galaxy's fine swirl and rings of energy; the links' thread of light; the expanding wave. The first four have no pass-4
+	-- look-alike: until they are uploaded those layers are simply not built
+	bezelBand = "", trail = "", galaxySwirl = "", energyRings = "", link = "", shockwave = "",
 }
 -- (pass 5.1: te5_ash is a tumbling ember flake, 16 frames, and te5_shards a ray-traced steel blade tumbling)
 local TEX5_LAYOUT = { shards5 = { "Grid4x4", "Loop" }, ash5 = { "Grid4x4", "Loop" },
@@ -169,6 +192,8 @@ local FALLBACK = { -- key -> { pass-4 TEX key, flipbook layout, mode }
 	twinkle = { "sparkles", "Grid4x4", "OneShot" }, billow = { "puff", "Grid4x4", "OneShot" }, wisp = { "puff", "Grid4x4", "OneShot" },
 	mistbank = { "puff", "Grid4x4", "OneShot" },
 	spark5 = { "spark" }, stardust = { "sparkles", "Grid4x4", "Loop" },
+	bezelBand = { "none" }, trail = { "none" }, galaxySwirl = { "none" }, energyRings = { "none" }, link = { "streak" },
+	shockwave = { "rim" },
 }
 -- (te4_moon is a 512² moon disc, radius 152 px, inside a glow ring. Drawn as the face of the moon's disc it is cropped to
 -- the moon itself and rounded, so no white ring or square corner shows round the face; te5_moon is drawn whole)
@@ -190,60 +215,6 @@ local function idOf(v, key)
 	if v == "" then return nil end
 	if string.match(v, "^%d+$") then return "rbxassetid://" .. v end
 	if string.match(v, "^rbxassetid://%d+$") or string.match(v, "^rbxasset://") or string.match(v, "^rbxthumb://")
-		or string.match(v, "^pending:%w+$") then
-		return v
-	end
-	warnOnce("tex5:" .. tostring(key), string.format("TheEnd: TEX5.%s = %q is not an asset id; using the pass-4 fallback", tostring(key), v))
-	return nil
-end
-local failed = {} -- te5 keys whose upload did not load in this game (ContentProvider said so): they use the fallback
--- T(key) -> id, flipbook layout name, flipbook mode name (layout "None" when it is not a flipbook). Accepts a TEX5 key or
--- a pass-4 TEX key. The layout comes from whichever texture is used, because a fallback can be laid out differently.
-local function T(key)
-	local id = not failed[key] and idOf(TEX5[key], key)
-	if id then
-		local l = TEX5_LAYOUT[key]
-		return id, l and l[1] or "None", l and l[2] or "Loop"
-	end
-	local f = FALLBACK[key]
-	if f then return TEX[f[1]], f[2] or "None", f[3] or "Loop" end
-	local t = TEX[key]
-	if not t then warnOnce("texkey:" .. tostring(key), "TheEnd: no texture called " .. tostring(key)) end
-	return t or "", "None", "Loop"
-end
-local function isTe5(key) return not failed[key] and idOf(TEX5[key], key) ~= nil end
--- every live image, beam and emitter that uses a te5 key, so a texture that fails to load can be swapped for its fallback;
--- fixUps[o](o) puts back what the build chose because the te5 texture was there (a colour, a brightness, a size). (The
--- hook gets the object as its argument: a weak-keyed entry whose value held its own key would never be collected)
-local texUsers = setmetatable({}, { __mode = "k" })
-local fixUps = setmetatable({}, { __mode = "k" })
-local usedKeys = {} -- (te5 keys some build on this client draws: only those are asked for)
-local function applyTex(o, key)
-	local id, layout, mode = T(key)
-	if o:IsA("ImageLabel") then
-		o.Image = id
-		local c = CROP[key]
-		if c then
-			local fb = not isTe5(key)
-			o.ImageRectOffset, o.ImageRectSize = fb and c[1] or Vector2.zero, fb and c[2] or Vector2.zero
-		end
-	elseif o:IsA("Beam") then
-		o.Texture = id
-	elseif o:IsA("ParticleEmitter") then
-		o.Texture = id
-		o.FlipbookLayout = Enum.ParticleFlipbookLayout[layout]
-		if layout ~= "None" then o.FlipbookMode = Enum.ParticleFlipbookMode[mode] end
-	end
-	if TEX5[key] then
-		texUsers[o] = key
-		usedKeys[key] = true
-	end
-end
--- ask the engine for the te5 textures a build actually draws, once each (in the background: never blocks require or
--- build; a low-quality build never asks for the six textures only high quality uses, so a phone does not hold them). One
--- that does not load (wrong id, still in moderation, rejected) is reported and swapped for its pass-4 fallback everywhere,
--- for every key that shares its id. A slow phone or a cold cache can time out: that id is asked for once more 20 s later
--- before anything is swapped.
 ]=]
 
 local function main()
@@ -288,7 +259,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "14_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "18_apply.luau"))
 end
 
 local ok, res = pcall(main)

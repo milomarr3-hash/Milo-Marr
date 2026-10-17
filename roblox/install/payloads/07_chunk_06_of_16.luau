@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 06_chunk_05_of_12.luau | step 6: piece 5 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (155147 bytes, checksum 484396720).
+-- AuraRNG Studio install kit | 07_chunk_06_of_16.luau | step 7: piece 6 of 16
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (198845 bytes, checksum 17952987).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "06_chunk_05_of_12.luau"
+local FILE = "07_chunk_06_of_16.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-155147-484396720-12-73384217"
-local NEW_LEN, NEW_SUM = 155147, 484396720
+local RUN = "TheEnd-198845-17952987-16-151465783"
+local NEW_LEN, NEW_SUM = 198845, 17952987
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 12
-local LENS = { 13303, 13296, 13287, 13167, 13290, 13271, 13256, 13301, 13240, 13302, 13264, 9170 }
-local SUMS = { 67409079, 948660274, 266404745, 816058228, 379904796, 918623796, 659321254, 309794145, 464118196, 901135989, 725623781, 681290935 }
+local N = 16
+local LENS = { 13242, 13165, 13228, 13140, 13231, 13214, 13219, 13150, 13223, 13242, 13241, 13228, 13234, 13175, 13201, 712 }
+local SUMS = { 137879888, 580038089, 425714260, 382625152, 135632818, 823280755, 924487494, 162546552, 917082428, 106838554, 486110360, 934107283, 670841394, 102157393, 814892809, 773373630 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -67,11 +67,9 @@ local function chunkOk(h, i)
 	return v ~= nil and v:IsA("StringValue") and #v.Value == LENS[i] and sum(v.Value) == SUMS[i]
 end
 
-local K = 5
--- piece 5 of 12 of the new source (13290 bytes, checksum 379904796, long bracket level 1)
+local K = 6
+-- piece 6 of 16 of the new source (13214 bytes, checksum 823280755, long bracket level 1)
 local DATA = [=[
-				if big then sx, sy, sz2 = 0.3 * cx, 0.3 * cy, -4 elseif gi == 5 then sx, sy, sz2 = cx, cy, cz - 3 else sx, sy, sz2 = cx, cy, cz + 3 end
-				table.insert(gearData, { grp = grp, cx = cx, cy = cy, cz = cz, sx = sx, sy = sy, sz = sz2, rate = rate, a0 = a, a1 = a + (big and 1.0 or 0.6),
 					sign = rate < 0 and -1 or 1, extra = 0 })
 			end
 		end
@@ -150,6 +148,16 @@ local DATA = [=[
 				local k = solid("TimeShard", i % 2 == 0 and "BRIGHT" or "LUME", ARMD, GSHARD0 + 1 + i, "Wedge", Vector3.new(0.14, 0.7 + 0.15 * (i % 3), 0.40), IDENT)
 				fadeWin(k, 5.0 + 0.06 * i, 5.2 + 0.06 * i)
 			end
+			-- (pass 5.2) a bright segment of light runs round the meridian and the equator, a signal travelling the orbits:
+			-- three Neon blocks hugging the wire, brightest at the head, fading behind it. They race in the buildup
+			for r = 1, 2 do
+				local R, sz = r == 1 and 6.0 or 5.3, r == 1 and Vector3.new(0.62, 0.36, 0.30) or Vector3.new(0.62, 0.30, 0.42)
+				for j = 0, 2 do
+					local i = solid("Runner", "LUME", ARMD, r == 1 and G2.RUN1 or G2.RUN2, "Block", sz * (1 - 0.12 * j), radial((r == 1 and -6.5 or 6.5) * j, R, 0))
+					if j > 0 then PP[i].Color = j == 1 and Color3.fromRGB(168, 168, 172) or Color3.fromRGB(104, 104, 108) end
+					fadeWin(i, 4.4, 4.7)
+				end
+			end
 		end
 	end
 
@@ -185,6 +193,7 @@ local DATA = [=[
 			-- craters from blowing out to white)
 			local m5 = isTe5("moon")
 			local fg, fe = surface(hosts.moonFace, Enum.NormalId.Left, hiCanvas, m5 and 1.25 or 0.75, m5 and 2.0 or 1.25, "moon", 0.6, 0.9)
+			hosts.moonB = brights[#brights] -- (pass 5.2: the moon brightens through the reveal's buildup and pulses at midnight)
 			new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, fe[1])
 			table.insert(ghostGuis, fg)
 			if m5 then
@@ -257,12 +266,19 @@ local DATA = [=[
 		hosts.horizon = hi and carrier("Horizon", CORE, GPF, Vector3.new(0.2, 0.2, 0.2))
 		-- the photon ring: a lume hairline that always hugs the black silhouette as the camera sees it (from any distance;
 		-- it thickens with distance in steps, HAIR below, so it never breaks into a crawling stair-step without anti-aliasing)
+		-- (pass 5.2: the ring is not even: like the Doppler-bright side of a real black hole it is thickest and whitest on
+		-- the side facing the clock and the wearer (the viewer's left of the void, 9 o'clock) and thins to a dimmer hair on
+		-- the far side, so the rim reads as polished light with a highlight, not a drawn circle)
 		local N = low and 12 or 24
-		hosts.photon = {}
+		hosts.photon, hosts.photonF = {}, {}
 		for i = 0, N - 1 do
 			local th = (i + 0.5) * 360 / N
-			local k = solid("PhotonRing", "LUME", CORE, GPF, "Block", Vector3.new(low and 2.25 or 1.14, HAIR[low and 2 or 1][1], 0.12), IDENT)
-			PROT[k], PRR[k], PRS[k] = CFrame.Angles(0, 0, -rad(th)), 0.115 + HAIR[low and 2 or 1][1] / 2, 11
+			local f = 0.75 + 1.25 * (0.5 + 0.5 * cos(rad(th - 270))) ^ 1.6
+			local hy = HAIR[low and 2 or 1][1] * f
+			local k = solid("PhotonRing", "LUME", CORE, GPF, "Block", Vector3.new(low and 2.25 or 1.14, hy, 0.12), IDENT)
+			PROT[k], PRR[k], PRS[k] = CFrame.Angles(0, 0, -rad(th)), 0.115 + hy / 2, 11
+			PP[k].Color = Color3.fromRGB(205, 205, 210):Lerp(Color3.fromRGB(255, 255, 255), (f - 0.75) / 1.25)
+			hosts.photonF[k] = f
 			table.insert(hosts.photon, k)
 			PS[k], PM0[k], PM1[k] = true, 0.25 + 0.6 * i / N, 0.85 + 0.6 * i / N
 			fadeWin(k, 0.25 + 0.6 * i / N, 0.45 + 0.6 * i / N)
@@ -273,31 +289,8 @@ local DATA = [=[
 		-- STUDIO-VERIFY: Roblox wedge orientation (right angle at -Y, +Z); if the spikes come out hollow: attribute WEDGE_SWAP
 		local hb = solid("Heart", "LUME", CORE, GHF, "Ball", Vector3.new(0.70, 0.70, 0.70), IDENT)
 		fadeWin(hb, 0.9, 1.1)
+		hosts.heart = PP[hb] -- (pass 5.2: its glow and rays are a slow glint on it, P21)
 		local function grow(i, L)
-			motion(i, CFrame.new(L.Position * 0.05) * L.Rotation, 0.9, 0.6)
-			fadeWin(i, 0.9, 1.1)
-		end
-		local wa = CONFIG.WEDGE_SWAP and -90 or 90
-		for _, sp in ipairs({ { 0, 1.3 }, { 180, 1.3 }, { 90, 0.9 }, { 270, 0.9 } }) do
-			if hi then
-				local S = CFrame.Angles(0, 0, -rad(sp[1]))
-				local h = sp[2]
-				local La = S * CFrame.new(-0.16, h / 2, 0) * CFrame.Angles(0, rad(wa), 0)
-				local Lb = S * CFrame.new(0.16, h / 2, 0) * CFrame.Angles(0, rad(-wa), 0)
-				grow(solid("Spike", "LUME", CORE, GHF, "Wedge", Vector3.new(0.08, h, 0.32), La), La)
-				grow(solid("Spike", "LUME", CORE, GHF, "Wedge", Vector3.new(0.08, h, 0.32), Lb), Lb)
-			end
-		end
-	end
-
-	---------------------------------------------------------------- THE DAIS: a dark galaxy pool in a raised silver rim
-	local base = solid("DaisBase", "BASE", CORE, GDAIS, "Cylinder", Vector3.new(0.12, 29.6, 29.6), CFrame.new(0, 0.06, 0) * VERT)
-	fadeWin(base, 4.0, 4.4)
-	hosts.base = PP[base]
-	local wheelHub
-	do
-		-- STUDIO-VERIFY: Top-face canvas orientation (up = +Z); the arms must trail the spin (floor turns clockwise from above;
-		-- if they lead: attribute GALAXY_DIR = -1). The floor and core images come in with the base disc (no bare grey lid).
 ]=]
 
 local function main()
@@ -342,7 +335,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "14_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "18_apply.luau"))
 end
 
 local ok, res = pcall(main)

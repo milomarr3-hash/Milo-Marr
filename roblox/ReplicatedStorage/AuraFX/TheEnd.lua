@@ -663,7 +663,8 @@ function End.build(ctx)
 		-- the links' lengths last written; ownReveal: the wearer's own real equip (bloom, push); bloom, fov0/fovW: the
 		-- screen effects
 		revOn = false, gearM = 1, runM = 1, trailA = nil, sweepA = 0, convOn = false, smokeQ = 0, peakDone = false, run1 = 0, run2 = 0,
-		linkLm = -9, linkLv = -9, linkLf = -9, ownReveal = false, bloom = nil, bloomDone = false, fov0 = nil, fovW = nil, pushDone = false,
+		linkLm = -9, linkLv = -9, linkLf = -9, ownReveal = false, bloom = nil, bloomDone = false, fov0 = nil, fovW = nil, fovCam = nil,
+		pushDone = false,
 	}
 
 	-- the part registry: part, group, rest transform in the group, hide group; the assembly's start transform and motion
@@ -834,7 +835,20 @@ function End.build(ctx)
 		-- Brightness, not alpha). STUDIO-VERIFY: SurfaceGui Face = Back draws on the +Z face (toward the viewer), XII up
 		-- (if not: attribute FRONT_FACES = true)
 		hosts.inlay = carrier("Inlay", CORE, GK, Vector3.new(24.4, 24.4, 0.05), CFrame.new(0, 0, 0.12) * frontL)
-		hosts.inlayGui = surface(hosts.inlay, frontFace, hiCanvas, 1.6, 2.6, "dialInlay", 3.4, 4.2)
+		-- (pass 5.2: te5_dial_inlay's numerals and track are bevelled metal, shaded 170-255: drawn at 1.0 by day so the bevel
+		-- shows instead of clipping to flat white; at night 1.8, crisp white just under the Bloom threshold, so the numerals
+		-- stay sharp and the glow comes from the trail, the plots and the time dust)
+		local il5 = isTe5("dialInlay")
+		local ie
+		hosts.inlayGui, ie = surface(hosts.inlay, frontFace, hiCanvas, il5 and 1.0 or 1.6, il5 and 1.8 or 2.6, "dialInlay", 3.4, 4.2)
+		if il5 then
+			-- (if it fails to load in the game, pass 4's flat dial comes back at its own brightness)
+			local be = brights[#brights]
+			fixUps[ie[1]] = function()
+				be[2], be[3] = 1.6, 2.6
+				be[1].Brightness = 1.6 + 1.0 * nightStep() + be[4]
+			end
+		end
 		-- raised lume plots at the hours, on the minute track. (pass 5.2) They land dark and light one by one round the dial
 		-- in the reveal's buildup, I first and XII last, at midnight (hosts.plots: XII is [1])
 		if hi then
@@ -977,10 +991,11 @@ function End.build(ctx)
 	-- (pass 5.2) the seconds hand's trail: a comet arc of light on the minute track that rides the hand round (te5_trail;
 	-- head at the hand, tail behind it), lighting each hour as it passes. In the reveal's buildup it leaves the hand and
 	-- sweeps the dial once, lighting the plots, and reaches XII at midnight; then it fades and comes back on the hand.
-	-- It rides a little above the inlay, so its light lies over the track (the plots stand up through it)
+	-- It rides a little above the inlay, so its light lies over the track (the plots stand up through it).
+	-- STUDIO-VERIFY: the comet's head is at the hand and its tail behind (it shares the inlay's face convention)
 	if hi and isTe5("trail") then
-		hosts.trail = carrier("SecondsTrail", CORE, G2.TRAIL, Vector3.new(25, 25, 0.05), frontL)
-		hosts.trailGui, hosts.trailE = surface(hosts.trail, frontFace, hiCanvas, 1.4, 2.4, "trail", 0, 0, nil, true)
+		hosts.secTrail = carrier("SecondsTrail", CORE, G2.TRAIL, Vector3.new(25, 25, 0.05), frontL)
+		hosts.trailGui, hosts.trailE = surface(hosts.secTrail, frontFace, hiCanvas, 1.4, 2.4, "trail", 0, 0, nil, true)
 		hosts.trailB = brights[#brights]
 		table.insert(ghostGuis, hosts.trailGui)
 	end
@@ -1122,7 +1137,7 @@ function End.build(ctx)
 			for r = 1, 2 do
 				local R, sz = r == 1 and 6.0 or 5.3, r == 1 and Vector3.new(0.62, 0.36, 0.30) or Vector3.new(0.62, 0.30, 0.42)
 				for j = 0, 2 do
-					local i = solid("Runner", "LUME", ARMD, r == 1 and G2.RUN1 or G2.RUN2, "Block", sz * (1 - 0.12 * j), radial(-6.5 * j, R, 0))
+					local i = solid("Runner", "LUME", ARMD, r == 1 and G2.RUN1 or G2.RUN2, "Block", sz * (1 - 0.12 * j), radial((r == 1 and -6.5 or 6.5) * j, R, 0))
 					if j > 0 then PP[i].Color = j == 1 and Color3.fromRGB(168, 168, 172) or Color3.fromRGB(104, 104, 108) end
 					fadeWin(i, 4.4, 4.7)
 				end
@@ -1291,16 +1306,18 @@ function End.build(ctx)
 			surface(arms, Enum.NormalId.Top, 1024, 1.4, 2.4, "galaxyArms", 4.2, 5.2)
 		end
 		local core = carrier("GalaxyCore", CORE, GG2, Vector3.new(12, 0.05, 12))
-		surface(core, Enum.NormalId.Top, midCanvas, 1.5, 2.6, "galaxyCore", 4.0, 4.6)
+		surface(core, Enum.NormalId.Top, midCanvas, 1.5, 2.2, "galaxyCore", 4.0, 4.6) -- (pass 5.2: 2.2 at night, was 2.6: the bulge blew out to white)
 		hosts.coreB = brights[#brights] -- (pass 5.2: the galaxy's heart brightens in the buildup and at midnight)
 		-- (pass 5.2) the vortex in layers, each turning its own way at its own pace: the broad slow floor (-6 deg/s), rings of
 		-- energy (+4), the arms against it (+9), a fine fast swirl (-30) and the bright core (-16). The two new layers have no
 		-- pass-4 look-alike: they come with their te5 textures
 		if hi and isTe5("energyRings") then
-			surface(carrier("EnergyRings", DETAIL, G2.RINGS, Vector3.new(28, 0.05, 28)), Enum.NormalId.Top, 1024, 1.2, 2.2, "energyRings", 4.4, 5.4)
+			hosts.rings = carrier("EnergyRings", DETAIL, G2.RINGS, Vector3.new(28, 0.05, 28))
+			surface(hosts.rings, Enum.NormalId.Top, 1024, 1.2, 2.2, "energyRings", 4.4, 5.4)
 		end
 		if hi and isTe5("galaxySwirl") then
-			surface(carrier("GalaxySwirl", DETAIL, G2.FINE, Vector3.new(18, 0.05, 18)), Enum.NormalId.Top, 1024, 1.3, 2.4, "galaxySwirl", 4.4, 5.4)
+			hosts.fine = carrier("GalaxySwirl", DETAIL, G2.FINE, Vector3.new(18, 0.05, 18))
+			surface(hosts.fine, Enum.NormalId.Top, 1024, 1.3, 1.7, "galaxySwirl", 4.4, 5.4)
 		end
 		-- the stage: an engraved clock ring 56 studs across round the pool (Roman numerals 3 studs tall, a minute track with
 		-- batons). Kept at every distance: from far away it is the aura's footprint. (pass 5.2) Gold markings on a black
@@ -1893,7 +1910,10 @@ function End.build(ctx)
 		-- big signature sparkles glint at XII and at the links' ports (P31). The reveal adds streaks converging on the clock
 		-- in the buildup (P26) and, once, at midnight: the floor's wave (P24), glints bursting off the dial that slow into
 		-- orbit round it (P25), sparks lifting off the floor (P27) and a ring off the moon (P28). The moon gets a broad soft
-		-- glow (P29) and the void thin ink tendrils between its billows (P30)
+		-- glow (P29) and the void thin ink tendrils between its billows (P30).
+		-- STUDIO-VERIFY: the wave lies flat on the floor (VelocityPerpendicular with its velocity straight up); the dial's
+		-- glints burst out in the dial's plane (Cylinder + Outward on a carrier whose axis is the dial's); the spiral arms
+		-- stand still on the floor while their motes stream in (attachments moved every frame on a turning host)
 		em.wave = pe(hosts.wave, "shockwave", 0, { EmissionDirection = N_.Top, Rate = 0, Lifetime = n(1.7), Speed = n(0.05), LockedToPart = true,
 			Orientation = Enum.ParticleOrientation.VelocityPerpendicular, Size = seq({ { 0, 3 }, { 1, 65 } }), -- (its ring is 0.86 of its size: 56 studs at the end)
 			Transparency = seq({ { 0, 1 }, { 0.05, 0.05 }, { 0.45, 0.3 }, { 1, 1 } }) }, { 0.4, 1 }, { 1.6, 2.6 }, "burst")
@@ -1920,8 +1940,12 @@ function End.build(ctx)
 				Speed = n(5.2, 5.8), Size = seq({ { 0, 0.5 * mS }, { 1, 0.2 * mS } }), Transparency = seq({ { 0, 1 }, { 0.2, 0.15 }, { 1, 0.4 } }),
 				LockedToPart = true, ZOffset = 0.3 }, WHITE_LE, WHITE_BR), mS, { { 0, 0.5 }, { 1, 0.2 } })
 			em.burst = pe(hosts.burst, "glint5", 0, { Shape = CYL, ShapeStyle = SURFACE, ShapeInOut = OUTWARD, EmissionDirection = N_.Top, Rate = 0,
-				Lifetime = n(4.5, 6), Speed = n(13, 19), Drag = 1.7, LockedToPart = true, Size = seq({ { 0, 0 }, { 0.04, 1.1, 0.25 }, { 0.75, 0.75, 0.15 }, { 1, 0 } }),
+				Lifetime = n(4.5, 6), Speed = n(13, 19), Drag = 1.7, LockedToPart = true, Size = seq({ { 0, 0 }, { 0.04, 1.8, 0.35 }, { 0.75, 1.1, 0.2 }, { 1, 0 } }),
 				Transparency = seq({ { 0, 0 }, { 0.75, 0.15 }, { 1, 1 } }), Rotation = n(0, 90), RotSpeed = n(-25, 25), ZOffset = 0.8 }, { 0.5, 1 }, WHITE_BR, "burst")
+			-- (the stroke itself: one star flares at the hub and shrinks away in about half a second, the only flash there is)
+			em.flare = pe(new("Attachment", { Name = "Flare", Position = Vector3.new(0, 0, 2.2) }, hosts.ports), "glint5", 0, { Rate = 0,
+				Lifetime = n(0.7), Size = seq({ { 0, 3 }, { 0.12, 16 }, { 0.45, 9 }, { 1, 0 } }), Transparency = seq({ { 0, 0 }, { 0.6, 0.2 }, { 1, 1 } }),
+				Rotation = n(0), RotSpeed = n(20), LockedToPart = true, ZOffset = 1.5 }, { 0.8, 1 }, { 3.0, 3.5 }, "burst")
 			em.converge = sizeFix(pe(hosts.converge, "streak5", 0, { Shape = SPHERE, ShapeStyle = SURFACE, ShapeInOut = INWARD, Rate = 10,
 				Lifetime = n(1.6, 1.8), Speed = n(7.5, 8.2), Size = seq({ { 0, 0.5 * stS }, { 1, 0.12 * stS } }),
 				Transparency = seq({ { 0, 1 }, { 0.2, 0.1 }, { 0.9, 0.3 }, { 1, 1 } }), Orientation = VPAR, Rotation = stRot, LockedToPart = true, ZOffset = 0.5 },
@@ -2362,15 +2386,17 @@ function End.build(ctx)
 				e[5] = tq
 			end
 		end
-		local function screenOff() -- the wearer's bloom goes and the field of view is given back (if it is still ours)
+		-- the wearer's bloom goes and the field of view is given back to the camera it was taken from, if it is still ours.
+		-- (Only once either has started: a hide before the buildup, e.g. under the roll cutscene, must not cancel them)
+		local function screenOff()
 			if st.bloom then
 				st.bloom:Destroy()
 				st.bloom = nil
 			end
 			st.bloomDone = true
-			if st.fov0 and not st.pushDone then
-				local cam = workspace.CurrentCamera
-				if cam and abs(cam.FieldOfView - st.fovW) <= 0.01 then cam.FieldOfView = st.fov0 end
+			local cam = st.fovCam
+			if st.fov0 and not st.pushDone and cam and cam.Parent and abs(cam.FieldOfView - st.fovW) <= 0.01 then
+				cam.FieldOfView = st.fov0
 			end
 			st.pushDone = true
 		end
@@ -2470,7 +2496,8 @@ function End.build(ctx)
 				if near and alphaOn and visible then
 					em.wave:Emit(1)
 					if em.waveFront then em.waveFront:Emit(40) end
-					if em.burst then em.burst:Emit(36) end
+					if em.burst then em.burst:Emit(44) end
+					if em.flare then em.flare:Emit(1) end
 					if em.lift then em.lift:Emit(30) end
 					if em.moonPulse then em.moonPulse:Emit(1) end
 					em.smoke.Speed = n(7, 10)
@@ -2480,11 +2507,17 @@ function End.build(ctx)
 			end
 			-- the wearer's own screen (a real equip only): a soft bloom that builds and peaks at midnight, and a slight
 			-- push-in (the field of view narrows 6 % and comes back). Both are let go of at once if anything else takes the
-			-- camera or the field of view meanwhile
+			-- camera or the field of view meanwhile. STUDIO-VERIFY: the field of view ends exactly where it started, and a
+			-- game script that sets it meanwhile wins
 			if st.ownReveal and not st.bloomDone and CONFIG.REVEAL_BLOOM and age >= REV_BUILD then
 				local cam = workspace.CurrentCamera
-				if not st.bloom and cam and age < PEAK then
-					st.bloom = new("BloomEffect", { Name = "TheEndBloom", Intensity = 0, Size = 28, Threshold = 2 }, cam)
+				if not st.bloom then
+					-- (it only ever starts at the start of the buildup, so it never pops in half way)
+					if cam and bu < 0.1 and cam.CameraType ~= Enum.CameraType.Scriptable then
+						st.bloom = new("BloomEffect", { Name = "TheEndBloom", Intensity = 0, Size = 28, Threshold = 2 }, cam)
+					elseif bu >= 0.1 then
+						st.bloomDone = true
+					end
 				end
 				if st.bloom then
 					local bi = 0.3 * (age < PEAK and bu or 1 - ss(PEAK, PEAK + 1.5, age)) + 0.7 * pk
@@ -2499,11 +2532,18 @@ function End.build(ctx)
 			if st.ownReveal and not st.pushDone and CONFIG.REVEAL_PUSH and age >= REV_BUILD then
 				local cam = workspace.CurrentCamera
 				if not cam or cam.CameraType == Enum.CameraType.Scriptable then
-					st.pushDone = true
+					-- (a cutscene took the camera: give the field of view back now, if the push had started and it is
+					-- still ours)
+					if st.fov0 then screenOff() end
 				elseif not st.fov0 then
-					st.fov0, st.fovW = cam.FieldOfView, cam.FieldOfView
-				elseif abs(cam.FieldOfView - st.fovW) > 0.01 then
-					st.pushDone = true -- (something else changed it: it is theirs now, never touched again)
+					-- (it only ever starts at the start of the buildup, so the view never jumps in half way)
+					if bu < 0.05 then
+						st.fov0, st.fovW, st.fovCam = cam.FieldOfView, cam.FieldOfView, cam
+					else
+						st.pushDone = true
+					end
+				elseif cam ~= st.fovCam or abs(cam.FieldOfView - st.fovW) > 0.01 then
+					screenOff() -- (another camera, or something else changed it: it is theirs now, never touched again)
 				elseif age >= REV_END - 0.4 then
 					cam.FieldOfView = st.fov0
 					st.pushDone = true
@@ -2797,7 +2837,10 @@ function End.build(ctx)
 		-- settles at most CLOSE.dist further back. It glides there (never jumps) and is off in first person
 		local ft = (ctx.isLocal and cam) and CONFIG.FRAME_TOP or 0
 		if ft > 0 then
-			local lim = min(1.45, asin(clamp(cam.CFrame.LookVector.Y, -1, 1)) + rad(cam.FieldOfView) * 0.455) -- (the frame's top edge, less a margin)
+			-- (the frame's top edge, less a margin; during the reveal's push-in, from the field of view before it, so the
+			-- clock does not step back as the view narrows: the margin covers the 6 %)
+			local fov = (st.fov0 and not st.pushDone) and st.fov0 or cam.FieldOfView
+			local lim = min(1.45, asin(clamp(cam.CFrame.LookVector.Y, -1, 1)) + rad(fov) * 0.455)
 			local push = clamp((st.kY + Hc + ft * cos(tilt) - camPos.Y) / max(tan(lim), 0.05) - dh - ft * sin(tilt) - Dc, 0,
 				CLOSE.dist + 1.1 * max(0, ft - 9.6)) * (1 - fp)
 			st.fitD = snap and push or st.fitD + (push - st.fitD) * (1 - exp(-3 * dt))
@@ -2854,10 +2897,10 @@ function End.build(ctx)
 		GCF[GCROWN] = crownY ~= 0 and K * CFrame.new(0, crownY, 0) or K
 		-- (pass 5.2) the bezel's engraving creeps round anticlockwise, a degree a second; the trail rides the seconds hand
 		-- (or the reveal's sweep); the burst ring turns slowly round the dial's axis
-		GCF[G2.BAND] = K * CFrame.Angles(0, 0, (rad(1) * now) % TAU) * BAND_Z
+		if hosts.band then GCF[G2.BAND] = K * CFrame.Angles(0, 0, (rad(1) * now) % TAU) * BAND_Z end
 		GCF[G2.SUB] = K * CFrame.Angles(0, 0, -((rad(3) * now) % TAU))
-		GCF[G2.TRAIL] = K * CFrame.Angles(0, 0, -(st.trailA or ts)) * TRAIL_Z
-		GCF[G2.BURST] = K * BURST_TILT * CFrame.Angles(0, (rad(30) * t) % TAU, 0)
+		if hosts.secTrail then GCF[G2.TRAIL] = K * CFrame.Angles(0, 0, -(st.trailA or ts)) * TRAIL_Z end
+		if hosts.burst then GCF[G2.BURST] = K * BURST_TILT * CFrame.Angles(0, (rad(30) * t) % TAU, 0) end
 
 		-- 3. the dais layers and the balance wheel (just below the soles, never into the galaxy; on the dais when seated)
 		local gdir = CONFIG.GALAXY_DIR
@@ -2869,9 +2912,9 @@ function End.build(ctx)
 		-- (pass 5.2) the rings of energy turn slowly one way, the fine swirl fast the other; the spiral arms' host turns
 		-- clockwise while their two feeds circle the other way a little faster, so the arms stand still on the floor (they
 		-- keep step with it) and the motes stream in along them; the stage sweep turns once in the reveal
-		GCF[G2.RINGS] = Gd * RINGS_Y * CFrame.Angles(0, (rad(4) * gdir * now) % TAU, 0)
-		GCF[G2.FINE] = Gd * FINE_Y * CFrame.Angles(0, (rad(-30) * gdir * now) % TAU, 0)
-		GCF[G2.SWEEP] = Gd * SWEEP_Y * CFrame.Angles(0, st.sweepA * gdir, 0)
+		if hosts.rings then GCF[G2.RINGS] = Gd * RINGS_Y * CFrame.Angles(0, (rad(4) * gdir * now) % TAU, 0) end
+		if hosts.fine then GCF[G2.FINE] = Gd * FINE_Y * CFrame.Angles(0, (rad(-30) * gdir * now) % TAU, 0) end
+		if hosts.sweepGui then GCF[G2.SWEEP] = Gd * SWEEP_Y * CFrame.Angles(0, st.sweepA * gdir, 0) end
 		if hosts.spiral then
 			GCF[G2.SPIRAL] = Gd * SPIRAL_Y * CFrame.Angles(0, (rad(-42) * gdir * t) % TAU, 0)
 			if near then
@@ -2968,7 +3011,7 @@ function End.build(ctx)
 			-- (pass 5.2: the face librates, rocking 4 degrees either way over 47 s, as the real Moon nods)
 			GCF[GMOONF] = CFrame.lookAt(fpos, fpos - fdir, abs(fdir.Y) > 0.98 and Vector3.zAxis or Vector3.yAxis) * CFrame.Angles(0, 0, rad(4) * sin(TAU * t / 47))
 		end
-		GCF[G2.MRING] = CFrame.new(moonC) * V.Rotation * MRING_TILT * CFrame.Angles(0, (rad(25) * t) % TAU, 0)
+		if hosts.moonRing then GCF[G2.MRING] = CFrame.new(moonC) * V.Rotation * MRING_TILT * CFrame.Angles(0, (rad(25) * t) % TAU, 0) end
 		-- the void's camera-facing details: the photon ring sits on the silhouette circle the camera sees (radius rt)
 		local dv = camPos - voidC
 		local dm = dv.Magnitude
@@ -3003,7 +3046,7 @@ function End.build(ctx)
 		GCF[GSWIRL] = Dk * SWIRL_UP * CFrame.Angles(0, (rad(85) * now * dir) % TAU, 0)
 		GCF[GFEED] = CFrame.lookAt(K * FEED_PT, voidC)
 		-- (pass 5.2) matter falls into the void from all round, turning with its disc
-		GCF[G2.INFALL] = Dk * SWIRL_UP * CFrame.Angles(0, (rad(60) * now * dir) % TAU, 0)
+		if hosts.infall then GCF[G2.INFALL] = Dk * SWIRL_UP * CFrame.Angles(0, (rad(60) * now * dir) % TAU, 0) end
 		-- the energy links' far ends: on the moon facing IX, on the void facing III, on the floor in front of the clock. Each
 		-- link's bow (and the moon's motes' speed) follows its length, written when it changes by a stud or more
 		if hosts.linkMoon then
@@ -3326,7 +3369,7 @@ function End.build(ctx)
 				st.gradeOut = true
 				gradeTo(GRADE_OFF, 0.4, true)
 			end
-			hosts.screenOff() -- (pass 5.2: nor the reveal's bloom or push-in)
+			if st.bloom or st.fov0 then hosts.screenOff() end -- (pass 5.2: nor the reveal's bloom or push-in, once started)
 		end
 		refreshEmitters()
 		refreshLights()

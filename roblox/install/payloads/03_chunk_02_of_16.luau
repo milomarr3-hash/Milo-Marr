@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 03_chunk_02_of_12.luau | step 3: piece 2 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (155147 bytes, checksum 484396720).
+-- AuraRNG Studio install kit | 03_chunk_02_of_16.luau | step 3: piece 2 of 16
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (198845 bytes, checksum 17952987).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "03_chunk_02_of_12.luau"
+local FILE = "03_chunk_02_of_16.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-155147-484396720-12-73384217"
-local NEW_LEN, NEW_SUM = 155147, 484396720
+local RUN = "TheEnd-198845-17952987-16-151465783"
+local NEW_LEN, NEW_SUM = 198845, 17952987
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 12
-local LENS = { 13303, 13296, 13287, 13167, 13290, 13271, 13256, 13301, 13240, 13302, 13264, 9170 }
-local SUMS = { 67409079, 948660274, 266404745, 816058228, 379904796, 918623796, 659321254, 309794145, 464118196, 901135989, 725623781, 681290935 }
+local N = 16
+local LENS = { 13242, 13165, 13228, 13140, 13231, 13214, 13219, 13150, 13223, 13242, 13241, 13228, 13234, 13175, 13201, 712 }
+local SUMS = { 137879888, 580038089, 425714260, 382625152, 135632818, 823280755, 924487494, 162546552, 917082428, 106838554, 486110360, 934107283, 670841394, 102157393, 814892809, 773373630 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -68,8 +68,62 @@ local function chunkOk(h, i)
 end
 
 local K = 2
--- piece 2 of 12 of the new source (13296 bytes, checksum 948660274, long bracket level 0)
-local DATA = [[
+-- piece 2 of 16 of the new source (13165 bytes, checksum 580038089, long bracket level 1)
+local DATA = [=[
+		or string.match(v, "^pending:%w+$") then
+		return v
+	end
+	warnOnce("tex5:" .. tostring(key), string.format("TheEnd: TEX5.%s = %q is not an asset id; using the pass-4 fallback", tostring(key), v))
+	return nil
+end
+local failed = {} -- te5 keys whose upload did not load in this game (ContentProvider said so): they use the fallback
+-- T(key) -> id, flipbook layout name, flipbook mode name (layout "None" when it is not a flipbook). Accepts a TEX5 key or
+-- a pass-4 TEX key. The layout comes from whichever texture is used, because a fallback can be laid out differently.
+local function T(key)
+	local id = not failed[key] and idOf(TEX5[key], key)
+	if id then
+		local l = TEX5_LAYOUT[key]
+		return id, l and l[1] or "None", l and l[2] or "Loop"
+	end
+	local f = FALLBACK[key]
+	if f then return TEX[f[1]], f[2] or "None", f[3] or "Loop" end
+	local t = TEX[key]
+	if not t then warnOnce("texkey:" .. tostring(key), "TheEnd: no texture called " .. tostring(key)) end
+	return t or "", "None", "Loop"
+end
+local function isTe5(key) return not failed[key] and idOf(TEX5[key], key) ~= nil end
+-- every live image, beam and emitter that uses a te5 key, so a texture that fails to load can be swapped for its fallback;
+-- fixUps[o](o) puts back what the build chose because the te5 texture was there (a colour, a brightness, a size). (The
+-- hook gets the object as its argument: a weak-keyed entry whose value held its own key would never be collected)
+local texUsers = setmetatable({}, { __mode = "k" })
+local fixUps = setmetatable({}, { __mode = "k" })
+local usedKeys = {} -- (te5 keys some build on this client draws: only those are asked for)
+local function applyTex(o, key)
+	local id, layout, mode = T(key)
+	if o:IsA("ImageLabel") then
+		o.Image = id
+		local c = CROP[key]
+		if c then
+			local fb = not isTe5(key)
+			o.ImageRectOffset, o.ImageRectSize = fb and c[1] or Vector2.zero, fb and c[2] or Vector2.zero
+		end
+	elseif o:IsA("Beam") then
+		o.Texture = id
+	elseif o:IsA("ParticleEmitter") then
+		o.Texture = id
+		o.FlipbookLayout = Enum.ParticleFlipbookLayout[layout]
+		if layout ~= "None" then o.FlipbookMode = Enum.ParticleFlipbookMode[mode] end
+	end
+	if TEX5[key] then
+		texUsers[o] = key
+		usedKeys[key] = true
+	end
+end
+-- ask the engine for the te5 textures a build actually draws, once each (in the background: never blocks require or
+-- build; a low-quality build never asks for the six textures only high quality uses, so a phone does not hold them). One
+-- that does not load (wrong id, still in moderation, rejected) is reported and swapped for its pass-4 fallback everywhere,
+-- for every key that shares its id. A slow phone or a cold cache can time out: that id is asked for once more 20 s later
+-- before anything is swapped.
 local preloadUsed
 do
 	local asked, keysOf, retried, dead = {}, {}, {}, {}
@@ -149,7 +203,14 @@ local MAT = {
 	-- the moon: a grey core (it carries the dust, smoke, stream and key light, and casts the shadow) behind an opaque face
 	-- disc that always turns to the camera. Both stay outside the Highlight (no ink ring, nothing painted over the face)
 	MOONCORE = { Color3.fromRGB(184, 186, 192), Enum.Material.SmoothPlastic, 0, "Dark" },
+	-- (pass 5.2) gunmetal: the dark facets of the central star. A dark metal under the cyan sky turns teal, so it is a
+	-- satin plastic outside the silver tone, a step lighter than the steel round it
+	GUN = { Color3.fromRGB(66, 68, 74), Enum.Material.SmoothPlastic, 0, "Dark" },
 }
+-- (pass 5.2) an hour plot before it lights up on equip (a dark Neon does not glow), and the stage's gold (Milo: "the
+-- gold-and-black circular platform"; te5_engraving is grey and takes this tint, so its black base stays black)
+local LUME_OFF = Color3.fromRGB(52, 52, 56)
+local GOLD = Color3.fromRGB(228, 196, 132)
 
 -- flags. Any attribute on this ModuleScript with the same name and type overrides the default; they are read again at every
 -- build, so in Studio: set the attribute, then unequip and equip the aura (no reinstall). Numbers are range-checked.
@@ -178,6 +239,10 @@ local DEFAULTS = {
 	NEAR_BOKEH_HIDE = 18, NEAR_BOKEH_SHOW = 20, -- the big bokeh discs only drift by in showcase framings
 	GHOST_REMOTE = true, -- another wearer's clock, rings and orbs turn see-through while they stand between you and your camera
 	FAR_BEACON = false, -- (needs Milo's OK) a thin steady spire over the wearer that only far-away players see
+	-- (pass 5.2) the energy links between the moon, the clock, the void and the floor's vortex; and during the equip
+	-- reveal, on the wearer's own screen only, a soft bloom at the peak and a slight camera push-in (the field of view
+	-- narrows 6 % and comes back; it lets go at once if anything else changes the field of view meanwhile)
+	LINKS = true, REVEAL_BLOOM = true, REVEAL_PUSH = true,
 	-- where the ring of the pass-2 "rim" texture peaks, as a fraction of the image's half-width (measure it on the Mac:
 	-- studio_checks.md). Until te5_halo is uploaded the night corona, the void's horizon glow and the moon halo use "rim",
 	-- and they are scaled so its ring lands where te5_halo's does (0.73)
@@ -234,70 +299,7 @@ local function readConfig()
 	-- (the hysteresis pairs must stay in order)
 	if CONFIG.ZOOM_NEAR > CONFIG.ZOOM_FAR - 1 then CONFIG.ZOOM_NEAR = CONFIG.ZOOM_FAR - 1 end
 	if CONFIG.AIR_OFF > CONFIG.AIR_ON - 0.5 then CONFIG.AIR_OFF = CONFIG.AIR_ON - 0.5 end
-	if CONFIG.NEAR_ARM_SHOW < CONFIG.NEAR_ARM_HIDE + 0.5 then CONFIG.NEAR_ARM_SHOW = CONFIG.NEAR_ARM_HIDE + 0.5 end
-	if CONFIG.NEAR_BOKEH_SHOW < CONFIG.NEAR_BOKEH_HIDE + 0.5 then CONFIG.NEAR_BOKEH_SHOW = CONFIG.NEAR_BOKEH_HIDE + 0.5 end
-end
-readConfig()
-
-local End = {}
-
-End.pose = {
-	hover = 2.4, bob = 0.28, bobSpeed = 1.4,
-	-- degrees in the parent part's axes (X right, Y up, Z back): +X on a hip/shoulder swings the limb forward,
-	-- -X on a knee bends it back, -Z on the left shoulder lifts that arm out (+Z the right one)
-	idle = {
-		Root = { 2, 0, 0 }, Waist = { 2, 0, 0 }, Neck = { -8, 0, 0 },
-		LeftShoulder = { 6, 0, -24 }, RightShoulder = { 6, 0, 24 }, LeftElbow = { 16, 0, 0 }, RightElbow = { 16, 0, 0 },
-		LeftHip = { 10, 0, -3 }, RightHip = { -5, 0, 3 }, LeftKnee = { -16, 0, 0 }, RightKnee = { -40, 0, 0 },
-		LeftAnkle = { -26, 0, 0 }, RightAnkle = { -32, 0, 0 },
-	},
-	glide = {
-		Root = { -18, 0, 0 }, Waist = { -5, 0, 0 }, Neck = { 14, 0, 0 },
-		LeftShoulder = { -30, 0, -26 }, RightShoulder = { -30, 0, 26 }, LeftElbow = { 10, 0, 0 }, RightElbow = { 10, 0, 0 },
-		LeftHip = { -14, 0, -2 }, RightHip = { -22, 0, 2 }, LeftKnee = { -26, 0, 0 }, RightKnee = { -48, 0, 0 },
-		LeftAnkle = { -34, 0, 0 }, RightAnkle = { -34, 0, 0 },
-	},
-	breathe = { LeftShoulder = { 0, 0, -5 }, RightShoulder = { 0, 0, 5 }, LeftElbow = { 4, 0, 0 }, RightElbow = { 4, 0, 0 }, Waist = { 1.5, 0, 0 } },
-	suppress = {
-		Root = 0.6, Waist = 0.6, Neck = 0.2, LeftShoulder = 0.7, RightShoulder = 0.7, LeftElbow = 0.6, RightElbow = 0.6,
-		LeftHip = 0.93, RightHip = 0.93, LeftKnee = 0.93, RightKnee = 0.93, LeftAnkle = 0.9, RightAnkle = 0.9,
-	},
-}
-
-local rad, sin, cos, exp, sqrt, abs, atan2 = math.rad, math.sin, math.cos, math.exp, math.sqrt, math.abs, math.atan2
-local min, max, clamp, pi, asin, tan = math.min, math.max, math.clamp, math.pi, math.asin, math.tan
-local TAU = 2 * pi
-local IDENT = CFrame.new()
-local DISC = CFrame.Angles(0, rad(90), 0) -- a cylinder lying with its axis along z (a disc facing the viewer)
-local VERT = CFrame.Angles(0, 0, rad(90)) -- a cylinder standing upright
-local FLIP = CFrame.Angles(0, pi, 0)
-local TILTACC = CFrame.Angles(rad(24), 0, 0) -- the accretion disc tilts 24° toward the viewer (reads as a disc, not a line)
-local TILT33 = CFrame.Angles(rad(33), 0, 0)
-local FLAT = CFrame.new(0, 0.95, 0) * CFrame.Angles(rad(90), 0, 0) -- the rings lying flat on the dais before they rise
-local ASM_END = 6.5
--- the close-camera form (cz = 1 at Roblox's 12.5-stud default zoom, 0 from 30 studs out): the owner's clock stands this
--- much further back (other players' clocks less, so a passing wearer's clock does not slide far away) and leans back a
--- little more; the orbs come down and move back and a little out, so at the default zoom the moon is about the dial's
--- size beside it (not a huge disc under the HUD) and the theme reads first
-local CLOSE = { dist = 32, distRemote = 16, tilt = 24, arm = -2, orbY = 5, orbZ = 18 }
-
-local Players = game:GetService("Players")
-local Lighting = game:GetService("Lighting")
-local TweenService = game:GetService("TweenService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
--- the wearer's own screen dims and cools for a few seconds when they put it on (not when spawning or joining)
-local spawnedAt = setmetatable({}, { __mode = "k" })
-if Players.LocalPlayer then
-	local function mark(c) spawnedAt[c] = os.clock() end
-	if Players.LocalPlayer.Character and time() < 20 then mark(Players.LocalPlayer.Character) end -- (just joined: not an equip)
-	Players.LocalPlayer.CharacterAdded:Connect(mark)
-end
-
--- the wearer's equip grade lives here (one per client), so a quick re-equip takes it over instead of stacking a second one;
--- gradeOwner is the build that took it last (only that one eases it out)
-local liveGrade, liveGradeTween, gradeToken, gradeOwner = nil, nil, 0, nil
-]]
+]=]
 
 local function main()
 	if game:GetService("RunService"):IsRunning() then
@@ -341,7 +343,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "14_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "18_apply.luau"))
 end
 
 local ok, res = pcall(main)

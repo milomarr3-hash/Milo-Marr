@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 07_chunk_06_of_12.luau | step 7: piece 6 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (155147 bytes, checksum 484396720).
+-- AuraRNG Studio install kit | 08_chunk_07_of_16.luau | step 8: piece 7 of 16
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (198845 bytes, checksum 17952987).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "07_chunk_06_of_12.luau"
+local FILE = "08_chunk_07_of_16.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-155147-484396720-12-73384217"
-local NEW_LEN, NEW_SUM = 155147, 484396720
+local RUN = "TheEnd-198845-17952987-16-151465783"
+local NEW_LEN, NEW_SUM = 198845, 17952987
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 12
-local LENS = { 13303, 13296, 13287, 13167, 13290, 13271, 13256, 13301, 13240, 13302, 13264, 9170 }
-local SUMS = { 67409079, 948660274, 266404745, 816058228, 379904796, 918623796, 659321254, 309794145, 464118196, 901135989, 725623781, 681290935 }
+local N = 16
+local LENS = { 13242, 13165, 13228, 13140, 13231, 13214, 13219, 13150, 13223, 13242, 13241, 13228, 13234, 13175, 13201, 712 }
+local SUMS = { 137879888, 580038089, 425714260, 382625152, 135632818, 823280755, 924487494, 162546552, 917082428, 106838554, 486110360, 934107283, 670841394, 102157393, 814892809, 773373630 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -67,9 +67,33 @@ local function chunkOk(h, i)
 	return v ~= nil and v:IsA("StringValue") and #v.Value == LENS[i] and sum(v.Value) == SUMS[i]
 end
 
-local K = 6
--- piece 6 of 12 of the new source (13271 bytes, checksum 918623796, long bracket level 0)
+local K = 7
+-- piece 7 of 16 of the new source (13219 bytes, checksum 924487494, long bracket level 0)
 local DATA = [[
+			motion(i, CFrame.new(L.Position * 0.05) * L.Rotation, 0.9, 0.6)
+			fadeWin(i, 0.9, 1.1)
+		end
+		local wa = CONFIG.WEDGE_SWAP and -90 or 90
+		for _, sp in ipairs({ { 0, 1.3 }, { 180, 1.3 }, { 90, 0.9 }, { 270, 0.9 } }) do
+			if hi then
+				local S = CFrame.Angles(0, 0, -rad(sp[1]))
+				local h = sp[2]
+				local La = S * CFrame.new(-0.16, h / 2, 0) * CFrame.Angles(0, rad(wa), 0)
+				local Lb = S * CFrame.new(0.16, h / 2, 0) * CFrame.Angles(0, rad(-wa), 0)
+				grow(solid("Spike", "LUME", CORE, GHF, "Wedge", Vector3.new(0.08, h, 0.32), La), La)
+				grow(solid("Spike", "LUME", CORE, GHF, "Wedge", Vector3.new(0.08, h, 0.32), Lb), Lb)
+			end
+		end
+	end
+
+	---------------------------------------------------------------- THE DAIS: a dark galaxy pool in a raised silver rim
+	local base = solid("DaisBase", "BASE", CORE, GDAIS, "Cylinder", Vector3.new(0.12, 29.6, 29.6), CFrame.new(0, 0.06, 0) * VERT)
+	fadeWin(base, 4.0, 4.4)
+	hosts.base = PP[base]
+	local wheelHub
+	do
+		-- STUDIO-VERIFY: Top-face canvas orientation (up = +Z); the arms must trail the spin (floor turns clockwise from above;
+		-- if they lead: attribute GALAXY_DIR = -1). The floor and core images come in with the base disc (no bare grey lid).
 		hosts.floor = carrier("GalaxyFloor", CORE, GG0, Vector3.new(29.6, 0.05, 29.6))
 		surface(hosts.floor, Enum.NormalId.Top, hiCanvas, 1.3, 2.4, "galaxyFloor", 4.0, 4.6)
 		if hi then
@@ -77,18 +101,47 @@ local DATA = [[
 			surface(arms, Enum.NormalId.Top, 1024, 1.4, 2.4, "galaxyArms", 4.2, 5.2)
 		end
 		local core = carrier("GalaxyCore", CORE, GG2, Vector3.new(12, 0.05, 12))
-		surface(core, Enum.NormalId.Top, midCanvas, 1.5, 2.6, "galaxyCore", 4.0, 4.6)
-		-- the stage: an engraved clock ring 56 studs across round the pool (inked Roman numerals 3 studs tall, a minute track
-		-- with lume ticks), solid ink and white lines on the ground. Kept at every distance: from far away it is the aura's
-		-- footprint. The ink carries the day; it glows at night
+		surface(core, Enum.NormalId.Top, midCanvas, 1.5, 2.2, "galaxyCore", 4.0, 4.6) -- (pass 5.2: 2.2 at night, was 2.6: the bulge blew out to white)
+		hosts.coreB = brights[#brights] -- (pass 5.2: the galaxy's heart brightens in the buildup and at midnight)
+		-- (pass 5.2) the vortex in layers, each turning its own way at its own pace: the broad slow floor (-6 deg/s), rings of
+		-- energy (+4), the arms against it (+9), a fine fast swirl (-30) and the bright core (-16). The two new layers have no
+		-- pass-4 look-alike: they come with their te5 textures
+		if hi and isTe5("energyRings") then
+			hosts.rings = carrier("EnergyRings", DETAIL, G2.RINGS, Vector3.new(28, 0.05, 28))
+			surface(hosts.rings, Enum.NormalId.Top, 1024, 1.2, 2.2, "energyRings", 4.4, 5.4)
+		end
+		if hi and isTe5("galaxySwirl") then
+			hosts.fine = carrier("GalaxySwirl", DETAIL, G2.FINE, Vector3.new(18, 0.05, 18))
+			surface(hosts.fine, Enum.NormalId.Top, 1024, 1.3, 1.7, "galaxySwirl", 4.4, 5.4)
+		end
+		-- the stage: an engraved clock ring 56 studs across round the pool (Roman numerals 3 studs tall, a minute track with
+		-- batons). Kept at every distance: from far away it is the aura's footprint. (pass 5.2) Gold markings on a black
+		-- base, "the gold-and-black circular platform": te5_engraving is grey and takes the gold tint (its base stays
+		-- black); it no longer glows at night (1.25, under the Bloom threshold), so its detail never washes out, and it
+		-- brightens once, briefly, at midnight
 		if hi then
 			local eng = carrier("Engraving", CORE, GENG, Vector3.new(56, 0.05, 56))
-			surface(eng, Enum.NormalId.Top, 1024, 1.0, 2.0, "engraving", 4.2, 5.2)
+			surface(eng, Enum.NormalId.Top, 1024, 1.0, 1.25, "engraving", 4.2, 5.2, GOLD)
+			hosts.stageB = brights[#brights]
+			-- (pass 5.2) in the reveal a golden light sweeps once round the stage's minute band (te5_trail, 56 studs: its arc
+			-- lands on the band), lighting the markings as it passes
+			if isTe5("trail") then
+				hosts.sweepGui, hosts.sweepE = surface(carrier("StageSweep", CORE, G2.SWEEP, Vector3.new(56, 0.05, 56)), Enum.NormalId.Top, 1024, 1.5, 2.5,
+					"trail", 0, 0, Color3.fromRGB(255, 232, 186), true)
+			end
 		end
 		-- the floor's particles (mist, motes, ash) rise from their own invisible disc just above the top floor layer, so they
 		-- draw over the galaxy whether Roblox sorts a particle by its emitter's part or by the particles themselves
 		-- (STUDIO-VERIFY: by day, close up, the twinkles and ash are never hidden under the floor's SurfaceGuis)
 		hosts.floorFx = carrier("FloorFx", CORE, GG0, Vector3.new(29.6, 0.05, 29.6), CFrame.new(0, 0.8, 0))
+		-- (pass 5.2) the floor's wave at midnight starts at the centre, a stud above the floor layers (it lies flat and grows
+		-- across the stage: P24); the spiral arms are fed from two points that circle the pool's edge (P20, high quality)
+		hosts.wave = carrier("WaveHost", CORE, GDAIS, Vector3.new(0.2, 0.2, 0.2), CFrame.new(0, 1.0, 0))
+		if hi then
+			hosts.spiral = carrier("SpiralHost", CORE, G2.SPIRAL, Vector3.new(1, 0.05, 1))
+			hosts.spiralA = new("Attachment", { Name = "ArmA", CFrame = SPIRAL_OUT }, hosts.spiral)
+			hosts.spiralB = new("Attachment", { Name = "ArmB", CFrame = CFrame.Angles(0, pi, 0) * SPIRAL_OUT }, hosts.spiral)
+		end
 		-- the rim: fluted blocks (bright silver and satin) rising in a wave round the pool on equip
 		local NR = low and 16 or 24
 		for i = 0, NR - 1 do
@@ -142,6 +195,29 @@ local DATA = [[
 	hosts.helix = carrier("HelixHub", CORE, GHELIX, Vector3.new(1, 1, 1))
 	hosts.strandMoon = new("Attachment", { Name = "StrandMoon", Position = Vector3.new(3.1, 0, 0) }, hosts.helix)
 	hosts.strandVoid = new("Attachment", { Name = "StrandVoid", Position = Vector3.new(-3.1, 0, 0) }, hosts.helix)
+	-- (pass 5.2) the links' far ends: on the moon, facing IX (it aims straight at IX, for the motes; the beam leaves it
+	-- bowed up 20 degrees), on the void, facing III, and on the floor, in front of the clock (each beam arrives along its
+	-- end's x axis)
+	if CONFIG.LINKS then
+		hosts.linkMoon = carrier("LinkMoon", CORE, G2.LINKM, Vector3.new(0.2, 0.2, 0.2))
+		hosts.linkMoonA = new("Attachment", { Name = "LinkOut", CFrame = CFrame.fromMatrix(Vector3.zero, Vector3.new(0, 0.342, -0.94), Vector3.new(0, 0.94, 0.342)) },
+			hosts.linkMoon)
+		hosts.linkVoid = carrier("LinkVoid", CORE, G2.LINKV, Vector3.new(0.2, 0.2, 0.2))
+		hosts.linkVoidA = new("Attachment", { Name = "LinkIn", CFrame = CFrame.fromMatrix(Vector3.zero, -Vector3.zAxis, Vector3.yAxis) }, hosts.linkVoid)
+		if hi then
+			hosts.linkFloor = carrier("LinkFloor", CORE, G2.LINKF, Vector3.new(0.2, 0.2, 0.2))
+			hosts.linkFloorA = new("Attachment", { Name = "LinkIn", CFrame = CFrame.fromMatrix(Vector3.zero, -Vector3.zAxis, Vector3.yAxis) }, hosts.linkFloor)
+		end
+	end
+	if hi then
+		-- (pass 5.2) a tilted ring of glints orbiting the moon (P22); the void's infall shell, turning with its disc (P23);
+		-- the dial's burst ring at the hub, turning slowly, its axis along the dial's (P25: the glints that burst off the
+		-- dial at midnight slow down and stay in orbit round it); the converging streaks' shell round the clock (P26)
+		hosts.moonRing = carrier("MoonRing", CORE, G2.MRING, Vector3.new(14, 0.2, 14))
+		hosts.infall = carrier("Infall", CORE, G2.INFALL, Vector3.new(18, 18, 18))
+		hosts.burst = carrier("BurstRing", CORE, G2.BURST, Vector3.new(2, 0.2, 2))
+		hosts.converge = carrier("Converge", CORE, GK, Vector3.new(30, 30, 30), CFrame.new(0, 0, 1.5))
+	end
 
 	-- the Highlight: one per aura, on the Silver model only (neutral silver by day plus an ink contour on the bright sky).
 	-- STUDIO-VERIFY: a Highlight on a Model of 200+ parts. Its strength is the HIGHLIGHT_FILL / HIGHLIGHT_OUTLINE attributes.
@@ -200,86 +276,6 @@ local DATA = [[
 		return a or carA
 	end
 
-	---------------------------------------------------------------- THE STREAMS (beams)
-	-- { beam, faded transparency steps, written step, LE day, night, Br day, night, near only, far only }
-	local beams = {}
-	local sb -- the four stream beams (their palm end moves when the wearer turns): { MoonCore, MoonFlow, VoidCore, VoidCrackle }
-	do
-		local function beam(name, a0, a1, key, mode, len, speed, w0, w1, c0, c1, color, le0, le1, br0, br1, tr, nearOnly, farOnly)
-			local b = new("Beam", { Name = name, Attachment0 = a0, Attachment1 = a1, TextureMode = mode, TextureLength = len,
-				TextureSpeed = speed * CONFIG.FLOW_SIGN, Width0 = w0, Width1 = w1, CurveSize0 = c0, CurveSize1 = c1, Color = ColorSequence.new(color),
-				LightEmission = le0, LightInfluence = 0, Brightness = br0, FaceCamera = true, Segments = 20, ZOffset = 0,
-				Transparency = NumberSequence.new(1), Enabled = not farOnly }, holder("Fx", CORE))
-			if key then applyTex(b, key) end
-			-- (the fade steps are made here, once: update only picks one; 21 steps, so a fade never jumps more than 5 %)
-			local steps = {}
-			for q = 0, 20 do
-				local pts = {}
-				for _, p in ipairs(tr) do table.insert(pts, { p[1], 1 - (1 - p[2]) * q / 20 }) end
-				steps[q] = seq(pts)
-			end
-			table.insert(beams, { b, steps, 0, le0, le1, br0, br1, nearOnly, farOnly })
-			return b
-		end
-		local WRAP, STRETCH = Enum.TextureMode.Wrap, Enum.TextureMode.Stretch
-		local moonA0, voidA0 = palmFor(-assign, moonCarA), palmFor(assign, voidCarA)
-		-- STUDIO-VERIFY: Beam TextureSpeed direction: the streams must flow from the orb INTO the palm (all four are built
-		-- source -> destination, so they share one sign; if they run backwards: attribute FLOW_SIGN = -1). The lensed band
-		-- shares the sign: it drifts slowly left to right over the top (either way reads)
-		local trCore = { { 0, 0.15 }, { 0.12, 0.05 }, { 0.88, 0.05 }, { 1, 0.30 } }
-		sb = {
-			beam("MoonCore", hosts.moonOut, moonA0, "stream", WRAP, 5, 0.8, 1.4, 0.30, 4.0, 0, WHITE, 0, 0.45, 1.6, 2.4, trCore),
-			hi and beam("MoonFlow", hosts.moonOut, moonA0, "streak", WRAP, 7, 1.6, 0.5, 0.15, 4.3, 0, WHITE, 0.3, 0.9, 2.0, 2.6,
-				{ { 0, 0.4 }, { 0.15, 0.2 }, { 0.85, 0.2 }, { 1, 0.6 } }, true),
-			beam("VoidCore", hosts.voidOut, voidA0, "stream", WRAP, 5, 0.7, 1.6, 0.35, 3.0, 0, Color3.fromRGB(18, 18, 24), 0, 0, 1.0, 1.0, trCore),
-			hi and beam("VoidCrackle", hosts.voidOut, voidA0, "line", STRETCH, 1, 0, 0.14, 0.10, 2.6, 0, WHITE, 0.2, 0.8, 1.8, 2.4,
-				{ { 0, 0.3 }, { 0.1, 0.1 }, { 0.9, 0.1 }, { 1, 0.5 } }, true),
-		}
-		if hosts.horizon then
-			-- the lensed disc (the black hole's signature): the far side of the accretion disc, bent by the void's gravity, a
-			-- bright band arching over the top of the shadow and a thinner one under it. Both hang on the camera-facing
-			-- horizon carrier, so they hug the silhouette from every side; slimmer when the camera is close
-			local function lens(name, sg, w, br)
-				local a0 = new("Attachment", { Name = name .. "0", CFrame = CFrame.fromMatrix(Vector3.new(-4.45, 0, 0), Vector3.new(0, sg, 0), Vector3.new(-sg, 0, 0)) }, hosts.horizon)
-				local a1 = new("Attachment", { Name = name .. "1", CFrame = CFrame.fromMatrix(Vector3.new(4.45, 0, 0), Vector3.new(0, -sg, 0), Vector3.new(sg, 0, 0)) }, hosts.horizon)
-				return beam(name, a0, a1, "stream", WRAP, 6, 0.4, w, w, 6.0, 6.0, WHITE, 0.2, 0.8, br, br + 1.0,
-					{ { 0, 1 }, { 0.15, 0.05 }, { 0.85, 0.05 }, { 1, 1 } })
-			end
-			hosts.lensTop = lens("LensTop", 1, 1.5, 2.0)
-			hosts.lensBot = lens("LensBottom", -1, 0.8, 1.8)
-		end
-		if hosts.beacon0 then
-			-- (FAR_BEACON) a steady column seen only from far away: solid ink on the day sky, white at night, soft at the top.
-			-- No texture (a solid band reads at 300 studs; a textured line thinned to a hairline). No pulse.
-			hosts.beaconBeam = beam("Spire", hosts.beacon0, hosts.beacon1, nil, STRETCH, 1, 0, 8, 3, 0, 0, INK, 0, 1, 1, 2,
-				{ { 0, 0.1 }, { 0.6, 0.15 }, { 1, 1 } }, false, true)
-		end
-		-- (entry [10]: one of the four palm streams, switched off in first person; [11]: the Enabled last written; [12]: when
-		-- it fades in on equip: the lens with the void's heart, the streams once the dais is down)
-		for _, b in ipairs(beams) do
-			b[10] = b[1] == sb[1] or b[1] == sb[2] or b[1] == sb[3] or b[1] == sb[4]
-			b[11] = b[1].Enabled
-			b[12] = (b[1] == hosts.lensTop or b[1] == hosts.lensBot) and 0.9 or 4.6
-		end
-	end
-
-	---------------------------------------------------------------- THE PARTICLES: every system has a job and a path
-	local emitters = {} -- { emitter, on time, kind, live, written Enabled }
-	local emitNight = {} -- { emitter, LE day, LE night, Br day, Br night }
-	local em = {} -- the emitters that change after the build: bokeh (rate by night), smoke (thins out while moving)
-	do
-		local function pe(parent, key, tOn, props, le, br, kind)
-			local p = Instance.new("ParticleEmitter")
-			applyTex(p, key)
-			p.LightInfluence = 0
-			p.VelocityInheritance = 0
-			p.Color = ColorSequence.new(WHITE)
-			p.Speed = n(0)
-			p.Rotation = n(0)
-			p.RotSpeed = n(0)
-			p.Enabled = false
-			local sz = props.Size
-			if typeof(sz) == "NumberRange" then -- (a size range: a steady size with a random spread)
 ]]
 
 local function main()
@@ -324,7 +320,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "14_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "18_apply.luau"))
 end
 
 local ok, res = pcall(main)

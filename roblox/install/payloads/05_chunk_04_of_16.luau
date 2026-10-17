@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 04_chunk_03_of_12.luau | step 4: piece 3 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (155147 bytes, checksum 484396720).
+-- AuraRNG Studio install kit | 05_chunk_04_of_16.luau | step 5: piece 4 of 16
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (198845 bytes, checksum 17952987).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "04_chunk_03_of_12.luau"
+local FILE = "05_chunk_04_of_16.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-155147-484396720-12-73384217"
-local NEW_LEN, NEW_SUM = 155147, 484396720
+local RUN = "TheEnd-198845-17952987-16-151465783"
+local NEW_LEN, NEW_SUM = 198845, 17952987
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 12
-local LENS = { 13303, 13296, 13287, 13167, 13290, 13271, 13256, 13301, 13240, 13302, 13264, 9170 }
-local SUMS = { 67409079, 948660274, 266404745, 816058228, 379904796, 918623796, 659321254, 309794145, 464118196, 901135989, 725623781, 681290935 }
+local N = 16
+local LENS = { 13242, 13165, 13228, 13140, 13231, 13214, 13219, 13150, 13223, 13242, 13241, 13228, 13234, 13175, 13201, 712 }
+local SUMS = { 137879888, 580038089, 425714260, 382625152, 135632818, 823280755, 924487494, 162546552, 917082428, 106838554, 486110360, 934107283, 670841394, 102157393, 814892809, 773373630 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -67,172 +67,9 @@ local function chunkOk(h, i)
 	return v ~= nil and v:IsA("StringValue") and #v.Value == LENS[i] and sum(v.Value) == SUMS[i]
 end
 
-local K = 3
--- piece 3 of 12 of the new source (13287 bytes, checksum 266404745, long bracket level 0)
+local K = 4
+-- piece 4 of 16 of the new source (13140 bytes, checksum 382625152, long bracket level 0)
 local DATA = [[
--- when this client's own THE END was last taken away, and from which character (a respawn rebuilds it on a new character
--- within seconds: that is not an equip, so no grade)
-local ownGone, ownGoneChar = nil, setmetatable({}, { __mode = "v" }) -- (weak: an old character is never kept alive)
--- where this client's own clock hub is (the owner's build writes it every frame): another wearer's clock and orbs step
--- back behind it instead of standing in front of your own clock
-local ownerHub = nil
-local GRADE_ON = { Saturation = -0.75, Brightness = -0.1, Contrast = 0.15, TintColor = Color3.fromRGB(232, 238, 255) }
-local GRADE_OFF = { Saturation = 0, Brightness = 0, Contrast = 0, TintColor = Color3.new(1, 1, 1) }
--- where the time shards leave the bezel on equip (K angles), and the bezel point at eleven the metal shards break off from
-local SHARD_A = {}
-for i = 0, 7 do SHARD_A[i] = math.rad(300 + 20 * i) end
-local FEED_PT = Vector3.new(-10.72, 9.00, 0)
--- the camera closeness (in 0.05 steps) at which the floor's twinkles step down a size (each step under 20 %)
-local MOTE_T = { 0.3, 0.45, 0.6, 0.75 }
-local DOWN9 = Vector3.new(0, -9, 0) -- (the dais's slope rays)
-local SWIRL_UP = CFrame.new(0, 0.3, 0)
--- (pass 5.1) the star halo's ring leans like a planet's: tipped forward 12 degrees and over 8 (its far edge clears the
--- ground), so from every side one half of it passes in front of the aura and the other behind; the helix hub sits at
--- the feet
-local HALO_TILT = CFrame.new(0, 1.2, 0) * CFrame.Angles(math.rad(12), 0, math.rad(-8))
-local HELIX_FEET = Vector3.new(0, -2.9, 0)
--- the hairlines (the photon ring's thickness, the seconds needle's width) by distance band: under 50 studs, 50-95, beyond.
--- A 0.13-stud line is under a pixel past ~85 studs; drawn without anti-aliasing (phones, low graphics) it breaks into a
--- crawling stair-step, so it thickens in two steps (5 studs of margin each way: no back and forth)
-local HAIR = { { 0.13, 0.12 }, { 0.22, 0.2 }, { 0.36, 0.3 } }
-local function hairBand(d, b)
-	if b < 3 and d > (b == 1 and 50 or 95) then return b + 1 end
-	if b > 1 and d < (b == 2 and 45 or 90) then return b - 1 end
-	return b
-end
-
-local function new(class, props, parent)
-	local o = Instance.new(class)
-	for k, v in pairs(props) do o[k] = v end
-	if parent then o.Parent = parent end
-	return o
-end
-local function seq(points)
-	local kp = {}
-	for _, p in ipairs(points) do table.insert(kp, NumberSequenceKeypoint.new(p[1], p[2], p[3] or 0)) end
-	return NumberSequence.new(kp)
-end
-local function n(a, b) return NumberRange.new(a, b or a) end
-local function wrapPi(a) return (a + pi) % TAU - pi end
-local function smooth(u)
-	if u <= 0 then return 0 elseif u >= 1 then return 1 end
-	return u * u * (3 - 2 * u)
-end
--- eases in with a small overshoot (~6 %) and locks exactly at 1, like a part snapping into its seat
-local function easeOutBack(u)
-	if u <= 0 then return 0 elseif u >= 1 then return 1 end
-	local v = u - 1
-	return 1 + 2.25 * v * v * v + 1.25 * v * v
-end
--- position eased with overshoot (k may go a little below 0), rotation blended without overshoot
-local function lerpCF(a, b, k)
-	return CFrame.new(a.Position + (b.Position - a.Position) * k) * a.Rotation:Lerp(b.Rotation, clamp(k, 0, 1))
-end
-local function ss(a, b, x)
-	local u = clamp((x - a) / (b - a), 0, 1)
-	return u * u * (3 - 2 * u)
-end
--- 0 by day, 1 by night (dusk 17:30-19:00, dawn 05:00-06:30), in steps of 0.05
-local function nightStep()
-	local ct = Lighting.ClockTime
-	return math.floor(max(ss(17.5, 19, ct), 1 - ss(5, 6.5, ct)) * 20 + 0.5) / 20
-end
-
--- the gears: where they sit on the clock (x, y, z), tip and root diameters, teeth bars, thickness, tooth width, web, spokes,
--- turning speed (°/s, all clients agree through the server clock), and whether low quality builds it
-local GEARS = {
-	{ "GA", 8.839, 8.839, -2.00, 9.0, 8.0, 8, 0.50, 0.785, true, true, -4.0, true },
-	{ "GB", 11.172, -6.450, -1.85, 6.0, 5.2, 6, 0.45, 0.681, true, false, 9.0, false },
-	{ "GC", -10.912, -6.300, -2.10, 7.0, 6.1, 6, 0.45, 0.798, true, true, -6.0, false },
-	{ "GD", -8.768, 8.768, -1.90, 8.0, 7.1, 7, 0.50, 0.797, true, false, 4.6, false },
-	{ "GE", 0, 0, -0.95, 7.6, 6.8, 8, 0.40, 0.668, true, true, 6.0, true },
-	{ "GH", 5.196, -3.000, 0.58, 3.6, 3.0, 4, 0.24, 0.589, false, false, -12.0, false },
-	{ "GI", -5.196, -3.000, 0.58, 3.6, 3.0, 4, 0.24, 0.589, false, false, -12.0, false },
-}
--- the film's own meshes (only looked up when the FILM_* flags ask for them; any failure keeps the procedural part)
-local function meshOf(o)
-	if not o then return nil end
-	if o:IsA("MeshPart") then return o end
-	return o:FindFirstChildWhichIsA("MeshPart", true)
-end
-local function filmKit()
-	local te, obl
-	pcall(function()
-		local cinema = ReplicatedStorage:FindFirstChild("AuraCinema")
-		local assets = cinema and cinema:FindFirstChild("Assets")
-		te = assets and assets:FindFirstChild("TheEnd")
-		obl = (te and te:FindFirstChild("Oblivion")) or (assets and (assets:FindFirstChild("Oblivion") or assets:FindFirstChild("Oblivion", true)))
-	end)
-	return te, obl
-end
-local function goodMesh(m)
-	if not m then return false end
-	local ok, good = pcall(function()
-		local s = m.Size
-		return m.MeshId ~= "" and s.X >= 0.01 and s.Y >= 0.01 and s.Z >= 0.01
-	end)
-	return ok and good == true
-end
--- a right-handed rotation that sends the mesh's local axes to the clock axes picked for them
-local function axesTo(img)
-	if img[1]:Cross(img[2]):Dot(img[3]) < 0 then img[2] = -img[2] end
-	return CFrame.fromMatrix(Vector3.zero, img[1], img[2], img[3])
-end
--- a disc-like mesh: its thinnest axis becomes the depth (z), the other two must be round; scaled to the target diameter
-local function fitDisc(m, dia, depth)
-	local sz = m.Size
-	local s = { sz.X, sz.Y, sz.Z }
-	local thin = 1
-	if s[2] < s[thin] then thin = 2 end
-	if s[3] < s[thin] then thin = 3 end
-	local a, b = thin % 3 + 1, (thin + 1) % 3 + 1
-	if max(s[a], s[b]) / min(s[a], s[b]) > 1.15 then return nil end
-	local k = dia / max(s[a], s[b])
-	local ns = { s[1] * k, s[2] * k, s[3] * k }
-	if ns[thin] < 0.3 * depth or ns[thin] > 3 * depth then ns[thin] = depth end
-	local img = {}
-	img[thin], img[a], img[b] = Vector3.zAxis, Vector3.xAxis, Vector3.yAxis
-	return Vector3.new(ns[1], ns[2], ns[3]), axesTo(img)
-end
--- a hand: the longest axis points at XII (y), the thinnest of the other two is the depth (z)
-local function fitHand(m, length)
-	local sz = m.Size
-	local s = { sz.X, sz.Y, sz.Z }
-	local long = 1
-	if s[2] > s[long] then long = 2 end
-	if s[3] > s[long] then long = 3 end
-	local a, b = long % 3 + 1, (long + 1) % 3 + 1
-	local thin, other = a, b
-	if s[b] < s[a] then thin, other = b, a end
-	local k = length / s[long]
-	local img = {}
-	img[long], img[thin], img[other] = Vector3.yAxis, Vector3.zAxis, Vector3.xAxis
-	return Vector3.new(s[1] * k, s[2] * k, s[3] * k), axesTo(img)
-end
--- a sphere: scaled evenly to the target diameter
-local function fitSphere(m, dia)
-	local sz = m.Size
-	local big, small = max(sz.X, sz.Y, sz.Z), min(sz.X, sz.Y, sz.Z)
-	if big / small > 1.1 then return nil end
-	return sz * (dia / big), IDENT
-end
-
-function End.build(ctx)
-	readConfig() -- (attributes are read again at every build: set one in Studio, then unequip and equip)
-	local low = ctx.quality == "low"
-	local hi = not low
-	local char = ctx.char
-	local destroyed = false
-	local root = new("Model", { Name = "TheEnd_" .. char.Name })
-	local mats = {
-		Silver = new("Model", { Name = "Silver" }, root), Dark = new("Model", { Name = "Dark" }, root),
-		Lume = new("Model", { Name = "Lume" }, root), Fx = new("Folder", { Name = "Fx" }, root),
-	}
-	-- every part belongs to one hideable group: Core, Detail (dropped when far), Armillary (hidden when the camera is inside
-	-- the rings) or ArmillaryDetail (both). Each group has its own child model inside each material model.
-	local CORE, DETAIL, ARM, ARMD = 1, 2, 3, 4
-	local HIDE_NAMES = { "Core", "Detail", "Armillary", "ArmillaryDetail" }
-	local hideD, hideA = { false, true, false, true }, { false, false, true, true }
 	local holders, holderOf, shownH = { {}, {}, {}, {} }, {}, { true, true, true, true }
 	local function holder(mat, h)
 		local key = mat .. h
@@ -254,7 +91,12 @@ function End.build(ctx)
 	local GDAIS, GG0, GG1, GG2, GENG, GWHEEL, GFUNNEL = 30, 31, 32, 33, 34, 35, 37
 	local GHALO, GHELIX = 36, 38 -- (pass 5.1: the star halo's turning ring, the helix hub)
 	local GFEED, GAIR, GBOKEH, GPALMM, GPALMV, GMOONF, GDUST = 39, 40, 41, 42, 43, 44, 45
-	local GCF = table.create(45, IDENT)
+	-- (pass 5.2, as constants in one table: End.build has no registers to spare for 14 more locals) the bezel's engraved
+	-- band; the lume trail; the links' moon, void and floor ends; the two runners; the galaxy's spiral host, fine swirl,
+	-- energy rings and stage sweep; the dial's burst ring; the void's infall shell; the moon's ring of glints
+	local G2 = { BAND = 46, TRAIL = 47, LINKM = 48, LINKV = 49, LINKF = 50, RUN1 = 51, RUN2 = 52, SPIRAL = 53, FINE = 54,
+		RINGS = 55, SWEEP = 56, BURST = 57, INFALL = 58, MRING = 59, SUB = 60 }
+	local GCF = table.create(60, IDENT)
 	-- per-frame state that is not a hot inner-loop value lives in one table (End.build is close to Luau's 200-register
 	-- limit: every new top-level local here costs one; tools/harness/register_headroom.py keeps 16 spare)
 	local st = {
@@ -274,6 +116,14 @@ function End.build(ctx)
 		-- silver tone while they fade; nearHide/ghostRemote: those flags as this build read them
 		gn = Vector3.yAxis, gnT = Vector3.yAxis, gpT = 0, fitD = 0, yieldD = 0, yieldT = 0, yieldHold = 0, r0 = nil, ringsOut = false,
 		nearHide = CONFIG.NEAR_HIDE, ghostRemote = CONFIG.GHOST_REMOTE, pBand = low and 2 or 1, nBand = low and 2 or 1,
+		-- (pass 5.2) the reveal: revOn while it runs; gearM/runM: the gears' and runners' pace; trailA/sweepA: the trail's
+		-- and the stage sweep's angles (trailA nil: the trail rides the seconds hand); convOn: the converging streaks;
+		-- smokeQ: the void smoke's draw-in step; peakDone: midnight has struck; run1/run2: the runners' angles; linkLm/Lv/Lf:
+		-- the links' lengths last written; ownReveal: the wearer's own real equip (bloom, push); bloom, fov0/fovW: the
+		-- screen effects
+		revOn = false, gearM = 1, runM = 1, trailA = nil, sweepA = 0, convOn = false, smokeQ = 0, peakDone = false, run1 = 0, run2 = 0,
+		linkLm = -9, linkLv = -9, linkLf = -9, ownReveal = false, bloom = nil, bloomDone = false, fov0 = nil, fovW = nil, fovCam = nil,
+		pushDone = false,
 	}
 
 	-- the part registry: part, group, rest transform in the group, hide group; the assembly's start transform and motion
@@ -286,7 +136,7 @@ function End.build(ctx)
 	local function reg(p, grp, L, h)
 		NP += 1
 		PP[NP], PG[NP], PL[NP], PH[NP] = p, grp, L, h
-		if grp <= GGEAR0 + 7 then table.insert(clockParts, p) end
+		if grp <= GGEAR0 + 7 or grp == G2.SUB then table.insert(clockParts, p) end
 		return NP
 	end
 	local function solidPart(p, tok, h, grp, L)
@@ -320,6 +170,129 @@ function End.build(ctx)
 
 	-- GUIs: images fade in once; their Brightness only changes on the night tick
 	local images, brights = {}, {} -- { image, rest transparency, fade from, fade to, written }, { gui, day, night }
+	local hiCanvas, midCanvas = low and 512 or 1024, low and 256 or 512
+	-- (own: the reveal writes this image's transparency itself, so it stays out of the fades; brights entries carry a
+	-- fourth value, the reveal's brightness boost, 0 at rest)
+	local function surface(host, face, canvas, b0, b1, key, f0, f1, color, own)
+		local g = new("SurfaceGui", { Face = face, SizingMode = Enum.SurfaceGuiSizingMode.FixedSize, CanvasSize = Vector2.new(canvas, canvas),
+			LightInfluence = 0, Brightness = b0, AlwaysOnTop = false }, host)
+		local im = new("ImageLabel", { BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ImageColor3 = color or Color3.new(1, 1, 1),
+			ImageTransparency = 1 }, g)
+		applyTex(im, key)
+		local e = { im, 0, f0, f1, 1 }
+		if not own then table.insert(images, e) end
+		if b1 then table.insert(brights, { g, b0, b1, 0 }) end
+		return g, e
+	end
+
+	-- the film meshes (CONFIG.USE_FILM_MESHES + one FILM_* flag per element), cloned and scaled to the procedural size
+	local filmTe, filmObl
+	if CONFIG.USE_FILM_MESHES then filmTe, filmObl = filmKit() end
+	local function film(flag, name, oblivion)
+		if not (CONFIG.USE_FILM_MESHES and CONFIG[flag]) then return nil end
+		local m
+		pcall(function()
+			local box = oblivion and filmObl or filmTe
+			m = meshOf(box and box:FindFirstChild(name))
+		end)
+		if goodMesh(m) then return m end
+		return nil
+	end
+	local function filmSolid(tpl, size, name, tok, h, grp, L)
+		local ok, p = pcall(function()
+			local c = tpl:Clone()
+			if not CONFIG.FILM_KEEP_TEXTURES then
+				c:ClearAllChildren()
+				pcall(function() c.TextureID = "" end)
+			end
+			pcall(function() c.RenderFidelity = Enum.RenderFidelity.Automatic end) -- STUDIO-VERIFY: may not be settable at runtime (harmless if not)
+			c.Name = name
+			c.Size = size
+			return c
+		end)
+		if not ok or not p then return nil end
+		return solidPart(p, tok, h, grp, L)
+	end
+
+	---------------------------------------------------------------- THE CLOCK: a skeleton pocket watch, 28 studs, 8 studs beyond
+	-- (frame K: x = viewer's right, y = toward XII, z = toward the viewer; the angle θ runs clockwise from XII)
+	local function radial(th, r, z) return CFrame.Angles(0, 0, -rad(th)) * CFrame.new(0, r, z) end
+	local hosts = { plots = {} } -- invisible carriers and attachments the emitters, beams and lights hang on (one table: saves registers)
+	-- (the silver rings' parts move here, outside the Highlight's Silver model, while they fade or ghost)
+	hosts.noTone = new("Model", { Name = "SilverRings" }, root)
+	local ghostGuis = {} -- GUIs that switch off while another wearer's aura is ghosted (LocalTransparencyModifier skips GUIs)
+	local frontL = CONFIG.FRONT_FACES and FLIP or IDENT -- (FRONT_FACES: draw the dial GUIs on Front faces of flipped planes, as pass 4)
+	local frontFace = CONFIG.FRONT_FACES and Enum.NormalId.Front or Enum.NormalId.Back
+	do
+		-- the bezel: a fluted coin edge 2.4 deep, bright silver and darker satin flutes (the segments alternate in depth too,
+		-- so the flutes show and nothing z-fights); on equip it sweeps round clockwise from twelve, each segment flying in
+		-- from outside and behind
+		local filmBezel = film("FILM_BEZEL", "RingG")
+		local fsz, frot
+		if filmBezel then fsz, frot = fitDisc(filmBezel, 28.24, 2.5) end
+		local k0 = fsz and filmSolid(filmBezel, fsz, "Bezel", "SILVER", CORE, GK, CFrame.new(0, 0, -0.2) * frot)
+		if k0 then
+			motion(k0, CFrame.new(0, 0, -4.2) * CFrame.Angles(0, 0, -rad(40)) * frot, 2.0, 0.9)
+			fadeWin(k0, 2.0, 2.3)
+		else
+			local NB = low and 20 or 32
+			for i = 0, NB - 1 do
+				local th = (i + 0.5) * 360 / NB
+				local odd = i % 2 == 1
+				local Ro = odd and 14.12 or 14.00
+				local zb, zf = odd and -1.44 or -1.40, odd and 1.12 or 1.00
+				local rm, zc = (12.2 + Ro) / 2, (zb + zf) / 2
+				local k = solid("Bezel", odd and "SATIN" or "SILVER", CORE, GK, "Block",
+					Vector3.new(2 * Ro * math.tan(rad(180 / NB)) + 0.02, Ro - 12.2, zf - zb), radial(th, rm, zc))
+				local a = 2.0 + 0.9 * i / NB
+				motion(k, radial(th + 40, rm + 7, zc - 4), a, 0.7)
+				fadeWin(k, a, a + 0.25)
+			end
+			-- (pass 5.2) a near-black band set into the bezel's face between bright lips of flute (silver | black | silver),
+			-- engraved with a fine degree scale and the hours' stars on its own plane, which turns a degree a second: the
+			-- scale creeps round like the sky. The band is solid and outside the silver tone, so the tone never paints over
+			-- its engraving; until te5_bezel_band is uploaded it is a plain dark inset. Each segment flies in with its flute
+			if hi then
+				for i = 0, 31 do
+					local th = (i + 0.5) * 11.25
+					local k = solid("BezelBand", "DEEP", CORE, GK, "Block", Vector3.new(2 * 13.62 * math.tan(rad(5.625)) + 0.02, 0.92, 0.20),
+						radial(th, 13.16, 1.07))
+					local a = 2.0 + 0.9 * i / 32
+					motion(k, radial(th + 40, 20.16, -2.93), a, 0.7)
+					fadeWin(k, a, a + 0.25)
+				end
+				if isTe5("bezelBand") then
+					hosts.band = carrier("BezelEngraving", CORE, G2.BAND, Vector3.new(27.4, 27.4, 0.05), frontL)
+					hosts.bandGui = surface(hosts.band, frontFace, hiCanvas, 1.3, 1.8, "bezelBand", 3.0, 3.6, Color3.fromRGB(236, 236, 240))
+					table.insert(ghostGuis, hosts.bandGui)
+				end
+			end
+		end
+		-- the chapter ring: dark steel, recessed into the bezel (its outer edge tucks under the bezel and hides the polygon)
+		local filmDial = film("FILM_DIAL", "Dial")
+		fsz, frot = nil, nil
+		if filmDial then fsz, frot = fitDisc(filmDial, 25.0, 0.5) end
+		k0 = fsz and filmSolid(filmDial, fsz, "Dial", "STEEL", CORE, GK, CFrame.new(0, 0, -0.15) * frot)
+		if k0 then
+			motion(k0, CFrame.new(0, 0, -3.15) * frot, 2.3, 0.6)
+			fadeWin(k0, 2.3, 2.55)
+		else
+			local NC = low and 16 or 18 -- (its inner edge is dark on the dark star window and the inlay covers its face: 18 is enough)
+			for i = 0, NC - 1 do
+				local th = (i + 0.5) * 360 / NC
+				local odd = i % 2 == 1
+				local zb, zf = odd and -0.42 or -0.40, odd and 0.12 or 0.10
+				local zc = (zb + zf) / 2
+				local k = solid("Chapter", "STEEL", CORE, GK, "Block", Vector3.new(2 * 12.5 * math.tan(rad(180 / NC)) + 0.02, 3.1, zf - zb),
+					radial(th, 10.95, zc))
+				local a = 2.3 + 0.9 * i / NC
+				motion(k, radial(th, 10.95, zc - 3), a, 0.6)
+				fadeWin(k, a, a + 0.25)
+			end
+		end
+		-- the inlay: white Roman numerals, minute track and stars set into the chapter ring (opaque strokes, glowing through
+		-- Brightness, not alpha). STUDIO-VERIFY: SurfaceGui Face = Back draws on the +Z face (toward the viewer), XII up
+		-- (if not: attribute FRONT_FACES = true)
 ]]
 
 local function main()
@@ -364,7 +337,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "14_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "18_apply.luau"))
 end
 
 local ok, res = pcall(main)

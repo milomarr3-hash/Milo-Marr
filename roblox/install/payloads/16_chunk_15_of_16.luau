@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 13_chunk_12_of_12.luau | step 13: piece 12 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (155147 bytes, checksum 484396720).
+-- AuraRNG Studio install kit | 16_chunk_15_of_16.luau | step 16: piece 15 of 16
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (198845 bytes, checksum 17952987).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "13_chunk_12_of_12.luau"
+local FILE = "16_chunk_15_of_16.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-155147-484396720-12-73384217"
-local NEW_LEN, NEW_SUM = 155147, 484396720
+local RUN = "TheEnd-198845-17952987-16-151465783"
+local NEW_LEN, NEW_SUM = 198845, 17952987
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 12
-local LENS = { 13303, 13296, 13287, 13167, 13290, 13271, 13256, 13301, 13240, 13302, 13264, 9170 }
-local SUMS = { 67409079, 948660274, 266404745, 816058228, 379904796, 918623796, 659321254, 309794145, 464118196, 901135989, 725623781, 681290935 }
+local N = 16
+local LENS = { 13242, 13165, 13228, 13140, 13231, 13214, 13219, 13150, 13223, 13242, 13241, 13228, 13234, 13175, 13201, 712 }
+local SUMS = { 137879888, 580038089, 425714260, 382625152, 135632818, 823280755, 924487494, 162546552, 917082428, 106838554, 486110360, 934107283, 670841394, 102157393, 814892809, 773373630 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -67,9 +67,113 @@ local function chunkOk(h, i)
 	return v ~= nil and v:IsA("StringValue") and #v.Value == LENS[i] and sum(v.Value) == SUMS[i]
 end
 
-local K = 12
--- piece 12 of 12 of the new source (9170 bytes, checksum 681290935, long bracket level 0)
-local DATA = [[
+local K = 15
+-- piece 15 of 16 of the new source (13201 bytes, checksum 814892809, long bracket level 1)
+local DATA = [=[
+		-- (pass 5.1) the star halo turns slowly on its tilt; the helix hub spins round the body from the feet
+		if hosts.halo then GCF[GHALO] = W * HALO_TILT * CFrame.Angles(0, (rad(14) * now) % TAU, 0) end
+		GCF[GHELIX] = CFrame.new(O + HELIX_FEET) * CFrame.Angles(0, (rad(220) * now) % TAU, 0)
+		-- (a hand replaced without a new character, e.g. by ApplyDescription, takes our attachment with it: fall back to the
+		-- intake carriers and re-point the streams)
+		if palmR and palmR.Parent == nil then palmR, st.repoint = nil, true end
+		if palmL and palmL.Parent == nil then palmL, st.repoint = nil, true end
+		local f = W.RightVector:Dot(V.RightVector)
+		local flip = (f > 0.2 and assign ~= 1) and 1 or (f < -0.2 and assign ~= -1) and -1 or nil
+		if flip then assign = flip end
+		local moonSide = -assign
+		local mA, vA = palmFor(moonSide, moonCarA), palmFor(-moonSide, voidCarA)
+		GCF[GPALMM] = mA ~= moonCarA and CFrame.new(mA.WorldPosition) or W * CFrame.new(2.3 * moonSide, -0.3, -0.5)
+		GCF[GPALMV] = vA ~= voidCarA and CFrame.new(vA.WorldPosition) or W * CFrame.new(-2.3 * moonSide, -0.3, -0.5)
+
+		-- near-camera rules (with hysteresis), decided before the move so a group shown again moves this very frame: no rings
+		-- or bokeh blobs across the lens. The rings fade out over 0.25 s in three steps before they leave the world, and come
+		-- back fully see-through and fade in, so scrolling between 9 and 12 studs never snaps the biggest thing near the lens
+		if st.nearHide then
+			local dA = (camPos - A0p).Magnitude
+			if (not st.armWant and dA < CONFIG.NEAR_ARM_HIDE) or (st.armWant and dA > CONFIG.NEAR_ARM_SHOW) then
+				st.armWant = not st.armWant
+			end
+			local tgt = st.armWant and 1 or 0
+			if st.armF ~= tgt or (armHidden and not st.armWant) then
+				if armHidden and not st.armWant then
+					armHidden = false -- (back in the world at full see-through, at this frame's positions)
+					setGroups()
+				end
+				local step = snap and 1 or dt / 0.25
+				st.armF = tgt > st.armF and min(1, st.armF + step) or max(0, st.armF - step)
+				local q = math.floor(st.armF * 3 + 0.5) / 3
+				if q ~= st.armQ then
+					st.armQ = q
+					writeRings()
+				end
+				if st.armF >= 1 and not armHidden then
+					armHidden = true
+					setGroups()
+				end
+			end
+			if (not bokehNear and camDist < CONFIG.NEAR_BOKEH_HIDE) or (bokehNear and camDist > CONFIG.NEAR_BOKEH_SHOW) then
+				bokehNear = not bokehNear
+				refreshEmitters()
+			end
+		end
+		-- far detail (the framework's setDetail past ~110 studs): the lights, the near-only beams and another player's
+		-- silver tone fade over 0.5 s instead of switching in one frame (at night a lit patch of plaza would pop)
+		local lt = near and 1 or 0
+		if st.lodF ~= lt then
+			st.lodF = lt > st.lodF and min(1, st.lodF + dt / 0.5) or max(0, st.lodF - dt / 0.5)
+			local lq = math.floor(st.lodF * 20 + 0.5) / 20
+			if lq ~= st.lod then
+				st.lod = lq
+				applyLod()
+			end
+		end
+		-- first person: the palm streams, the palm and funnel streaks and the body's wisps and sparks switch off (they sit
+		-- just under or round the lens), and fewer ash flakes drift across the bottom of the view
+		local fpOn = fp > 0.5
+		if fpOn ~= st.fpOn then
+			st.fpOn = fpOn
+			refreshBeams()
+			refreshEmitters()
+			if em.ash then em.ash.Rate = fpOn and 3 or 8 end
+		end
+
+		-- 7. every part = its group's frame x its rest transform (eased from its start pose while it assembles)
+		for j = 1, nAct do
+			local i = act[j]
+			local L = PL[i]
+			local rr = PRR[i]
+			if rr then L = PROT[i] * CFrame.new(0, rt + rr, 0) end
+			if asm then
+				local S = PS[i]
+				if S and age < PM1[i] then
+					local kk = 1 - easeOutBack((age - PM0[i]) / (PM1[i] - PM0[i]))
+					if rr then
+						L = PROT[i] * CFrame.new(0, rt + rr + (PRS[i] - rt - rr) * kk, 0)
+					else
+						L = lerpCF(L, S, kk)
+					end
+				end
+			end
+			acf[j] = GCF[PG[i]] * L
+		end
+		workspace:BulkMoveTo(actParts, acf, Enum.BulkMoveMode.FireCFrameChanged)
+
+		-- 8. event writes only
+		if flip or st.repoint then
+			st.repoint = false
+			sb[1].Attachment1 = mA
+			if sb[2] then sb[2].Attachment1 = mA end
+			sb[3].Attachment1 = vA
+			if sb[4] then sb[4].Attachment1 = vA end
+		end
+		if on ~= alphaOn then
+			alphaOn = on
+			refreshEmitters()
+			refreshLights()
+		end
+		if asm then
+			-- the void condenses out of a point (Size writes on this one part, during the assembly only)
+			local d = 0.6 + 7.4 * easeOutBack(age / 1.2)
 			if abs(d - voidD) >= 0.01 or (d == 8 and voidD ~= 8) then
 				voidD = d
 				void.Size = voidSize * (d / 8)
@@ -120,7 +224,7 @@ local DATA = [[
 		local slow = (st.smokeSlow and (g > 0.3 or st.speedOn)) or g > 0.6 or st.speedOn
 		if slow ~= st.smokeSlow then
 			st.smokeSlow = slow
-			em.smoke.Rate = slow and (low and 1 or 1.5) or (low and 4 or 10)
+			em.smoke.Rate = slow and (low and 1 or 1.5) or (low and 4 or 8)
 			em.smoke.Lifetime = slow and n(1.0, 1.4) or n(3.5, 4.5)
 			if em.smokeMoon then em.smokeMoon.Rate = slow and 0 or 5 end
 			em.dust.Rate = (low and 5 or 10) * (slow and 0.5 or 1)
@@ -200,6 +304,8 @@ local DATA = [[
 				for _, p in ipairs(clockParts) do p.LocalTransparencyModifier = cross and 0.5 or 0 end
 				-- (GUIs ignore LocalTransparencyModifier: the dial's inlay, star window and sub-dial switch off meanwhile)
 				hosts.inlayGui.Enabled, hosts.subdialGui.Enabled, hosts.plateGui.Enabled = not cross, not cross, not cross
+				if hosts.bandGui then hosts.bandGui.Enabled = not cross end
+				if hosts.trailGui then hosts.trailGui.Enabled = not cross end
 			end
 		end
 		-- (a state that went NaN anyway, e.g. a physics fling the guard above did not catch: start everything again where it
@@ -245,6 +351,7 @@ local DATA = [[
 				st.gradeOut = true
 				gradeTo(GRADE_OFF, 0.4, true)
 			end
+			if st.bloom or st.fov0 then hosts.screenOff() end -- (pass 5.2: nor the reveal's bloom or push-in, once started)
 		end
 		refreshEmitters()
 		refreshLights()
@@ -262,6 +369,7 @@ local DATA = [[
 		if destroyed then return end
 		destroyed = true
 		if grade then gradeTo(GRADE_OFF, 0.8, true) end -- (the screen eases back instead of snapping)
+		hosts.screenOff() -- (pass 5.2: the reveal's bloom goes and the field of view is given back)
 		if ctx.isLocal then
 			ownGone, ownGoneChar[1] = os.clock(), char -- (a respawn's rebuild within seconds is not an equip: no grade)
 			ownerHub = nil
@@ -271,28 +379,7 @@ local DATA = [[
 		end
 		root:Destroy()
 		for _, o in ipairs(charStuff) do o:Destroy() end
-		for _, tb in ipairs({ charStuff, act, actParts, acf, PP, solids, images, brights, emitters, emitNight, beams, clockParts, ghostParts, ringParts,
-			ghostGuis, gearData }) do
-			table.clear(tb)
-		end
-		nAct = 0
-	end
-
-	applyNight(nightStep())
-	root.Parent = ctx.container
-	preloadUsed() -- (the te5 textures this build draws, asked for once each, in the background)
-	if CONFIG.DEBUG then
-		local nb, ng = 0, 0
-		for _, d in ipairs(root:GetDescendants()) do
-			if d:IsA("BillboardGui") or d:IsA("SurfaceGui") then ng += 1 elseif d:IsA("Beam") then nb += 1 end
-		end
-		print(string.format("TheEnd: %d parts (%d moved), %d emitters, %d GUIs, %d beams", NP, nAct, #emitters, ng, nb))
-	end
-	return fx
-end
-
-return End
-]]
+]=]
 
 local function main()
 	if game:GetService("RunService"):IsRunning() then
@@ -336,7 +423,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "14_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "18_apply.luau"))
 end
 
 local ok, res = pcall(main)

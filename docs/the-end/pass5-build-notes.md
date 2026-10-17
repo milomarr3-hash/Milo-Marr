@@ -919,3 +919,165 @@ the preview renderer and the generators' own self-tests.
 57. The new moon at night at Brightness 2.0 (the bright craters keep their detail); te5_galaxy_core's 15° arms from the
     default camera (spirals, not rings).
 58. Texture memory with one and three wearers on high (six 1024² flipbooks plus the surfaces).
+
+## Pass 5.2: the execution upgrade (cloud, 2026-10-17)
+
+Milo's brief, *"UPGRADE MY EXISTING CELESTIAL VFX — KEEP THE ENTIRE CONCEPT, IMPROVE THE EXECUTION"*, ranked three things
+first: *"The clock's materials and fine details ... its depth, surface quality, and independent animations"*, *"The
+movement between the elements. Make the moon, void, clock, and galaxy feel connected through animated energy"* and *"The
+galaxy vortex and particle choreography ... make the particles appear at intentional moments"*, then asked for twelve
+areas in detail and ended *"Do not change the concept. Upgrade its execution."* Every element he listed is kept: the
+silver clock (Roman numerals, gears, central star), the moon on the left, the void with its white star and dark smoke,
+the white sparkles and fragments, the black-and-white galaxy, the gold-and-black platform and the character at the
+centre. He wrote the brief from the pass 5.1 preview pictures (the stage read gold there because the sandy plaza showed
+through it), so the stage is now gold-and-black in its own right. Nothing here has run in Studio.
+
+### The clock
+
+- **A near-black band set into the bezel** (32 DEEP blocks, 12.70-13.62 studs, front at z 1.17, flying in with their
+  flutes) between bright lips of flute: silver | black | silver. Its engraving (te5_bezel_band: a 360-tick degree scale,
+  the hours' stars, polished edge lines) is on its own plane, which turns a degree a second anticlockwise, so the scale
+  creeps round like the sky. The band is solid and outside the silver Highlight, so the tone never paints over the
+  engraving (a GUI over highlighted silver would be washed by the fill). Until te5 it is a plain dark inset.
+- **A polished flange** round the star window (24 BRIGHT blocks at 9.45 studs, proud of the inlay by 0.22).
+- **The central star**: a faceted eight-point compass star on the sub-dial (long points 4.6 to XII, III, VI, IX; short
+  2.9 between; each point two flat WedgePart facets, bright silver on its counter-clockwise half, gunmetal (new `GUN`
+  token, a satin plastic outside the tone) on the other), growing out of the hub as the sub-dial lands. Low quality builds
+  the four long points. The sub-dial now turns slowly clockwise (3°/s) under the still star.
+- **Breguet moon hands**: a polished ring with a dark eye near the hour and minute hands' tips (the lume strips shortened
+  to stop below them).
+- **The seconds hand's trail**: a comet arc of light on the minute track (te5_trail on a 25-stud plane riding the seconds
+  hand, just over the inlay; head at the hand, tail behind), lighting each hour as it passes.
+- **Hour plots that light in turn**: they land dark (Neon 52) and light one by one in the reveal (below).
+- **Motion with purpose, and stillness for contrast**: still: the bezel, the chapter ring and numerals, the rete, the
+  central star, the crown. Turning: the engraved band (+1°/s), the sub-dial (-3°/s), the star window (with the centre
+  wheel), the gears (meshed), the hands, the trail. The gears race toward midnight in the reveal and stop dead on the
+  stroke for 0.4 s.
+
+### The links between the elements
+
+- Three **energy links** (Beams, `LINKS`): the moon's light into the clock at IX, out at III into the void (white going to
+  ink as the void swallows it) and from VI down to the floor's vortex (7 studs in front of the clock's side of the pool).
+  Each is a thin tapered thread (te5_link: a faint filament with one soft pearl of light per 7 studs, symmetric, gliding at
+  3.5 studs/s; the pass-2 streak until uploaded), bowed by `CurveSize` in proportion to its length (written when the
+  length changes by a stud), near-only, off in first person, ghosted with the rest. In the reveal each lights up **along
+  its length** from its source (21 precomputed "grow" transparency steps instead of a fade) and they surge at midnight.
+  The ports sit on the bezel band (`PORT_IX`, `PORT_III`, `PORT_VI`) with a small twinkle each; a bigger signature
+  twinkle glints at XII.
+- **Moonlight motes** (P19) drift from the moon into IX along the link (locked to a carrier aimed at IX; their speed
+  follows the link's length; 5/s at rest, 30/s in the buildup).
+- **Runners**: a bright segment of light (three Neon blocks, brightest at the head) runs round the meridian (80°/s) and
+  the equator (64°/s), racing ×2.5 in the reveal.
+
+### The galaxy, the platform and the particles
+
+- **Layers that each turn their own way**: the broad floor (-6°/s), new **energy rings** (te5_energy_rings, 28 studs,
+  +4°/s: thin solid and broken rings, a tick ring and a bright boundary ring), the arms (+9), a new **fine fast swirl**
+  (te5_galaxy_swirl, 18 studs, -30°/s, the floor's winding so it trails) and the core (-16). The two new layers are
+  te5-only (no pass-4 look-alike), so they appear with the upload.
+- **Spiral arms of motes** (P20): two feeds circle the pool's edge on a host that turns the other way, so the arms stand
+  still on the floor (keeping step with it) while the motes stream in along them (two attachment `CFrame` writes a frame,
+  near only).
+- **The platform is gold-and-black**: te5_engraving is now an opaque near-black annulus with bevelled light markings
+  (rings, the guilloche band, the Roman numerals, a degree scale, small constellations) and the module tints it `GOLD`
+  (228,196,132): the base stays black, the markings turn gold. Night Brightness 1.25 (was 2.0): under the Bloom threshold,
+  so the detail never washes out. The harness palette lint allows exactly this gold and the sweep's warm white.
+- **Particles with jobs** (§9's new rows P19-P31): background dust (the air field, now 14/s at rest), fragments on
+  controlled orbits (time dust, the star halo, the moon's ring P22, the dial's burst glints P25), a few big signature
+  sparkles (XII and the ports, P31), energy streaks (the converging streaks P26, the wave's front, the funnel, the infall
+  P23). The void gains thin ink **tendrils** between its billows (P30; the billows thinned 10 → 8/s so they have gaps), a
+  slow **heart glint** with rays (P21) and matter spiralling in from all round (P23). The moon gains a broad soft glow
+  (P29, a pale haze by day), a tilted ring of orbiting glints (P22) and a slow 4° libration of its face.
+- **The photon ring's highlight**: thickest (×2) and whitest on the void's side facing the clock (9 o'clock), a ×0.75
+  hair at 3 o'clock, like the Doppler-bright side of a real black hole.
+
+### The reveal: a buildup, one peak, an aftermath
+
+Spec §12 has the timeline. The hands spin in to five to midnight; the buildup lights the links, sweeps the dial with the
+trail while the hour plots light I → XII, races the gears and runners, draws the void's smoke in, brightens the moon and
+the galaxy's heart, sweeps a golden light round the stage and converges streaks on the hub; the minute hand ticks five
+times to XII; **midnight (6.6 s)** is the one pulse (gears stop, the floor's wave with its racing front, glints burst
+off the dial into orbit, sparks lift, a ring off the moon, the void's smoke blown out, a brief boost on the links, moon,
+core and stage); the aftermath settles by 9.8 s. On the wearer's own screen only (`st.ownReveal`, the same real-equip
+rule as the grade): the grade holds through midnight, a `BloomEffect` under the Camera builds and peaks at midnight and
+is destroyed at 8.2 s (`REVEAL_BLOOM`), and the field of view narrows 6 % and returns exactly at 9.4 s (`REVEAL_PUSH`;
+it lets go at once if anything else changes the field of view or a cutscene takes the camera, giving it back first if
+it is still ours). `Lighting` is never touched. Hide, destroy or a cutscene mid-reveal remove the bloom and give the
+field of view back (`hosts.screenOff`).
+
+### Engineering
+
+- New groups live in one table (`G2`: 15 groups, 46-60) and new state in `st`: End.build keeps **29** spare registers at
+  -O0 (65 at -O1/-O2). The reveal is one closure (`hosts.reveal`) defined in a `do` block with its helpers (`rateTo`,
+  `boost`, `seen`, `screenOff`), so neither End.build nor `fx.update` carries its locals.
+- `surface(..., own)`: an image the reveal fades itself (the trail, the sweep) stays out of `fadeAll`; the trail joins
+  the ordinary fades when the reveal ends. `brights` entries carry a 4th value and `beams` entries a 13th: the reveal's
+  brightness boost, which `applyNight` adds, so the night tick never undoes it.
+- Burst-only emitters are kind `"burst"` (never enabled; `:Emit` works on a disabled emitter) and the converging streaks
+  kind `"converge"` (on only in the buildup). Bursts fire only when the particles would be drawn (near, shown, alpha on).
+- The Breguet ring parts are named `BreguetRing` / `BreguetEye` (the studio_checks S2 snippet finds the moon by the name
+  `Moon`). The turning sub-dial (group `G2.SUB`) stays in the clock's ghost and see-through lists.
+- Tools: the harness counts steady frames from 10 s (the reveal ends at 9.8 s; the two cutscene scenarios run to 17 s,
+  steady after 15.2; nan_frame to 12 s); the palette lint allows the stage's gold; the preview draws `:Emit` bursts from
+  disabled emitters (it skipped them: Roblox emits them).
+
+### Review (a read-only Roblox reviewer, then fixes)
+
+- **Fixed:** a hide before the buildup (the framework hides the aura under the roll cutscene's Scriptable camera, the
+  most common real equip) latched the bloom and the push-in off for good: `setVisible(false)` now gives the screen back
+  only if one had started, and each starts only at the start of the buildup (never half way, so neither pops in).
+- **Fixed:** the equator's runner turned anticlockwise with its fading tail ahead of its head (its tail now sits on its
+  clockwise side).
+- **Fixed:** frames were worked out every frame for groups never built (the te5-only layers before the upload, the
+  high-only carriers on low): each is now guarded by its host.
+- **Fixed:** the owner's frame fit (`FRAME_TOP`) read the narrowed field of view during the push-in and stepped the clock
+  back, the opposite of a push-in: it uses the field of view from before the push while the push is ours.
+- **Fixed:** the field of view is given back to the camera it was taken from (`st.fovCam`), and a different current
+  camera ends the push.
+- **Fixed:** `hosts.trail` named both the seconds hand's trail carrier and the speed trail's attachment (now
+  `hosts.secTrail`).
+- **Not done:** the reveal-only carriers (the stage sweep, the converging shell, the wave and burst hosts) stay in the
+  move list after the reveal: 4 parts of 454.
+- **Found in the renders:** the silver Highlight composites over particles that sit in front of silver parts (the preview
+  models it; Roblox is believed to do the same), so the midnight flare over the silver hub read weakly. It is now 16
+  studs at its peak so its rays reach the dark dial, and the dial's burst glints are bigger (1.8). The preview also
+  skipped `:Emit` bursts from disabled emitters, which Roblox draws: fixed in `tools/preview/web/particles.js`.
+- **From the texture agents:** te5_dial_inlay's bevel clipped to flat white at Brightness 1.6 / 2.6: it is drawn at
+  1.0 / 1.8 now (pass 4's dial keeps 1.6 / 2.6 if the te5 one fails to load). The galaxy's core blew out to white at
+  night: core 2.6 → 2.2, the new swirl 1.7.
+
+### Checks run (cloud only)
+
+- `run_aura.py`: 35 scenarios, 0 errors, 0 harness failures, with the fallback textures and with the te5 previews; the 3
+  known translucent-layer warnings only (moon halo, night corona). Steady state (after the reveal): 0 GUI writes per frame.
+- The reveal measured in the harness: the field of view 70 → 65.8 at midnight and exactly 70 again by 9.4 s; `TheEndBloom`
+  under the Camera from 4.6 s, 0.77 at midnight, gone at 8.2 s; the grade gone by 10 s; after an equip out of the roll
+  cutscene (`equip_in_cutscene`, `_paused`) the same, shifted by the 5 s the cutscene held the camera.
+- `tests/run_tests.py`: all passed (typecheck included). `install/test/run_tests.py`: 25/25 (the snippet test expects
+  163 / 454 parts). `typecheck.sh`: 0 diagnostics. `register_headroom.py`: 29 spare at -O0, 65 at -O1 / -O2. Preview
+  `npm test`: passed. Generators' `--check`: particles 139, surfaces 103, smoke 29, all passed. `patch_tex5.py status`:
+  29 keys, the module up to date with the manifests.
+- **Budget** (high / low, fallback textures): 454 / 163 parts in one BulkMoveTo (459 with te5: the five te5-only layer
+  carriers), 43 emitters (34 on by day) / 12 on, about 343 / 78 particles a second (about 891 / 164 alive; the bursts
+  add about 130 particles once, at midnight), 9 / 4 beams, 11 / 8 GUIs (16 with te5), 2 / 0 PointLights, 1 Highlight.
+- Module 198,845 bytes, checksum 17952987. Payloads regenerated (16 pieces: `01_backup`, 02-17, `18_apply`) and checked.
+- Renders: `docs/the-end/pass52-renders/` (idle views at 12 s, the clock close up, the reveal step by step by night and
+  by day, before / after against pass 5.1 from the same cameras).
+
+### New STUDIO-VERIFY items (also in `roblox/install/studio_checks.md`)
+
+59. One pulse, at midnight only: the hands tick from XI to XII; nothing else flashes before or after.
+60. The wearer's screen is given back exactly: `TheEndBloom` only during the reveal, the field of view as before,
+    `Lighting` untouched, nothing on another player's screen; a game script that sets the field of view meanwhile wins.
+61. The central star's WedgePart facets come out solid (`WEDGE_SWAP` otherwise, shared with the void's heart).
+62. The bezel band sits evenly proud of the flutes and its engraving is crisp, not greyed by the silver tone.
+63. The seconds hand's trail: head at the hand, tail behind (it shares the inlay's face convention).
+64. The energy links bow gently, never cross the moon's face or the dial, light up along their length in the reveal.
+65. The floor's wave lies flat (VelocityPerpendicular) and reaches the stage's edge; its streaks race out with it.
+66. The dial's glints burst out in the dial's plane (Cylinder + Outward on the turned carrier) and slow into orbit.
+67. The spiral arms of motes stand still on the floor and stream inward (attachments moved every frame).
+68. The gold stage by day and night: crisp gold on black; the golden sweep goes round head first.
+69. The photon ring is thickest and whitest on the void's side facing the clock.
+70. Particles in front of silver parts (the midnight flare over the hub, the dial's glints over the rete) under the
+    silver Highlight's fill by day: do they still read?
+71. Cost with pass 5.2 (454 / 163 parts, 43 / 12 emitters): the frame time and MicroProfiler numbers against pass 5.1.

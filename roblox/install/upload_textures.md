@@ -1,17 +1,21 @@
 # Uploading the te5 textures and filling TEX5
 
-Pass 5.1 has 23 new textures, all code-generated PNGs of 1024² or smaller (pass 5 had 18; pass 5.1 rebuilt most of
-them at film quality and added the lit smoke, the twinkle, the stardust and the spark):
+Pass 5.2 has 29 new textures, all code-generated PNGs of 1024² or smaller (pass 5 had 18, pass 5.1 23; pass 5.2 added
+six and rebuilt the stage, now gold-and-black, and the dial's numerals, now bevelled):
 
-- 9 particle textures in `textures/te5/particles/`: shards (a ray-traced steel blade tumbling, 1024² flipbook), ash (a
+- 11 particle textures in `textures/te5/particles/`: shards (a ray-traced steel blade tumbling, 1024² flipbook), ash (a
   tumbling ember flake, 1024² flipbook), twinkle (a star that blooms and shrinks, 1024² flipbook), stardust (glitter
-  clusters, 1024² flipbook), mote, glint, bokeh, streak and spark (256² or smaller). `retired/te5_smoke.png` is **not**
+  clusters, 1024² flipbook), mote, glint, bokeh, streak and spark (256² or smaller), and (pass 5.2) link (512×128, the
+  energy links' thread of light) and shockwave (512², the floor's wave at midnight). `retired/te5_smoke.png` is **not**
   uploaded: pass 5.1 no longer draws it (it is only kept for the generator's comparison sheets).
 - 3 smoke textures in `textures/te5/smoke/`: billow and wisp (lit volumetric smoke, 1024² flipbooks) and mistbank (512²).
-- 11 surface textures in `textures/te5/surfaces/`: dial inlay, sub-dial, accretion, galaxy floor/arms/core, engraving,
-  halo, stream (now 512×128), the photographic **moon** face and the **star window** on the clock's movement plate. The
-  moon is an opaque face disc turned to the camera either way: with te5_moon on it, the rendered globe; until then pass
-  4's moon, cropped to its disc.
+- 15 surface textures in `textures/te5/surfaces/`: dial inlay, sub-dial, accretion, galaxy floor/arms/core, engraving
+  (the gold-and-black stage: grey in the file, the module tints it gold), halo, stream (512×128), the photographic
+  **moon** face, the **star window** on the clock's movement plate, and (pass 5.2) bezel band, trail, galaxy swirl and
+  energy rings. The moon is an opaque face disc turned to the camera either way: with te5_moon on it, the rendered globe;
+  until then pass 4's moon, cropped to its disc. **The four pass 5.2 surfaces have no pass-4 stand-in**: the bezel's
+  engraving, the seconds hand's trail (and the stage's sweep), the galaxy's fine swirl and its energy rings only appear
+  once they are uploaded.
 
 Roblox only animates a particle flipbook whose texture is exactly 1024×1024: all six flipbooks above are (`patch_tex5.py`
 refuses to record or patch otherwise).
@@ -46,13 +50,16 @@ upload_image  imagePaths: [".../particles/te5_mote.png", ".../particles/te5_glin
                            ".../particles/te5_streak.png", ".../particles/te5_spark.png"]
 upload_image  imagePaths: [".../surfaces/te5_dial_inlay.png", ".../surfaces/te5_subdial.png", ".../surfaces/te5_accretion.png",
                            ".../surfaces/te5_galaxy_floor.png", ".../surfaces/te5_galaxy_arms.png"]
-upload_image  imagePaths: [".../surfaces/te5_galaxy_core.png", ".../surfaces/te5_stream.png", ".../surfaces/te5_star_window.png"]
+upload_image  imagePaths: [".../surfaces/te5_galaxy_core.png", ".../surfaces/te5_stream.png", ".../surfaces/te5_star_window.png",
+                           ".../surfaces/te5_bezel_band.png", ".../surfaces/te5_trail.png"]
+upload_image  imagePaths: [".../surfaces/te5_galaxy_swirl.png", ".../surfaces/te5_energy_rings.png", ".../particles/te5_link.png",
+                           ".../particles/te5_shockwave.png"]
 ```
 
 (`...` stands for `http://127.0.0.1:8765`. Always write the full URL.)
 
 Each call returns a JSON map like `{"http://127.0.0.1:8765/particles/te5_mote.png": "rbxassetid://123...", ...}`. Save
-**each result exactly as returned** to a file, for example `/tmp/te5_up1.json` to `/tmp/te5_up5.json`, and record them:
+**each result exactly as returned** to a file, for example `/tmp/te5_up1.json` to `/tmp/te5_up6.json`, and record them:
 
 ```sh
 cd ~/Documents/Milo-Marr
@@ -64,7 +71,7 @@ Then stop the web server (kill the background `http.server`).
 
 ## B. By hand with Studio's Asset Manager
 
-1. In Studio, open **View -> Asset Manager** and click **Bulk Import**. Pick all 23 PNGs from `textures/te5/particles/`,
+1. In Studio, open **View -> Asset Manager** and click **Bulk Import**. Pick all 29 PNGs from `textures/te5/particles/`,
    `textures/te5/smoke/` and `textures/te5/surfaces/` (not the `sheets/` or `retired/` folders).
 2. When they are done, open **Images** in the Asset Manager. Right-click each one, choose **Copy Asset ID**, and note
    which file it belongs to.

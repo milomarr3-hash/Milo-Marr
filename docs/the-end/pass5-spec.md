@@ -692,6 +692,29 @@ Notes:
   LE ≤ 0.5 by day and Brightness 2.4, just above the place's Bloom threshold, plus their ink-rim textures. P6c Rate changes with n. P7 toggles with
   `grounded`. P3 and P6c are high only.
 
+**Pass 5.2 (2026-10-17): particles with jobs and timing.** (Pass 5.1 added P15-P18: see the build notes.) "burst" = never
+enabled, fired once with `:Emit` at midnight (§12); "converge" = on only in the reveal's buildup.
+
+| Id | Job | Host · shape · direction | Texture | Rate (high / low) | Life | Speed · drag | Size | Notes |
+|---|---|---|---|---|---|---|---|---|
+| P19 MoonFeed | moonlight drifts from the moon into the clock at IX | LinkMoon carrier (aimed at IX) · point · Front | mote | 5 (30 in the buildup) / — | 2.2–2.4 | link length / 2.3 · 0 | ≤ 0.55 (×1.2 te5) | locked; speed written when the link's length changes by a stud |
+| P20 SpiralArms ×2 | motes stream in along two arms that stand still on the floor | two attachments circling the pool's edge (+36°/s) on a host turning -42°/s · Back (inward) | mote | 9 each / — | 4.2–4.6 | 2.4–2.6 · 0 | ≤ 0.6 | locked; attachment `CFrame` writes each frame while near |
+| P21 HeartGlint | the void's star: a slow glow with rays round the sharp lume core | attachment on the heart | glint5 | 1 / — | 2.4 | 0 | 3.0–3.6 | locked; ZOffset 1; 2-3 overlap into a steady glow |
+| P22 MoonRing | glints orbiting the moon on a tilted ring | MoonRing carrier (14 studs, tipped 68°/-14°, 25°/s) · Disc Partial .86 · Top | twinkle | 6 / — | 3-4 | 0 | 0.75 | locked |
+| P23 Infall | matter spirals into the void from all round | Infall carrier (18 studs, turning 60°/s about the disc axis, 0.3 toward the viewer) · Sphere (Surface, Inward) | mote | 12 / — | 1.4–1.5 | 5.2–5.8 · 0 | 0.5 → 0.2 | locked: the turn makes each path a spiral; it vanishes into the void |
+| P24 Wave + front | the floor's wave at midnight and streaks racing out with it | WaveHost (dais, 1 stud up) · **wave**: point, Top, **VelocityPerpendicular** (flat) · **front**: Cylinder (Surface, Outward) | shockwave · streak5 | burst 1 / burst 1 · burst 40 / — | 1.7 · 1.5–1.6 | .05 · 15.5–16.5 | 3 → 65 (ring 0.86 × size) · ≤ 0.7 | locked; the front keeps pace with the ring |
+| P25 DialBurst | glints burst off the dial and slow into orbit round it | BurstRing (hub, axis along the dial's, turning 30°/s) · Cylinder (Surface, Outward) | glint5 | burst 44 / — | 4.5–6 | 13–19 · drag 1.7 | ≤ 1.8 | locked: they stop 8-11 studs out and orbit |
+| P25b Flare | the stroke of midnight: one star flares at the hub, the only flash | attachment on LinkPorts, 2.2 in front of the hub | glint5 | burst 1 / — | 0.7 | 0 | 3 → 16 → 0 | locked; ZOffset 1.5; over the silver hub the Highlight's fill composites over it, so it is big enough for its rays to reach the dark dial |
+| P26 Converge | streaks converge on the hub through the buildup | Converge carrier (30 studs, on the clock) · Sphere (Surface, Inward) | streak5 | 10 → 60 (4.9-6.6 only) / — | 1.6–1.8 | 7.5–8.2 | ≤ 0.5 (×2.2 te5) | locked; VelocityParallel |
+| P27 Lift | sparks lift off the floor at midnight and hang | FloorFx · Disc Partial .2 · Top | glint5 | burst 30 / — | 3–4.5 | 5–9 · drag 1.5 | ≤ 0.9 | locked (they turn with the floor) |
+| P28 MoonPulse | the moon's one pulse: a ring that grows out from behind its face | attachment at the moon's centre | shockwave | burst 1 / — | 1.0 | 0 | 9 → 26 | locked; ZOffset -1 (the face hides its start) |
+| P29 MoonGlow | the moon's broad soft glow (a pale haze by day) | the same attachment | softGlow | 1 / — | 3 | 0 | 18 | locked; ZOffset -2.5; LE 0 → .6 |
+| P30 VoidTendrils | thin ink tendrils curling between the void's billows | the void ball · Sphere (Surface, Outward) | wisp | 5 / — | 2.6–3.4 | 1.6–2.6 · .25 | 2.4 → 5.4 | colour (28,28,32); ZOffset -2.5 |
+| P31 Signature ×3 | a big slow twinkle at XII and a small one at each link's port | attachments on LinkPorts (GK) | twinkle | 0.4 · 0.6 · 0.6 / — | 2-3 | 0 | 3.2–3.8 · 1.6–2.2 | locked |
+
+Rates changed in pass 5.2: P4a 10 → 8 (gaps between the billows), P6a 18 → 14 and P13 20 → 16 at rest (both lifted in
+the aftermath, to 30), P4a's speed drawn in during the buildup.
+
 ---------------------------------------------------------------------------------------------------------------------------------
 
 ## 10. Character integration
@@ -767,6 +790,23 @@ factor 0, hidden, or far); its brightness itself is `night × fade`, where the f
 ---------------------------------------------------------------------------------------------------------------------------------
 
 ## 12. Equip assembly (≈ 6 s, mechanical, no flash) and unequip
+
+> **Pass 5.2 (2026-10-17): the reveal.** Milo: *"the effect has a clear buildup, a single strong peak, and an aftermath
+> that settles into a beautiful lower-intensity idle state ... Allow brief, controlled flashes only at the most important
+> moment."* The assembly below still builds the machine, then a **reveal** runs on top of it (`hosts.reveal`, called every
+> frame while `st.revOn`; `ASM_END` 7.0, `REV_BUILD` 4.6, `PEAK` 6.6, `REV_END` 9.8):
+>
+> | Time (s) | What happens |
+> |---|---|
+> | 3.6–4.8 | the hands spin in to **five to midnight** (minute hand at XI, hour hand 2.5° short of XII) |
+> | 4.6–6.4 | **buildup**: the energy links light up along their length (moon 4.6, void 5.2, floor 5.6); the gears race (pace ×1 → ×3); the runners race; the void's smoke draws in (its speed falls in 4 steps to a quarter); the moon (+0.45) and the galaxy's heart (+0.8) brighten; the moon's motes surge into IX (rate 5 → 30); streaks converge on the hub from a 15-stud shell (rate 10 → 60, 4.9–6.6); a golden light sweeps once round the stage (4.6–6.6); the wearer's bloom builds (0 → 0.3) and the view pushes in (FOV × 0.94) |
+> | 5.0–6.6 | the trail of light sweeps the dial once, reaching each hour plot as it lights (I at 5.13 … XII at 6.6, each 0.3 s in five Neon steps); the minute hand **ticks** from XI to XII a minute at a time (5.0, 5.4, 5.8, 6.2, 6.6; each tick 0.14 s with a hair of overshoot) |
+> | **6.6** | **midnight**, once: the gears stop dead for 0.4 s; the wave across the floor (one flat ring, Size 3 → 65 over 1.7 s, its front streaks racing out at 16 studs/s); one star flares at the hub (Size 3 → 16 → 0 over 0.7 s, the only flash); 44 glints burst off the dial and slow into orbit round it (Drag 1.7, locked to a ring turning 30°/s); 30 sparks lift off the floor; a ring off the moon (Size 9 → 26 over 1 s, behind its face); the void's smoke blown out (12 billows at speed 7–10); a pulse of light on the links (+1.4), the moon (+0.9), the galaxy's heart (+0.9) and the stage (+0.4), decaying with a 0.3 s time constant; the wearer's bloom peaks (+0.7) |
+> | 6.6–9.8 | **aftermath**: the boosts fall back, the air's sparkles and the time dust stay lively and calm down (rates 30 → 14, 30 → 16), the trail fades out and comes back on the seconds hand (7.8–8.8), the bloom is destroyed (8.2), the grade eases back (from 7.1 over 2.4 s), the field of view returns exactly (9.4) |
+>
+> So the table's "no pulse and no flash" now reads: one pulse, at midnight, and nothing else. Every value the reveal drives
+> is quantised and written only when its step changes, and at the end everything is left at rest (`st.revOn` false: no
+> more writes). With `ASSEMBLY` off the aura starts at `REV_END`: the plots are lit and nothing of the reveal runs.
 
 `age` = seconds since build. Helpers:
 
@@ -903,6 +943,16 @@ is held no longer leaves rings unparented or an aura ghosted until the next equi
 > **Pass 5.1 (2026-10-16):** the particle budget was raised for Milo's "particle effects tenfold" (new systems P15-P18,
 > film-quality textures). The table rows below for parts, emitters and rate carry the pass 5.1 numbers; the texture list is
 > in §16 and the details in `pass5-build-notes.md`, "Pass 5.1".
+>
+> **Pass 5.2 (2026-10-17):** raised again for Milo's execution brief (the clock's band, flange, star and Breguet hands,
+> the runners, the link and reveal carriers, P19-P31). As built, high / low with the fallback textures: **454 / 163 parts**
+> (459 with te5: the five te5-only layer carriers), **43 emitters, 34 on by day / 12 on** (the bursts and the converging
+> streaks are never on: they `:Emit` once or run only in the buildup), **≈ 343 / 78 particles a second** at rest
+> (≈ 891 / 164 alive; midnight adds about 130 once), **9 / 4 beams** (the three links / two), **11 / 8 GUIs** (16 with te5),
+> 2 / 0 PointLights, 1 Highlight. Registers: 29 spare at -O0, 65 at -O1 / -O2. After the reveal (10 s) there are no
+> per-frame GUI or Transparency writes; during it, quantised writes only (plot colours, boosts, rates, the trail's and the
+> sweep's transparency), the wearer's bloom intensity and field of view, and two attachment `CFrame`s a frame for the
+> spiral arms (always, while near).
 
 Counts as built after review round 3 (fallback and te5 textures alike). **No limit was raised**: the finer armillary (+22
 parts) was paid for by the lensed arc (9 blocks), the ribbon's end carrier, 2 bow segments, 4 dais-rim blocks and 6
@@ -967,6 +1017,9 @@ the attribute, then unequip and equip) and type-checked; a wrong type is ignored
 | `NEAR_BOKEH_HIDE` / `NEAR_BOKEH_SHOW` | 18 / 20 | Bokeh near rule (§13.3) |
 | `GHOST_REMOTE` | true | Another wearer's aura turns see-through while it stands between you and your camera (§13.3) |
 | `FAR_BEACON` | false | (Needs Milo's OK) a thin steady spire over the wearer seen only from far away; ink by day, white at night, no pulse. MILO_PROMPT asks him with two screenshots (review round 3, R3W-7) |
+| `LINKS` | true | (Pass 5.2) the three energy links: moon → IX, III → void, VI → the floor's vortex (thin tapered Beams with gliding pearls of light) |
+| `REVEAL_BLOOM` | true | (Pass 5.2) on the wearer's own screen only, a BloomEffect under the Camera that builds through the reveal's buildup, peaks at midnight and is destroyed ~1.6 s later |
+| `REVEAL_PUSH` | true | (Pass 5.2) on the wearer's own screen only, the field of view narrows 6 % through the buildup and comes back exactly by the end of the reveal; it lets go at once (never writes again) if anything else changes the field of view or a cutscene takes the camera |
 | `FRAME_TOP` | 9.6 | (Review round 3, R3W-1) how far above the hub the owner's camera always keeps the watch in frame: 9.6 = up to XII (the hands at midnight), 22.4 = the whole watch with its bow (smaller at the default zoom), 0 = off (§5). Range 0–24 |
 | `RIM_R` | 0.86 | (Review round 3, CR3-02) where the pass-2 `rim` texture's ring peaks, as a fraction of its half-width; the corona, the void's horizon glow and the moon halo are scaled by `0.73 / RIM_R` until te5_halo is uploaded. Measured on the Mac (studio_checks check 14). Range 0.5–0.98 |
 | `FLOW_SIGN` / `ACC_DIR` / `FUNNEL_DIR` / `GALAXY_DIR` | 1 | Studio direction checks, one flip each: −1 reverses the stream flow, the accretion / swirl spin, the floor vortex, the galaxy arms |
@@ -1031,6 +1084,24 @@ Reject the mesh if it is nil, has an empty `MeshId`, or any `Size` component < 0
 > retired (billow, wisp and mistbank replace it). The module's tables (`TEX5`, `TEX5_LAYOUT`, `FALLBACK`) hold the pass 5.1
 > keys; the tables below describe pass 5 and are kept for history. Each manifest records the texture's key, fallback,
 > size, layout and mode.
+>
+> **Pass 5.2 (2026-10-17): 29 te5 textures.** New: `te5_bezel_band` (1024², bezelBand: the bezel band's engraving, every
+> visible pixel inside r 0.9365-0.9895 of a 27.4-stud plane, so the band's dark parts at 12.70-13.62 studs cover it: a
+> 360-tick degree scale, the hours' stars at r 0.958, planets between, faint constellation hairlines, bevelled edge lines
+> at r 0.940 and 0.986), `te5_trail` (1024², trail: a comet arc, core at r 0.946, head at the canvas top fading out within
+> ~2.5° clockwise, tail running counter-clockwise for 80° as exp(-dθ/22°); 11.83 studs on the 25-stud dial plane, 26.5 on
+> the 56-stud stage), `te5_galaxy_swirl` (1024², galaxySwirl: fine filaments, the floor's winding, pitch 14°, mean alpha
+> 0.17, empty inside r 0.10), `te5_energy_rings` (1024², energyRings: rings at r 0.22-0.86, some broken into 24, 12, 8 or
+> 18 arcs, 120 ticks at r 0.80, a boundary ring at r 0.965), `te5_link` (512×128, link → streak: a faint thread with one
+> symmetric pearl of light per tile, nothing beyond ±33 px of the centre row) and `te5_shockwave` (512², shockwave → rim:
+> a thin ring at r 0.86 with a streaked wake inward to r 0.55; its front is 0.86 × the particle's size). Rebuilt:
+> `te5_engraving` is now an **opaque near-black annulus** (r 0.548-0.992, base grey 14) with light markings (205-255,
+> a centre-ridge bevel that stays right as the stage turns): the rings, the guilloche band, the Roman numerals, a degree
+> scale on the r 0.875-0.918 ring, the minute band's ticks and batons, ten small constellations; the module tints it gold
+> (`GOLD` 228,196,132), so its row below describes the pass-5 version. `te5_dial_inlay` keeps its layout, with a
+> polished-metal bevel on the numerals, ticks and stars (light from the upper left; the module draws it at Brightness 1.0
+> by day and 1.8 at night so the bevel is not clipped to flat white). The four te5-only layers (bezelBand, trail,
+> galaxySwirl, energyRings) have no pass-4 look-alike: their `FALLBACK` is `none` and they are not built until uploaded.
 
 ### 16.1 Tables in the module
 

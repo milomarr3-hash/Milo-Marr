@@ -1,12 +1,12 @@
--- AuraRNG Studio install kit | 11_chunk_10_of_12.luau | step 11: piece 10 of 12
--- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (155147 bytes, checksum 484396720).
+-- AuraRNG Studio install kit | 14_chunk_13_of_16.luau | step 14: piece 13 of 16
+-- Target ReplicatedStorage.AuraFX.TheEnd. Made by roblox/install/make_payloads.py from roblox/ReplicatedStorage/AuraFX/TheEnd.lua (198845 bytes, checksum 17952987).
 -- Run in Roblox Studio in EDIT mode (Studio MCP execute_luau with datamodel_type "Edit", or paste into the Command Bar).
 -- Send the text exactly as it is: it checks itself. It returns one line starting with OK, FAIL or STOP.
-local FILE = "11_chunk_10_of_12.luau"
+local FILE = "14_chunk_13_of_16.luau"
 local TARGET = { "ReplicatedStorage", "AuraFX", "TheEnd" }
 local TARGET_NAME = "ReplicatedStorage.AuraFX.TheEnd"
-local RUN = "TheEnd-155147-484396720-12-73384217"
-local NEW_LEN, NEW_SUM = 155147, 484396720
+local RUN = "TheEnd-198845-17952987-16-151465783"
+local NEW_LEN, NEW_SUM = 198845, 17952987
 local BEFORE_LEN, BEFORE_SUM, BEFORE_NAME = 35000, 489406639, "the pass-4 live version"
 local SES = game:GetService("ScriptEditorService")
 local SS = game:GetService("ServerStorage")
@@ -44,9 +44,9 @@ local function describe(len, cs)
 	return "an unknown version"
 end
 
-local N = 12
-local LENS = { 13303, 13296, 13287, 13167, 13290, 13271, 13256, 13301, 13240, 13302, 13264, 9170 }
-local SUMS = { 67409079, 948660274, 266404745, 816058228, 379904796, 918623796, 659321254, 309794145, 464118196, 901135989, 725623781, 681290935 }
+local N = 16
+local LENS = { 13242, 13165, 13228, 13140, 13231, 13214, 13219, 13150, 13223, 13242, 13241, 13228, 13234, 13175, 13201, 712 }
+local SUMS = { 137879888, 580038089, 425714260, 382625152, 135632818, 823280755, 924487494, 162546552, 917082428, 106838554, 486110360, 934107283, 670841394, 102157393, 814892809, 773373630 }
 
 -- the temporary holder ServerStorage.AuraRNG_Install: one StringValue per piece of the new source
 local function chunkName(i)
@@ -67,28 +67,9 @@ local function chunkOk(h, i)
 	return v ~= nil and v:IsA("StringValue") and #v.Value == LENS[i] and sum(v.Value) == SUMS[i]
 end
 
-local K = 10
--- piece 10 of 12 of the new source (13302 bytes, checksum 901135989, long bracket level 0)
+local K = 13
+-- piece 13 of 16 of the new source (13234 bytes, checksum 670841394, long bracket level 0)
 local DATA = [[
-		if p0.X ~= p0.X or p0.Y ~= p0.Y or p0.Z ~= p0.Z or s.hover ~= s.hover then return end
-		if remote and not near then
-			-- another player's aura past ~110 studs (about 40 px tall) runs every other frame, with both frames' time: the
-			-- springs and spins stay exact and it costs half
-			st.skipDt += dt
-			st.skipN = 1 - st.skipN
-			if st.skipN == 1 then return end
-			dt, st.skipDt = st.skipDt, 0
-		elseif st.skipDt > 0 then
-			dt += st.skipDt
-			st.skipDt = 0
-		end
-		if dt > 0.1 then dt = 0.1 end
-		age += dt
-		local asm = age < ASM_END
-		local t, now, g = s.t, s.now, s.glide
-		local cf = s.cf
-		local O = cf.Position + Vector3.new(0, s.hover, 0)
-		local a = s.alpha
 		if type(a) ~= "number" or a ~= a then a = 1 end
 		a = clamp(a, 0, 1)
 		local on = a >= 0.6 -- (the emitters follow the framework's fade only: the reveal below starts from an empty sky anyway)
@@ -120,21 +101,26 @@ local DATA = [[
 			elseif camG and camG.CameraType == Enum.CameraType.Scriptable then
 				st.gradeStarted = false
 			elseif camG then
-				if liveGrade and liveGrade.Parent then
-					grade = liveGrade -- (an earlier equip's grade still easing out: take it over, never stack a second one)
-				else
-					grade = new("ColorCorrectionEffect", { Name = "TheEndReveal" }, camG)
-					liveGrade = grade
+				st.ownReveal = true -- (a real equip that the player sees: the reveal may touch their screen)
+				if CONFIG.GRADE then
+					if liveGrade and liveGrade.Parent then
+						grade = liveGrade -- (an earlier equip's grade still easing out: take it over, never stack a second one)
+					else
+						grade = new("ColorCorrectionEffect", { Name = "TheEndReveal" }, camG)
+						liveGrade = grade
+					end
+					gradeOwner = st
+					gradeToken += 1
+					gradeTo(GRADE_ON, 1.2)
 				end
-				gradeOwner = st
-				gradeToken += 1
-				gradeTo(GRADE_ON, 1.2)
 			end
 		end
-		if grade and not st.gradeOut and age >= 5.8 then
+		-- (pass 5.2: the grade holds through midnight and eases back in the aftermath)
+		if grade and not st.gradeOut and age >= PEAK + 0.5 then
 			st.gradeOut = true
-			gradeTo(GRADE_OFF, 2.2, true)
+			gradeTo(GRADE_OFF, 2.4, true)
 		end
+		if st.revOn then hosts.reveal(a) end
 
 		-- 0. the wearer's state: how fast they travel (a teleport is ignored; on the ground only the horizontal speed counts,
 		-- so a jump is not a flight), and whether they sit
@@ -337,7 +323,10 @@ local DATA = [[
 		-- settles at most CLOSE.dist further back. It glides there (never jumps) and is off in first person
 		local ft = (ctx.isLocal and cam) and CONFIG.FRAME_TOP or 0
 		if ft > 0 then
-			local lim = min(1.45, asin(clamp(cam.CFrame.LookVector.Y, -1, 1)) + rad(cam.FieldOfView) * 0.455) -- (the frame's top edge, less a margin)
+			-- (the frame's top edge, less a margin; during the reveal's push-in, from the field of view before it, so the
+			-- clock does not step back as the view narrows: the margin covers the 6 %)
+			local fov = (st.fov0 and not st.pushDone) and st.fov0 or cam.FieldOfView
+			local lim = min(1.45, asin(clamp(cam.CFrame.LookVector.Y, -1, 1)) + rad(fov) * 0.455)
 			local push = clamp((st.kY + Hc + ft * cos(tilt) - camPos.Y) / max(tan(lim), 0.05) - dh - ft * sin(tilt) - Dc, 0,
 				CLOSE.dist + 1.1 * max(0, ft - 9.6)) * (1 - fp)
 			st.fitD = snap and push or st.fitD + (push - st.fitD) * (1 - exp(-3 * dt))
@@ -357,6 +346,7 @@ local DATA = [[
 		GCF[GK] = K
 		if not remote then ownerHub = K.Position end
 
+		-- 2. the clockwork: gears (meshed rates from the server clock), hands, crown. (pass 5.2: in the reveal the gears race
 ]]
 
 local function main()
@@ -401,7 +391,7 @@ local function main()
 		end
 	end
 	return say("OK", string.format("piece %d/%d stored%s (%d bytes, checksum %d). The holder has %d/%d. Next: %s",
-		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "14_apply.luau"))
+		K, N, again and " again" or "", LENS[K], SUMS[K], have, N, K < N and chunkFile(K + 1) or "18_apply.luau"))
 end
 
 local ok, res = pcall(main)

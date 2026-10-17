@@ -9,7 +9,7 @@
   "layout": "None",
   "mode": "None",
   "purpose": "Inlaid Roman numerals, minute track and inner ring on the solid dark chapter ring (C3 inlay plane, 24.4 studs)",
-  "notes": "C3 SurfaceGui Face=Back, image +y toward XII. r 1 = 12.2 studs. White 250 strokes, 2 px ink (10,10,14, 0.9). Radial numerals (tops outward, XII upright), IIII at 4 as on clock dials. Half-hour 4-point stars, tip radius 0.025.",
+  "notes": "C3 SurfaceGui Face=Back, image +y toward XII. r 1 = 12.2 studs. Pass 5.2: polished metal, lit from the canvas's upper left (the dial never turns to the viewer): each stroke's rim is shaded by its outline normal against that light, ~255 on edges facing up-left, ~170 facing down-right, a flat 225 middle (numerals, hour batons, minute ticks, track rings and the stars alike), 2 px ink (10,10,14, 0.9) kept. Layout and radii as before: tracks r 0.985 / 0.955, batons 0.94-0.985, radial numerals at 0.865 (tops outward, XII upright, IIII at 4 as on clock dials), inner ring 0.775, half-hour 4-point stars (tip radius 0.025).",
   "uploadedId": null
  },
  {
@@ -86,8 +86,8 @@
   "size": "1024x1024",
   "layout": "None",
   "mode": "None",
-  "purpose": "The stage: an engraved clock ring on the ground round the dais (D5, 56 studs; review round 3, was 40)",
-  "notes": "r 1 = 28 studs. From just outside the dais rim (r 0.585) to r 0.99: a fine guilloche tick band (r 0.64-0.68), Roman numerals 3 studs tall at r 0.80 with half-hour four-point stars, and an INKED minute track (a solid ink band r 0.925-0.975, alpha 1) with white ticks and lume batons every five minutes. White 240 strokes with a 2 px ink (20) outline at alpha 0.95: nothing semi-transparent. Day Brightness 1.0 (the ink carries the day), night 2.0.",
+  "purpose": "The stage: the gold-and-black circular platform with astronomical markings round the dais (D5, 56 studs; rebuilt in pass 5.2)",
+  "notes": "r 1 = 28 studs. Grey: the module tints it gold (ImageColor3 ~228,196,132), Brightness 1.0 by day, 1.25 at night (detail from contrast, not glow). An OPAQUE near-black base (14, alpha 1) over the whole annulus r 0.548-0.992 (the dais's silver rim covers r < 0.555), alpha 0 inside and outside (1 px edges). The markings are light metal (205-255) with a bevel that ignores direction (the stage turns): a bright ridge along each stroke's centre line, darker flanks. Rim lines r 0.585 and 0.985 (3 px); rings 0.605 0.632 0.688 0.725 0.875 (2 px) and 0.918 (2.5 px); a guilloche band of 120 ticks r 0.638-0.682; Roman numerals 3 studs tall at r 0.80 (IIII at 4, tops outward, XII upright; stems 0.015 r) with half-hour four-point stars; a 360-tick degree scale hanging in from the 0.918 ring (1 / 5 / 10 deg and the hours); the minute band r 0.922-0.978 with minute ticks and 7 px batons every five minutes; and between the numerals ten small constellations (dots, tiny four-point stars, faint lines; alpha <= 0.6). Every stroke >= 2 px (~18 px per stud).",
   "uploadedId": null
  },
  {
@@ -140,6 +140,58 @@
   "mode": "None",
   "purpose": "Deep-space window on the clock's solid movement plate behind the skeleton dial (review round 1, AD1)",
   "notes": "Rebuilt after review round 3: opaque near-black field (alpha 1 to r 0.985, mean L 0.07); a faint, gently curved Milky-Way band at 32 deg with star clouds, the Great Rift, branching dark filaments, globules and two faint emission clouds; ~22,000 stars with a real magnitude spread (N(<m) ~ 10^(0.4 m) over 8 magnitudes) drawn through a point-spread function (sharp core, faint halo), denser in the band and dimmed behind the dust, the 8 brightest with short diffraction spikes; ~260,000 unresolved stars as the band's grain; 34 small distant galaxies. Turns with the centre wheel (+6 deg/s). Brightness 1.1 / 2.0. Until uploaded it falls back to the pass-4 galaxy (galaxy4), drawn dimmer.",
+  "uploadedId": null
+ },
+ {
+  "name": "te5_bezel_band",
+  "file": "te5_bezel_band.png",
+  "repoPath": "textures/te5/surfaces/te5_bezel_band.png",
+  "texKey": "bezelBand",
+  "fallbackTexKey": null,
+  "size": "1024x1024",
+  "layout": "None",
+  "mode": "None",
+  "purpose": "The engraving on the near-black inset ring set into the clock's silver bezel (pass 5.2): a 27.4-stud plane turning ~1 deg/s in front of a ring of dark parts",
+  "notes": "r 1 = 13.7 studs, image +y = XII. HARD RULE (checked): every pixel with alpha > 0.02 lies in r 0.936-0.990 (12.82-13.56 studs), the band the dark parts cover; outside it a stroke would float over the silver. Light strokes on alpha 0: polished edges at r 0.940 and 0.986 (250, 2.5 px), each with a dim groove (grey 60, alpha 0.5, 1 px) on the band side; a 360-tick degree scale hanging from the outer edge (1 deg 0.006 r / 1.2 px, 5 deg 0.011 / 1.8 px, 10 deg 0.016 / 2.4 px; at the hours 0.012 / 3 px, so a gap stays above the star); four-point stars (tip 0.010 r) at the hours and small ringed planets at the half hours, centred r 0.958; in the inner half a faint zodiac of dots, hairline arcs and constellation lines (alpha 0.45). Strokes 245 with a 1 px ink outline (20, alpha 0.6). Pure grey. ~37 px per stud (the band is ~28 px wide).",
+  "uploadedId": null
+ },
+ {
+  "name": "te5_trail",
+  "file": "te5_trail.png",
+  "repoPath": "textures/te5/surfaces/te5_trail.png",
+  "texKey": "trail",
+  "fallbackTexKey": null,
+  "size": "1024x1024",
+  "layout": "None",
+  "mode": "None",
+  "purpose": "A comet arc of light (pass 5.2): the seconds hand's trail on the dial's minute track (25-stud plane, r 1 = 12.5 studs) and the golden sweep round the stage's minute band (56-stud plane, r 1 = 28 studs)",
+  "notes": "White, pure grey, alpha only. Radial: a core centred r 0.946 (half-width 0.010 at the head, alpha 1, narrowing to ~0.007 along the tail) in a soft glow (alpha <= 0.34) out to +-0.030; alpha 0 inside r 0.88 and outside 0.995. Angular: the HEAD is at 12 o'clock (canvas top centre), a rounded cap with a soft, quick leading edge, gone ~2.5 deg clockwise of 12 (toward canvas +x); the TAIL runs COUNTER-clockwise from 12 (toward XI, the canvas's upper left) for ~80 deg, alpha ~ exp(-dtheta / 22 deg), 0 by 88 deg; 38 faint sparkle grains (alpha <= 0.5) beside the core in the tail's first 30 deg. Turn the image so canvas up points along the hand: a clockwise sweep then drags the tail behind the head.",
+  "uploadedId": null
+ },
+ {
+  "name": "te5_galaxy_swirl",
+  "file": "te5_galaxy_swirl.png",
+  "repoPath": "textures/te5/surfaces/te5_galaxy_swirl.png",
+  "texKey": "galaxySwirl",
+  "fallbackTexKey": null,
+  "size": "1024x1024",
+  "layout": "None",
+  "mode": "None",
+  "purpose": "A finer, faster swirl laid over the galaxy floor (pass 5.2): an 18-stud layer, Top face, spinning clockwise ~30 deg/s",
+  "notes": "r 1 = 9 studs. 8 thin luminous filaments in a tight log spiral (pitch 14: at 10-11 deg spirals read as rings from the low default camera) with the SAME winding as te5_galaxy_floor / _core (counter-clockwise outward, image +y up: the clockwise spin makes them trail), each with its own start, end, brightness and meander, beaded and broken; a soft glow round each, long fine gas threads between them, dust grains, and three thin broken dark lanes (RGB 9, alpha <= 0.55) on filaments' concave edges. Mean alpha ~0.17 inside r 0.95, filament cores up to ~0.82. Empty inside r 0.10 (the balance wheel), fading in from r 0.12, out by 0.95. Pure grey.",
+  "uploadedId": null
+ },
+ {
+  "name": "te5_energy_rings",
+  "file": "te5_energy_rings.png",
+  "repoPath": "textures/te5/surfaces/te5_energy_rings.png",
+  "texKey": "energyRings",
+  "fallbackTexKey": null,
+  "size": "1024x1024",
+  "layout": "None",
+  "mode": "None",
+  "purpose": "Concentric energy rings over the galaxy pool (pass 5.2): a 28-stud layer, Top face, turning +4 deg/s",
+  "notes": "r 1 = 14 studs; nothing beyond r 0.97 (the pool's silver rim starts at ~14.75 studs = r 1.05). Six thin rings: r 0.22 solid (1.5 px, alpha 0.34), 0.34 in 24 dashes (2 px, 0.46), 0.47 in 12 arcs (1.2 px, 0.30), 0.60 in 8 arcs that swell mid-arc like pulses (2.5 px, 0.55), 0.73 in 18 short arcs (1.8 px, 0.40), 0.86 solid (1 px, 0.26), the broken ones at different phases so the turn shows; 120 ticks at r 0.80 (alpha 0.40, longer at the hours); an outer boundary ring at r 0.965 (3 px, alpha 0.85) with a soft inner glow (alpha <= 0.25 over 0.03 r). White, pure grey, alpha 0 elsewhere.",
   "uploadedId": null
  }
 ]
